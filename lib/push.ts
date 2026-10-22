@@ -14,7 +14,11 @@ export async function sendPushToAll(
     }
     webpush.setVapidDetails(subject, pub, priv);
     const db = createServiceClient();
-    let q = db.from("push_subscriptions").select("endpoint, p256dh, auth");
+    // Only approved people receive pushes (inner join on profiles; denied or pending accounts are skipped).
+    let q = db
+      .from("push_subscriptions")
+      .select("endpoint, p256dh, auth, profiles!inner(status)")
+      .eq("profiles.status", "approved");
     if (userIds) q = q.in("user_id", userIds);
     const { data: subs, error } = await q;
     if (error) throw error;

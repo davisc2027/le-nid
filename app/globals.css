@@ -285,3 +285,10 @@ body {
 @keyframes cath-twinkle { 0%, 100% { opacity: .25; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.1); } }
 @keyframes cath-pop { 0% { opacity: 0; transform: scale(.4) translateY(6px); } 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .cath *, .cath { animation: none !important; transition: none !important; } }
+
+/* Battery: decorative loops stop after a few cycles (WebKit repaints SVG transforms every frame). */
+.stork-still .stork-bob, .stork-still .stork-head, .stork-still .stork-eye { animation: none; }
+.art-cloud-a, .art-cloud-b, .art-fly, .art-boat, .art-ripple { animation-iteration-count: 2; animation-fill-mode: forwards; }
+.cath .cath-hook, .cath .cath-sparkle { animation-iteration-count: 3; }
+:root { --accent-ink: #a65a0f; }
+@media (prefers-color-scheme: dark) { :root { --accent-ink: #f0a04b; } }

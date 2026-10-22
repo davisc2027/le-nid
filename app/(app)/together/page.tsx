@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getProfile } from "@/lib/supabase/server";
 import SpireGoal from "@/components/art/SpireGoal";
 
 type Team = { team: string; xp: number | string };
@@ -7,7 +7,7 @@ type Row = { name: string; xp: number | string; is_me: boolean };
 
 export default async function Together() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getProfile();
   const [{ data: goal }, { data: total }, { data: teams }, { data: week }, { data: all }, { data: me }] = await Promise.all([
     supabase.from("trip_goal").select("title, target_xp").single(),
     supabase.rpc("group_xp"),

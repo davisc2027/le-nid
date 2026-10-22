@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import FileLink from "@/components/FileLink";
 
 export default async function Files() {
   const supabase = await createClient();
@@ -18,10 +19,7 @@ export default async function Files() {
         <section key={g.key} className="flex flex-col gap-2">
           <h2 className="font-bold text-primary">{g.title}</h2>
           {g.items.map((f) => (
-            <a key={f.id} className="card flex justify-between" href={`/files/${f.id}`} target="_blank" rel="noreferrer">
-              <span>{f.title}</span>
-              <span className="text-xs uppercase text-muted">{f.kind}</span>
-            </a>
+            <FileLink key={f.id} id={f.id} title={f.title} kind={f.kind} />
           ))}
         </section>
       ))}

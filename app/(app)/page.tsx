@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getProfile } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ChevronRight, Pin, Trophy } from "lucide-react";
 import PushToggle from "@/components/PushToggle";
@@ -7,12 +7,10 @@ import SpireGoal from "@/components/art/SpireGoal";
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: items } = await supabase
-    .from("announcements").select("*")
-    .order("pinned", { ascending: false }).order("created_at", { ascending: false });
-  const { data: { user } } = await supabase.auth.getUser();
-  const [{ data: me }, { data: goal }, { data: total }, { data: board }] = await Promise.all([
-    supabase.from("profiles").select("name").eq("id", user!.id).single(),
+  const [{ data: items }, me, { data: goal }, { data: total }, { data: board }] = await Promise.all([
+    supabase.from("announcements").select("*")
+      .order("pinned", { ascending: false }).order("created_at", { ascending: false }),
+    getProfile(),
     supabase.from("trip_goal").select("title, target_xp").single(),
     supabase.rpc("group_xp"),
     supabase.rpc("leaderboard", { p_all_time: false }),

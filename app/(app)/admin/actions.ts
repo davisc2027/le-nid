@@ -153,14 +153,14 @@ export async function addTodo(_: State, f: FormData) {
       .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on" })
       .select("id").single();
     fail(error);
-    const { data: people } = await supabase.from("profiles").select("id");
+    const { data: people } = await supabase.from("profiles").select("id").eq("status", "approved");
     const ids = (people ?? []).map((p) => p.id);
     let note = "";
     if (ids.length) {
       fail((await supabase.from("todo_assignments").insert(ids.map((user_id) => ({ todo_id: todo!.id, user_id })))).error);
       note = await push({ title: "New to-do", body: `${title} (due ${due_date})`, url: "/todos" }, ids);
     }
-    return `Created for ${ids.length} people${note}`;
+    return `Created for ${ids.length} approved ${ids.length === 1 ? "member" : "members"}${note}`;
   }, ["/todos"]);
 }
 
@@ -186,7 +186,7 @@ export async function assignMissing(): Promise<State> {
   return run(async (supabase) => {
     const [{ data: todos }, { data: people }, { data: have }] = await Promise.all([
       supabase.from("todos").select("id"),
-      supabase.from("profiles").select("id"),
+      supabase.from("profiles").select("id").eq("status", "approved"),
       supabase.from("todo_assignments").select("todo_id, user_id"),
     ]);
     const existing = new Set(have?.map((a) => `${a.todo_id}:${a.user_id}`));
@@ -294,6 +294,6 @@ export async function setAccess(_: State, f: FormData) {
   return run(async (supabase) => {
     const status = text(f, "status");
     fail((await supabase.rpc("admin_set_status", { p_id: text(f, "id"), p_status: status })).error);
-    return status === "approved" ? "Approved" : "Denied";
+    return status === "approved" ? "Approved. They can now sign in and use the app." : "Denied";
   });
 }

@@ -1,9 +1,9 @@
-import { requireApprovedUser } from "@/lib/talk/server-auth";
+import { requireApprovedUser, isLimitError } from "@/lib/talk/server-auth";
 import { createRateLimiter } from "@/lib/talk/rate-limit";
 import { shouldDropTranscript } from "@/lib/talk/hallucination";
 import { normalizeLang } from "@/lib/talk/lang";
 import { ACCEPTED_EXTENSIONS } from "@/lib/talk/mime";
-import { GROUP_PER_MINUTE, STT_MAX_BYTES, STT_PER_HOUR, STT_PER_MINUTE, type SttError, type SttErrorCode, type SttOk } from "@/lib/talk/api";
+import { DAILY_STT_MESSAGE, GROUP_PER_MINUTE,STT_MAX_BYTES, STT_PER_HOUR, STT_PER_MINUTE, type SttError, type SttErrorCode, type SttOk } from "@/lib/talk/api";
 
 // Speech to text for Conversation mode, through Groq's hosted Whisper (free tier). The key stays on the server.
 // Audio and transcripts are never logged or stored: they pass through this function and are gone.
@@ -54,6 +54,11 @@ export async function POST(request: Request) {
   if (!mine.ok) return fail("rate_limited", "You've sent a lot of speech in a short time.", 429, { retryAfter: mine.retryAfterSec, scope: "you" });
   const all = group.hit("groq", now);
   if (!all.ok) return fail("rate_limited", "The whole group is using live listening right now.", 429, { retryAfter: all.retryAfterSec, scope: "group" });
+
+  // Per-user daily budget, persisted in Postgres so it holds across instances. Only a missing function or
+  // permission error fails open (migration 0010 not run yet); the limit error itself is a 429.
+  const { error: quotaError } = await auth.supabase.rpc("use_stt_clip");
+  if (isLimitError(quotaError, "daily voice limit")) return fail("rate_limited", DAILY_STT_MESSAGE, 429, { scope: "you" });
 
   const upstream = new FormData();
   upstream.append("file", file, `clip.${ext}`);

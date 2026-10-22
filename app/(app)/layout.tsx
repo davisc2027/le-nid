@@ -14,12 +14,19 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();
   if (profile && profile.status !== "approved") return <PendingScreen id={profile.id} name={profile.name} rejected={profile.status === "rejected"} />;
   const supabase = await createClient();
-  const waiting = profile?.role === "admin"
-    ? ((await supabase.rpc("admin_list_people")).data as { status?: string }[] | null)?.filter((p) => p.status === "pending").length ?? 0
-    : 0;
-  const { count } = profile
-    ? await supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null)
-    : { count: 0 };
+  const isAdmin = profile?.role === "admin";
+  const [waiting, { count }] = await Promise.all([
+    !isAdmin ? 0 : (async () => {
+      // pending_count() exists after migration 0010; fall back to counting the people list until then.
+      const r = await supabase.rpc("pending_count");
+      if (!r.error && r.data != null) return Number(r.data);
+      const old = await supabase.rpc("admin_list_people");
+      return (old.data as { status?: string }[] | null)?.filter((p) => p.status === "pending").length ?? 0;
+    })(),
+    profile
+      ? supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null)
+      : Promise.resolve({ count: 0 }),
+  ]);
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <header className="flex items-center justify-between px-4 pt-2">

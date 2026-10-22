@@ -7,6 +7,6 @@ import Backdrop from "@/components/art/Backdrop";
  *  the scripture screens (stained-glass skin), and full-screen lesson drills. */
 export default function RouteBackdrop() {
   const path = usePathname();
-  const skip = path === "/" || path.startsWith("/together") || path.startsWith("/scripture") || /^\/french\/./.test(path);
+  const skip = path === "/" || path.startsWith("/together") || path.startsWith("/scripture") || path.startsWith("/translate/talk") || path.startsWith("/admin") || /^\/french\/./.test(path);
   return skip ? null : <Backdrop />;
 }

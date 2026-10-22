@@ -103,7 +103,7 @@ export default function TalkScreen({ startInSafari, demo: demoOptions }: { start
         speak(r.text);
       }
     } else {
-      patchTurn(id, { status: "failed", note: r.limited ? "Translation limit reached for this hour. Only the original is shown." : r.message });
+      patchTurn(id, { status: "failed", note: r.limited ? `${r.message} Only the original is shown.` : r.message });
     }
   };
 

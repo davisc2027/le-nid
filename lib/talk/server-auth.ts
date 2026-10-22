@@ -1,18 +1,31 @@
 // Server only (imports next/headers through lib/supabase/server).
-import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
+export type ApprovedUser = { id: string; email?: string };
+
 /**
- * Signed-in AND approved (profiles.status = 'approved'), checked with the cookie-based client like /api/translate.
- * Returns the user, or a JSON Response to send back as-is.
+ * Signed-in AND approved (profiles.status = 'approved'), checked with the cookie-based client.
+ * Uses getClaims() (local JWT verification, no Auth round trip), then one profiles query.
+ * Returns the user and the cookie-based client (reuse it for RPCs), or a JSON Response to send back as-is.
  */
-export async function requireApprovedUser(): Promise<{ user: User } | { response: Response }> {
+export async function requireApprovedUser(): Promise<
+  { user: ApprovedUser; supabase: Awaited<ReturnType<typeof createClient>> } | { response: Response }
+> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { response: Response.json({ error: "unauthorized", message: "Sign in first." }, { status: 401 }) };
-  const r = await supabase.from("profiles").select("status").eq("id", user.id).maybeSingle();
-  // Same fallback as getProfile(): before migration 0008 there is no status column and everyone counts as approved.
-  const status = r.error ? "approved" : r.data?.status;
-  if (status !== "approved") return { response: Response.json({ error: "forbidden", message: "Your account is waiting for a leader's approval." }, { status: 403 }) };
-  return { user };
+  const { data: claims } = await supabase.auth.getClaims();
+  const id = claims?.claims.sub;
+  if (!id) return { response: Response.json({ error: "unauthorized", message: "Sign in first." }, { status: 401 }) };
+  const email = typeof claims.claims.email === "string" ? claims.claims.email : undefined;
+
+  const r =await supabase.from("profiles").select("status").eq("id", id).maybeSingle();
+  // Only "column does not exist" (migration 0008 not run yet) counts as approved; any other error is a 503.
+  if (r.error && r.error.code === "42703") return { user: { id, email }, supabase };
+  if (r.error) return { response: Response.json({ error: "upstream_error", message: "Couldn't check your account. Try again." }, { status: 503 }) };
+  if (r.data?.status !== "approved") return { response: Response.json({ error: "forbidden", message: "Your account is waiting for a leader's approval." }, { status: 403 }) };
+  return { user: { id, email }, supabase };
+}
+
+/** True when an RPC error means the daily limit was hit (as opposed to a missing function or a permission problem). */
+export function isLimitError(error: { message?: string } | null, phrase: string): boolean {
+  return !!error && (error.message ?? "").toLowerCase().includes(phrase);
 }

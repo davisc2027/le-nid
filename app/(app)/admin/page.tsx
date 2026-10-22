@@ -50,6 +50,9 @@ export default async function Admin() {
     supabase.from("allowed_emails").select("email").order("email"),
   ]);
   const people = (peopleRaw ?? []) as Person[];
+  const approved = new Set(people.filter((p) => p.status === "approved").map((p) => p.id));
+  const waiting = people.filter((p) => p.status === "pending");
+  const denied = people.filter((p) => p.status === "rejected");
   const who = new Map(people.map((p) => [p.id, p.name || p.email]));
   const meetingOptions = (sel: string | null) => (
     <select className="input" name="meeting_id" defaultValue={sel ?? ""}>
@@ -62,16 +65,26 @@ export default async function Admin() {
     <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-extrabold">Admin</h1>
 
-      <Section title={`Access requests (${people.filter((p) => p.status === "pending").length} waiting)`} open={people.some((p) => p.status === "pending")}>
-        <p className="text-xs text-muted">Anyone can ask to join by signing in. They see nothing until you approve them here.</p>
-        {people.filter((p) => p.status !== "approved").length === 0 && <p className="text-sm text-muted">No requests right now.</p>}
-        {people.filter((p) => p.status !== "approved").map((p) => (
+      <Section title={`Access requests (${waiting.length} waiting)`} open={waiting.length > 0}>
+        <p className="text-xs text-muted">Anyone can ask to join by signing in. They see nothing until you approve them here. Denied people can be approved again at any time.</p>
+        {waiting.length === 0 && <p className="text-sm text-muted">No one is waiting for approval.</p>}
+        {waiting.map((p) => (
           <div key={p.id} className="rounded-xl border border-border p-3">
-            <p className="font-semibold">{p.name || "(no name yet)"} <span className="text-xs font-normal text-muted">{p.status === "rejected" ? "denied" : "waiting"}</span></p>
+            <p className="font-semibold">{p.name || "(no name yet)"} <span className="text-xs font-normal text-muted">waiting</span></p>
             <p className="break-all text-sm text-muted">{p.email}</p>
             <div className="mt-2 flex gap-2">
               <ActionForm action={setAccess} label="Approve" className="flex-1"><Id id={p.id} /><input type="hidden" name="status" value="approved" /></ActionForm>
-              {p.status !== "rejected" && <ActionForm action={setAccess} label="Deny" buttonClass="btn ghost" confirm={`Deny ${p.name || p.email}?`}><Id id={p.id} /><input type="hidden" name="status" value="rejected" /></ActionForm>}
+              <ActionForm action={setAccess} label="Deny" buttonClass="btn ghost" confirm={`Deny ${p.name || p.email}?`}><Id id={p.id} /><input type="hidden" name="status" value="rejected" /></ActionForm>
+            </div>
+          </div>
+        ))}
+        {denied.length > 0 && <h3 className="mt-2 text-sm font-bold">Denied ({denied.length})</h3>}
+        {denied.map((p) => (
+          <div key={p.id} className="rounded-xl border border-border p-3">
+            <p className="font-semibold">{p.name || "(no name yet)"} <span className="text-xs font-normal text-muted">denied</span></p>
+            <p className="break-all text-sm text-muted">{p.email}</p>
+            <div className="mt-2 flex gap-2">
+              <ActionForm action={setAccess} label="Approve instead" className="flex-1"><Id id={p.id} /><input type="hidden" name="status" value="approved" /></ActionForm>
             </div>
           </div>
         ))}
@@ -98,10 +111,10 @@ export default async function Admin() {
           <textarea className="input" name="description" placeholder="Details" rows={2} />
           <input className="input" name="due_date" type="date" required />
           <label className="text-sm"><input type="checkbox" name="requires_upload" /> Requires a file upload</label>
-          <p className="text-xs text-muted">Assigned to everyone, including people who sign in later. Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
+          <p className="text-xs text-muted">Assigned to every approved member, including people approved later. Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
         </ActionForm>
         {todos?.map((t) => {
-          const mine = assignments?.filter((a) => a.todo_id === t.id) ?? [];
+          const mine = assignments?.filter((a) => a.todo_id === t.id && approved.has(a.user_id)) ?? [];
           const open = mine.filter((a) => !a.completed_at);
           const uploads = mine.filter((a) => a.upload_path);
           return (
@@ -237,8 +250,8 @@ export default async function Admin() {
         </ActionForm>
       </Section>
 
-      <Section title={`People and teams (${people?.length ?? 0})`}>
-        {people.map((p) => (
+      <Section title={`People and teams (${approved.size})`}>
+        {people.filter((p) => approved.has(p.id)).map((p) => (
           <ActionForm key={p.id} action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
             <Id id={p.id} />
             <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>

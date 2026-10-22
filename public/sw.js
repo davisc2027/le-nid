@@ -1,6 +1,13 @@
 // Le Nid service worker: web push + offline support for the app shell.
-const CACHE = "le-nid-v2";
+// Bump BIBLE_VERSION whenever public/bible changes so phones refetch the text.
+const BIBLE_VERSION = "1";
+const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
+const BIBLE = "bible-" + BIBLE_VERSION;
+const PAGES = "pages-v3"; // only the shell URLs below, never RSC or admin pages
+const KEEP = [STATIC, BIBLE, PAGES];
 const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn"];
+const MAX_STATIC = 120;
+const MAX_BIBLE = 140;
 
 self.addEventListener("push", (event) => {
   const data = event.data ? event.data.json() : {};
@@ -26,11 +33,29 @@ self.addEventListener("notificationclick", (event) => {
 
 const good = (res) => res && res.ok && !res.redirected;
 
+async function trim(name, max) {
+  try {
+    const c = await caches.open(name);
+    const keys = await c.keys();
+    // keys() is in insertion order, so the oldest entries go first.
+    for (let i = 0; i < keys.length - max; i++) await c.delete(keys[i]);
+  } catch {}
+}
+
+async function remember(name, req, res, max) {
+  try {
+    const c = await caches.open(name);
+    await c.put(req, res);
+    if (max) await trim(name, max);
+  } catch {}
+}
+
 self.addEventListener("install", (event) => {
+  // Safe to take over at once: old chunks stay in STATIC, so a lesson that is open keeps working.
   self.skipWaiting();
   // Best effort: only caches pages when the person is signed in (redirects to /login are skipped).
   event.waitUntil(
-    caches.open(CACHE).then((c) =>
+    caches.open(PAGES).then((c) =>
       Promise.all(SHELL.map((u) => fetch(u, { credentials: "same-origin" }).then((r) => good(r) && c.put(u, r)).catch(() => {}))),
     ),
   );
@@ -38,7 +63,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => clients.claim()),
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => !KEEP.includes(k)).map((k) => caches.delete(k)))).then(() => clients.claim()),
   );
 });
 
@@ -52,30 +77,43 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET" || url.origin !== location.origin) return;
   const p = url.pathname;
 
-  // Static assets never change for a given URL: cache-first.
-  if (p.startsWith("/_next/static/") || p.startsWith("/bible/")) {
+  // Hashed build files never change for a given URL: cache-first.
+  if (p.startsWith("/_next/static/")) {
     event.respondWith(
-      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-        if (good(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+      caches.match(req, { cacheName: STATIC }).then((hit) => hit || fetch(req).then((res) => {
+        if (good(res)) event.waitUntil(remember(STATIC, req, res.clone(), MAX_STATIC));
         return res;
       })),
     );
     return;
   }
 
-  const isPage = req.mode === "navigate" || req.headers.get("RSC") === "1";
-  if (!isPage || p.startsWith("/api/") || p.startsWith("/auth") || p.startsWith("/login")) return;
+  // Bible text: cache-first within a versioned cache (a new BIBLE_VERSION starts fresh).
+  if (p.startsWith("/bible/")) {
+    event.respondWith(
+      caches.match(req, { cacheName: BIBLE }).then((hit) => hit || fetch(req).then((res) => {
+        if (good(res)) event.waitUntil(remember(BIBLE, req, res.clone(), MAX_BIBLE));
+        return res;
+      })),
+    );
+    return;
+  }
 
-  // Pages and Next client navigations: network-first, last good copy when offline.
+  // Everything else (RSC payloads and prefetches, APIs, auth, files, admin) goes straight to the network.
+  if (req.mode !== "navigate" || req.headers.get("RSC") === "1") return;
+  if (p.startsWith("/api/") || p.startsWith("/auth") || p.startsWith("/login") || p.startsWith("/files/")) return;
+
+  const shell = SHELL.includes(p);
+  // Page loads: network-first; offline falls back to the cached shell page, else the cached Home page.
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (good(res)) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        if (shell && good(res)) event.waitUntil(remember(PAGES, p, res.clone()));
         return res;
       })
       .catch(() =>
-        caches.match(req, { ignoreSearch: true }).then((r) =>
-          r || (req.mode === "navigate" ? caches.match("/") : null) || Response.error()),
+        caches.match(p, { cacheName: PAGES }).then((r) =>
+          r || caches.match("/", { cacheName: PAGES }) || Response.error()).then((r) => r || Response.error()),
       ),
   );
 });

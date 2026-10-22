@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getProfile } from "@/lib/supabase/server";
 import TodoItem from "@/components/TodoItem";
 
 export default async function Todos() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getProfile();
   const { data: rows } = await supabase
     .from("todo_assignments")
     .select("completed_at, upload_path, todos(id, title, description, due_date, requires_upload)")

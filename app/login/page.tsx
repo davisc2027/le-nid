@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/art/Logo";
 import Backdrop from "@/components/art/Backdrop";
+import InstallBanner from "@/components/InstallBanner";
 
 function friendly(message: string) {
   if (/trip list|database error saving new user/i.test(message)) return "This email isn't on the trip list yet. Ask a trip leader to add your email, then try again.";
@@ -58,6 +59,7 @@ export default function LoginPage() {
       <Backdrop aboveNav={false} />
       <h1 className="sr-only">Le Nid</h1>
       <Logo stacked size={120} />
+      <InstallBanner compact />
       <div className="card">
         {step === "email" ? (
           <form onSubmit={sendCode} className="flex flex-col gap-3">

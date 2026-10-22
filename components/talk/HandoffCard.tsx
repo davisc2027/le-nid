@@ -103,7 +103,7 @@ export default function HandoffCard({ reason, why, getLink, onClose }: Props) {
       {manual && link && (
         <div className="flex flex-col gap-1">
           <label htmlFor="handoff-link" className="text-sm font-bold">Couldn&apos;t copy automatically. Select the link and copy it:</label>
-          <input id="handoff-link" ref={field} readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="input select-all text-sm" />
+          <input id="handoff-link" ref={field} readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="input select-all truncate text-base" />
         </div>
       )}
       {error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>}

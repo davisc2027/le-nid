@@ -39,14 +39,18 @@ export const getProfile = cache(async () => {
   const id = claims?.claims.sub;
   if (!id) return null;
   // `status` exists after migration 0008; fall back so the app keeps working if the SQL has not been run yet.
+  let failed = false;
   const read = async () => {
     const r = await supabase.from("profiles").select("id, name, role, status").eq("id", id).maybeSingle();
     if (!r.error) return r.data;
+    // Only "undefined column" (42703) means migration 0008 has not run. Any other error (timeout, paused project)
+    // must not turn into an approval, so treat it as no profile.
+    if (r.error.code !== "42703") { failed = true; return null; }
     const old = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
     return old.data ? { ...old.data, status: "approved" as string } : null;
   };
   const data = await read();
-  if (data) return data;
+  if (data || failed) return data;
   // Safety net: the sign-up trigger should have created this row.
   await supabase.from("profiles").insert({ id, email: claims.claims.email });
   return read();

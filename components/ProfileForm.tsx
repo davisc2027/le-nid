@@ -36,7 +36,7 @@ export default function ProfileForm({ id, name: initial, optIn: initialOptIn, te
         {msg && <p className="text-sm text-muted">{msg}</p>}
       </form>
       <div className="card gap-2"><h2 className="label">Notifications</h2><PushToggle /></div>
-      <button onClick={signOut} className="self-start text-sm text-muted underline">Sign out</button>
+      <button onClick={signOut} className="min-h-11 self-start px-3 text-sm text-muted underline">Sign out</button>
     </div>
   );
 }
