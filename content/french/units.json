@@ -1,0 +1,62 @@
+[
+  { "id": "u1", "title": "Bonjour !", "blurb": "Greetings and meeting people", "lessons": [
+    { "id": "u1-l1", "title": "Hello and goodbye", "phrases": [
+      { "fr": "Bonjour", "en": "Hello" },
+      { "fr": "Bonsoir", "en": "Good evening" },
+      { "fr": "Salut", "en": "Hi" },
+      { "fr": "Au revoir", "en": "Goodbye" },
+      { "fr": "À bientôt", "en": "See you soon" },
+      { "fr": "Bonne journée", "en": "Have a good day" } ] },
+    { "id": "u1-l2", "title": "Meeting someone", "phrases": [
+      { "fr": "Comment vous appelez-vous ?", "en": "What is your name?" },
+      { "fr": "Je m'appelle Marie", "en": "My name is Marie" },
+      { "fr": "Enchanté", "en": "Nice to meet you" },
+      { "fr": "Comment allez-vous ?", "en": "How are you?" },
+      { "fr": "Très bien, merci", "en": "Very well, thank you" },
+      { "fr": "Je viens des États-Unis", "en": "I come from the United States" } ] } ] },
+  { "id": "u2", "title": "En route", "blurb": "Trams, trains and directions", "lessons": [
+    { "id": "u2-l1", "title": "Getting around", "phrases": [
+      { "fr": "Où est la gare ?", "en": "Where is the train station?" },
+      { "fr": "Un ticket de tram, s'il vous plaît", "en": "One tram ticket, please" },
+      { "fr": "Quel tram va à la cathédrale ?", "en": "Which tram goes to the cathedral?" },
+      { "fr": "À quelle heure part le train ?", "en": "What time does the train leave?" },
+      { "fr": "C'est loin ?", "en": "Is it far?" },
+      { "fr": "Pouvez-vous m'aider ?", "en": "Can you help me?" } ] },
+    { "id": "u2-l2", "title": "Directions", "phrases": [
+      { "fr": "Tout droit", "en": "Straight ahead" },
+      { "fr": "À gauche", "en": "To the left" },
+      { "fr": "À droite", "en": "To the right" },
+      { "fr": "C'est près d'ici", "en": "It is near here" },
+      { "fr": "Où sont les toilettes ?", "en": "Where is the restroom?" },
+      { "fr": "Merci beaucoup", "en": "Thank you very much" } ] } ] },
+  { "id": "u3", "title": "Au café", "blurb": "Food, drink and politeness", "lessons": [
+    { "id": "u3-l1", "title": "Ordering", "phrases": [
+      { "fr": "Un café, s'il vous plaît", "en": "A coffee, please" },
+      { "fr": "Je voudrais un croissant", "en": "I would like a croissant" },
+      { "fr": "De l'eau, s'il vous plaît", "en": "Some water, please" },
+      { "fr": "L'addition, s'il vous plaît", "en": "The bill, please" },
+      { "fr": "C'est délicieux !", "en": "It is delicious!" },
+      { "fr": "Je suis allergique aux noix", "en": "I am allergic to nuts" } ] },
+    { "id": "u3-l2", "title": "Being polite", "phrases": [
+      { "fr": "Merci", "en": "Thank you" },
+      { "fr": "De rien", "en": "You are welcome" },
+      { "fr": "Excusez-moi", "en": "Excuse me" },
+      { "fr": "Pardon", "en": "Sorry" },
+      { "fr": "Je ne comprends pas", "en": "I do not understand" },
+      { "fr": "Parlez-vous anglais ?", "en": "Do you speak English?" } ] } ] },
+  { "id": "u4", "title": "Dans la rue", "blurb": "Starting conversations with kindness", "lessons": [
+    { "id": "u4-l1", "title": "Starting a conversation", "phrases": [
+      { "fr": "Puis-je vous parler un instant ?", "en": "May I talk with you for a moment?" },
+      { "fr": "Nous visitons Strasbourg avec notre groupe", "en": "We are visiting Strasbourg with our group" },
+      { "fr": "Je parle un peu français", "en": "I speak a little French" },
+      { "fr": "Pouvez-vous parler plus lentement ?", "en": "Can you speak more slowly?" },
+      { "fr": "Pouvez-vous répéter, s'il vous plaît ?", "en": "Can you repeat, please?" },
+      { "fr": "Quelle belle ville !", "en": "What a beautiful city!" } ] },
+    { "id": "u4-l2", "title": "Offering kindness", "phrases": [
+      { "fr": "Puis-je prier pour vous ?", "en": "May I pray for you?" },
+      { "fr": "Dieu vous aime", "en": "God loves you" },
+      { "fr": "Avez-vous besoin de quelque chose ?", "en": "Do you need anything?" },
+      { "fr": "Bonne chance !", "en": "Good luck!" },
+      { "fr": "Que Dieu vous bénisse", "en": "May God bless you" },
+      { "fr": "Merci de votre temps", "en": "Thank you for your time" } ] } ] }
+]

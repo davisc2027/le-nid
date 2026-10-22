@@ -10,6 +10,9 @@
   --primary: #a8412e; /* cathedral sandstone */
   --primary-fg: #ffffff;
   --accent: #e8892b; /* stork orange */
+  --tint: #f4e3dc; --good: #3f7d4e;
+  --art-stone: #c98a74; --art-roof: #a8412e; --art-roof-2: #7e6a8f; --art-wall: #f1e2c8;
+  --art-beam: #7a4f38; --art-window: #8fb0d6; --art-water: #9fbdd6; --art-glow: #f6c58a;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -21,6 +24,9 @@
     --primary: #d9694f;
     --primary-fg: #1b1612;
     --accent: #f0a04b;
+    --tint: #3a2620; --good: #7cc48e;
+    --art-stone: #5c3a30; --art-roof: #7a2f22; --art-roof-2: #3f3550; --art-wall: #3a2d24;
+    --art-beam: #8a6a52; --art-window: #e8c46a; --art-water: #26394d; --art-glow: #5a3a22;
   }
 }
 
@@ -33,6 +39,8 @@
   --color-primary: var(--primary);
   --color-primary-fg: var(--primary-fg);
   --color-accent: var(--accent);
+  --color-tint: var(--tint);
+  --color-good: var(--good);
   --font-sans: var(--font-nunito);
 }
 
@@ -45,5 +53,20 @@ body {
 @layer components {
   .card { @apply rounded-2xl border border-border bg-surface p-4; }
   .btn { @apply inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-primary-fg disabled:opacity-50; }
+  .label { @apply text-xs font-extrabold uppercase tracking-wider text-muted; }
+  .btn.ghost { @apply bg-tint text-primary; }
   .input { @apply w-full rounded-xl border border-border bg-surface px-3 py-2; }
 }
+
+/* Odile animations */
+.stork-bob { animation: stork-bob 3.2s ease-in-out infinite; }
+.stork-head { transform-box: view-box; transform-origin: 82px 70px; animation: stork-peck 6s ease-in-out infinite; }
+.stork-eye { transform-box: fill-box; transform-origin: center; animation: stork-blink 5s infinite; }
+.stork-wing { transform-box: view-box; transform-origin: 62px 72px; }
+.stork-cheer .stork-wing { animation: stork-flap .45s ease-in-out infinite alternate; }
+.stork-sulk .stork-bob { animation-duration: 5s; }
+@keyframes stork-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes stork-peck { 0%, 86%, 100% { transform: rotate(0); } 90% { transform: rotate(7deg); } 94% { transform: rotate(-3deg); } }
+@keyframes stork-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes stork-flap { from { transform: rotate(0); } to { transform: rotate(-16deg); } }
+@media (prefers-reduced-motion: reduce) { .stork *, .stork { animation: none !important; } }

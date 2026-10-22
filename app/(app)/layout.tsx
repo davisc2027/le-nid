@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getProfile } from "@/lib/supabase/server";
+import Logo from "@/components/art/Logo";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();
@@ -7,12 +8,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     { href: "/", label: "Home" },
     { href: "/itinerary", label: "Itinerary" },
     { href: "/todos", label: "To-dos" },
+    { href: "/french", label: "French" },
     { href: "/files", label: "Files" },
     ...(profile?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
   ];
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-20">
-      <main className="flex-1 px-4 py-6">{children}</main>
+      <header className="px-4 pt-3"><Logo size={36} /></header>
+      <main className="flex-1 px-4 py-4">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 border-t border-border bg-surface">
         <div className="mx-auto flex max-w-xl justify-around py-3 text-sm font-bold">
           {tabs.map((t) => (

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Logo from "@/components/art/Logo";
+import Backdrop from "@/components/art/Backdrop";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,7 +21,9 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 px-4">
-      <h1 className="text-3xl font-extrabold text-primary">Le Nid</h1>
+      <Backdrop />
+      <h1 className="sr-only">Le Nid</h1>
+      <Logo stacked size={120} />
       <p className="text-muted">Strasbourg mission trip. Enter your email and we&apos;ll send you a sign-in link.</p>
       {state === "sent" ? (
         <p className="card">Check your email and tap the link. Open it in the same browser you use for the app.</p>

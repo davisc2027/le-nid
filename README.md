@@ -24,7 +24,10 @@ Import the repo into Vercel and add the same env vars from `.env.example`. Push 
 - Next.js 16 here differs from older versions; see `AGENTS.md` and `node_modules/next/dist/docs/`.
 
 ## Roadmap
-M3 conversational French, M4 scripture French, M5 translate. See `docs/plan.md`.
+M4 scripture French, M5 translate. See `docs/plan.md`.
 
 ## Reminders
 `vercel.json` runs `/api/cron/reminders` daily at 07:00 UTC (08:00-09:00 Paris). Set `CRON_SECRET` in Vercel. Reminders go out 5, 1, and 0 days before a to-do's due date to people who haven't finished it; `reminder_log` prevents repeats. Run `0002_todos.sql` after `0001_core.sql`. Test locally: `curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/reminders`.
+
+## French lessons
+Content is plain data in `content/french/units.json` (phrases only; exercises are generated from them in `lib/french/exercises.ts`). Add a phrase or lesson there; no code change needed. Progress, XP and streaks live in Supabase (`0003_french.sql`); streaks are written only by the `complete_lesson()` function. Audio uses the device's built-in `fr-FR` voice. Odile's lines are in `lib/odile.ts` (lines marked `sass` are hidden in gentle mode).
