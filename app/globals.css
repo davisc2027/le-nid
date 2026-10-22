@@ -11,6 +11,7 @@
   --primary-fg: #ffffff;
   --accent: #e8892b; /* stork orange */
   --tint: #f4e3dc; --good: #3f7d4e;
+  --parch: #f6ecd6; --glass-blue: #2d4f8f; --glass-red: #b3282d; --glass-gold: #d9a21b;
   --art-stone: #c98a74; --art-roof: #a8412e; --art-roof-2: #7e6a8f; --art-wall: #f1e2c8;
   --art-beam: #7a4f38; --art-window: #8fb0d6; --art-water: #9fbdd6; --art-glow: #f6c58a;
 }
@@ -25,6 +26,7 @@
     --primary-fg: #1b1612;
     --accent: #f0a04b;
     --tint: #3a2620; --good: #7cc48e;
+    --parch: #221b14; --glass-blue: #4d73c4; --glass-red: #d9524f; --glass-gold: #e8b53a;
     --art-stone: #5c3a30; --art-roof: #7a2f22; --art-roof-2: #3f3550; --art-wall: #3a2d24;
     --art-beam: #8a6a52; --art-window: #e8c46a; --art-water: #26394d; --art-glow: #5a3a22;
   }
@@ -70,3 +72,8 @@ body {
 @keyframes stork-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes stork-flap { from { transform: rotate(0); } to { transform: rotate(-16deg); } }
 @media (prefers-reduced-motion: reduce) { .stork *, .stork { animation: none !important; } }
+
+.verse-text { font-family: var(--font-garamond), Georgia, serif; font-size: 1.25rem; line-height: 1.5; }
+.petal-on { animation: petal-in .6s ease-out both; transform-box: fill-box; transform-origin: bottom center; }
+@keyframes petal-in { from { opacity: 0; transform: scale(.6); } }
+@media (prefers-reduced-motion: reduce) { .petal-on { animation: none; } }

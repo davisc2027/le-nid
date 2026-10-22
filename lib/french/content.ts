@@ -1,6 +1,6 @@
 import units from "@/content/french/units.json";
 
-export type Phrase = { fr: string; en: string };
+export type Phrase = { fr: string; en: string; note?: string };
 export type Lesson = { id: string; title: string; phrases: Phrase[] };
 export type Unit = { id: string; title: string; blurb: string; lessons: Lesson[] };
 

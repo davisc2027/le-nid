@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
+import { parseRef, refKey } from "@/lib/bible/reference";
 
 async function requireAdmin() {
   const profile = await getProfile();
@@ -79,4 +80,20 @@ export async function assignMissing() {
     .filter((p) => !existing.has(`${t.id}:${p.id}`)).map((p) => ({ todo_id: t.id, user_id: p.id })));
   if (rows.length) await supabase.from("todo_assignments").insert(rows);
   revalidatePath("/admin");
+}
+
+/** Leader verse set: one reference per line, e.g. "Jean 3:16". */
+export async function addVerseSet(f: FormData) {
+  const supabase = await requireAdmin();
+  const refs = text(f, "refs").split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const r = parseRef(l);
+    if (!r) throw new Error(`Could not read reference: ${l}`);
+    return refKey(r);
+  });
+  const { data: set, error } = await supabase.from("verse_sets")
+    .insert({ title: text(f, "title"), description: text(f, "description") }).select("id").single();
+  if (error) throw new Error(error.message);
+  const { error: e2 } = await supabase.from("verse_set_items").insert(refs.map((ref, position) => ({ set_id: set.id, ref, position })));
+  if (e2) throw new Error(e2.message);
+  revalidatePath("/scripture");
 }

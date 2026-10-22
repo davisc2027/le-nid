@@ -1,7 +1,7 @@
 import { ALL_PHRASES, type Lesson, type Phrase } from "./content";
 
 export type Exercise =
-  | { kind: "choose"; fr: string; choices: string[]; answer: string }
+  | { kind: "choose"; fr: string; choices: string[]; answer: string; note?: string }
   | { kind: "bank"; en: string; fr: string; tokens: string[] }
   | { kind: "listen"; fr: string }
   | { kind: "match"; pairs: Phrase[] };
@@ -42,7 +42,7 @@ export function buildLesson(lesson: Lesson): Exercise[] {
   const { phrases } = lesson;
   const others = ALL_PHRASES.filter((p) => !phrases.includes(p));
   const choose = shuffle(phrases).map<Exercise>((p) => ({
-    kind: "choose", fr: p.fr, answer: p.en,
+    kind: "choose", fr: p.fr, answer: p.en, note: p.note,
     choices: shuffle([p.en, ...shuffle(others).slice(0, 3).map((o) => o.en)]),
   }));
   const bank = shuffle(phrases).map<Exercise>((p) => {

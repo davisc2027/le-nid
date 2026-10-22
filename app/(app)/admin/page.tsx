@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
-import { postAnnouncement, addItineraryItem, addMeeting, addTodo, assignMissing } from "./actions";
+import { postAnnouncement, addItineraryItem, addMeeting, addTodo, assignMissing, addVerseSet } from "./actions";
 
 export default async function Admin() {
   const profile = await getProfile();
@@ -55,6 +55,14 @@ export default async function Admin() {
         <input className="input" name="title" placeholder="e.g. Prep meeting 2" required />
         <input className="input" name="meeting_date" type="date" required />
         <button className="btn">Add</button>
+      </form>
+
+      <form action={addVerseSet} className="card flex flex-col gap-2">
+        <h2 className="font-bold">New verse set</h2>
+        <input className="input" name="title" placeholder="e.g. Core verses for the trip" required />
+        <input className="input" name="description" placeholder="Short description" />
+        <textarea className="input" name="refs" placeholder={"One reference per line:\nJean 3:16\nRomains 8:38-39"} rows={4} required />
+        <button className="btn">Publish set</button>
       </form>
 
       <FileUpload meetings={meetings ?? []} />

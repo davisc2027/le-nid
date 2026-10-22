@@ -1,68 +1,312 @@
 [
-  { "id": "u1", "title": "Bonjour !", "blurb": "Greetings and meeting people", "lessons": [
-    { "id": "u1-l1", "title": "Hello and goodbye", "phrases": [
-      { "fr": "Bonjour", "en": "Hello" },
-      { "fr": "Bonsoir", "en": "Good evening" },
-      { "fr": "Salut", "en": "Hi (informal)" },
-      { "fr": "Au revoir", "en": "Goodbye" },
-      { "fr": "À bientôt", "en": "See you soon" },
-      { "fr": "Bonne journée", "en": "Have a good day" } ] },
-    { "id": "u1-l2", "title": "Meeting someone", "phrases": [
-      { "fr": "Comment vous appelez-vous ?", "en": "What is your name?" },
-      { "fr": "Je m'appelle Marie", "en": "My name is Marie" },
-      { "fr": "Enchanté", "en": "Nice to meet you" },
-      { "fr": "Comment allez-vous ?", "en": "How are you?" },
-      { "fr": "Très bien, merci", "en": "Very well, thank you" },
-      { "fr": "Je viens des États-Unis", "en": "I come from the United States" } ] } ] },
-  { "id": "u2", "title": "En route", "blurb": "Trams, trains and directions", "lessons": [
-    { "id": "u2-l1", "title": "Getting around", "phrases": [
-      { "fr": "Où est la gare ?", "en": "Where is the train station?" },
-      { "fr": "Un ticket de tram, s'il vous plaît", "en": "One tram ticket, please" },
-      { "fr": "Quel tram va à la cathédrale ?", "en": "Which tram goes to the cathedral?" },
-      { "fr": "À quelle heure part le train ?", "en": "What time does the train leave?" },
-      { "fr": "C'est loin ?", "en": "Is it far?" },
-      { "fr": "Pouvez-vous m'aider ?", "en": "Can you help me?" },
-      { "fr": "Où est l'arrêt de tram ?", "en": "Where is the tram stop?" },
-      { "fr": "Faut-il valider le ticket ?", "en": "Does the ticket need to be validated?" },
-      { "fr": "Appelez les secours, s'il vous plaît !", "en": "Please call emergency services!" } ] },
-    { "id": "u2-l2", "title": "Directions", "phrases": [
-      { "fr": "Tout droit", "en": "Straight ahead" },
-      { "fr": "À gauche", "en": "To the left" },
-      { "fr": "À droite", "en": "To the right" },
-      { "fr": "C'est près d'ici", "en": "It is near here" },
-      { "fr": "Où sont les toilettes ?", "en": "Where is the restroom?" },
-      { "fr": "Merci beaucoup", "en": "Thank you very much" },
-      { "fr": "Je cherche mon groupe", "en": "I am looking for my group" } ] } ] },
-  { "id": "u3", "title": "Au café", "blurb": "Food, drink and politeness", "lessons": [
-    { "id": "u3-l1", "title": "Ordering", "phrases": [
-      { "fr": "Un café, s'il vous plaît", "en": "A coffee, please" },
-      { "fr": "Je voudrais un croissant", "en": "I would like a croissant" },
-      { "fr": "De l'eau, s'il vous plaît", "en": "Some water, please" },
-      { "fr": "L'addition, s'il vous plaît", "en": "The bill, please" },
-      { "fr": "C'est délicieux !", "en": "It is delicious!" },
-      { "fr": "Je suis allergique aux fruits à coque", "en": "I am allergic to tree nuts" },
-      { "fr": "Une carafe d'eau, s'il vous plaît", "en": "A jug of tap water, please" },
-      { "fr": "C'est combien ?", "en": "How much is it?" } ] },
-    { "id": "u3-l2", "title": "Being polite", "phrases": [
-      { "fr": "Merci", "en": "Thank you" },
-      { "fr": "De rien", "en": "You are welcome" },
-      { "fr": "Excusez-moi", "en": "Excuse me" },
-      { "fr": "Pardon", "en": "Sorry" },
-      { "fr": "Je ne comprends pas", "en": "I do not understand" },
-      { "fr": "Parlez-vous anglais ?", "en": "Do you speak English?" } ] } ] },
-  { "id": "u4", "title": "Dans la rue", "blurb": "Starting conversations with kindness", "lessons": [
-    { "id": "u4-l1", "title": "Starting a conversation", "phrases": [
-      { "fr": "Puis-je vous parler un instant ?", "en": "May I talk with you for a moment?" },
-      { "fr": "Nous visitons Strasbourg avec notre groupe", "en": "We are visiting Strasbourg with our group" },
-      { "fr": "Je parle un peu français", "en": "I speak a little French" },
-      { "fr": "Pouvez-vous parler plus lentement ?", "en": "Can you speak more slowly?" },
-      { "fr": "Pouvez-vous répéter, s'il vous plaît ?", "en": "Could you repeat that, please?" },
-      { "fr": "Quelle belle ville !", "en": "What a beautiful city!" } ] },
-    { "id": "u4-l2", "title": "Offering kindness", "phrases": [
-      { "fr": "Puis-je prier pour vous ?", "en": "May I pray for you?" },
-      { "fr": "Dieu vous aime", "en": "God loves you" },
-      { "fr": "Avez-vous besoin de quelque chose ?", "en": "Do you need anything?" },
-      { "fr": "Bonne chance !", "en": "Good luck!" },
-      { "fr": "Que Dieu vous bénisse", "en": "May God bless you" },
-      { "fr": "Merci de votre temps", "en": "Thank you for your time" } ] } ] }
+  {
+    "id": "u1",
+    "title": "Bonjour !",
+    "blurb": "Greetings and meeting people",
+    "lessons": [
+      {
+        "id": "u1-l1",
+        "title": "Hello and goodbye",
+        "phrases": [
+          {
+            "fr": "Bonjour",
+            "en": "Hello",
+            "note": "Say bonjour to everyone, every time you enter a shop or start a conversation. Skipping it comes across as rude."
+          },
+          {
+            "fr": "Bonsoir",
+            "en": "Good evening",
+            "note": "Bonsoir is only a greeting. To say goodbye in the evening, use Bonne soirée."
+          },
+          {
+            "fr": "Salut",
+            "en": "Hi (informal)",
+            "note": "Salut is for friends and people your age. With strangers, stay with Bonjour and vous."
+          },
+          {
+            "fr": "Au revoir",
+            "en": "Goodbye"
+          },
+          {
+            "fr": "À bientôt",
+            "en": "See you soon"
+          },
+          {
+            "fr": "Bonne journée",
+            "en": "Have a good day"
+          }
+        ]
+      },
+      {
+        "id": "u1-l2",
+        "title": "Meeting someone",
+        "phrases": [
+          {
+            "fr": "Comment vous appelez-vous ?",
+            "en": "What is your name?",
+            "note": "Vous is the polite 'you' for adults you don't know. Tu is for friends and children."
+          },
+          {
+            "fr": "Je m'appelle Marie",
+            "en": "My name is Marie"
+          },
+          {
+            "fr": "Enchanté",
+            "en": "Nice to meet you",
+            "note": "It sounds the same for everyone. Women often write enchantée."
+          },
+          {
+            "fr": "Comment allez-vous ?",
+            "en": "How are you?"
+          },
+          {
+            "fr": "Très bien, merci",
+            "en": "Very well, thank you"
+          },
+          {
+            "fr": "Je viens des États-Unis",
+            "en": "I come from the United States",
+            "note": "Pays take an article: les États-Unis, so it becomes des États-Unis."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u2",
+    "title": "En route",
+    "blurb": "Trams, trains and directions",
+    "lessons": [
+      {
+        "id": "u2-l1",
+        "title": "Getting around",
+        "phrases": [
+          {
+            "fr": "Où est la gare ?",
+            "en": "Where is the train station?",
+            "note": "Locals just say la gare. Strasbourg's main station is the Gare Centrale."
+          },
+          {
+            "fr": "Un ticket de tram, s'il vous plaît",
+            "en": "One tram ticket, please",
+            "note": "Buy tickets at the machine on the platform, then validate them before boarding."
+          },
+          {
+            "fr": "Quel tram va à la cathédrale ?",
+            "en": "Which tram goes to the cathedral?"
+          },
+          {
+            "fr": "À quelle heure part le train ?",
+            "en": "What time does the train leave?"
+          },
+          {
+            "fr": "C'est loin ?",
+            "en": "Is it far?"
+          },
+          {
+            "fr": "Pouvez-vous m'aider ?",
+            "en": "Can you help me?"
+          },
+          {
+            "fr": "Où est l'arrêt de tram ?",
+            "en": "Where is the tram stop?"
+          },
+          {
+            "fr": "Faut-il valider le ticket ?",
+            "en": "Does the ticket need to be validated?",
+            "note": "Always validate. An unvalidated ticket can mean a fine."
+          },
+          {
+            "fr": "Appelez les secours, s'il vous plaît !",
+            "en": "Please call emergency services!"
+          }
+        ]
+      },
+      {
+        "id": "u2-l2",
+        "title": "Directions",
+        "phrases": [
+          {
+            "fr": "Tout droit",
+            "en": "Straight ahead"
+          },
+          {
+            "fr": "À gauche",
+            "en": "To the left"
+          },
+          {
+            "fr": "À droite",
+            "en": "To the right"
+          },
+          {
+            "fr": "C'est près d'ici",
+            "en": "It is near here"
+          },
+          {
+            "fr": "Où sont les toilettes ?",
+            "en": "Where is the restroom?"
+          },
+          {
+            "fr": "Merci beaucoup",
+            "en": "Thank you very much"
+          },
+          {
+            "fr": "Je cherche mon groupe",
+            "en": "I am looking for my group"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u3",
+    "title": "Au café",
+    "blurb": "Food, drink and politeness",
+    "lessons": [
+      {
+        "id": "u3-l1",
+        "title": "Ordering",
+        "phrases": [
+          {
+            "fr": "Un café, s'il vous plaît",
+            "en": "A coffee, please"
+          },
+          {
+            "fr": "Je voudrais un croissant",
+            "en": "I would like a croissant",
+            "note": "Je voudrais ('I would like') is politer than Je veux ('I want')."
+          },
+          {
+            "fr": "De l'eau, s'il vous plaît",
+            "en": "Some water, please"
+          },
+          {
+            "fr": "L'addition, s'il vous plaît",
+            "en": "The bill, please",
+            "note": "In France the bill only comes when you ask for it. Waiting is normal, not slow service."
+          },
+          {
+            "fr": "C'est délicieux !",
+            "en": "It is delicious!"
+          },
+          {
+            "fr": "Je suis allergique aux fruits à coque",
+            "en": "I am allergic to tree nuts"
+          },
+          {
+            "fr": "Une carafe d'eau, s'il vous plaît",
+            "en": "A jug of tap water, please",
+            "note": "A carafe d'eau is free tap water. Without asking, you may get paid bottled water."
+          },
+          {
+            "fr": "C'est combien ?",
+            "en": "How much is it?"
+          }
+        ]
+      },
+      {
+        "id": "u3-l2",
+        "title": "Being polite",
+        "phrases": [
+          {
+            "fr": "Merci",
+            "en": "Thank you",
+            "note": "Add beaucoup for more: merci beaucoup."
+          },
+          {
+            "fr": "De rien",
+            "en": "You are welcome",
+            "note": "De rien is casual. Je vous en prie is the more formal 'you're welcome'."
+          },
+          {
+            "fr": "Excusez-moi",
+            "en": "Excuse me",
+            "note": "Use excusez-moi to get someone's attention. Pardon is for bumping into someone, or for 'sorry, what?'."
+          },
+          {
+            "fr": "Pardon",
+            "en": "Sorry"
+          },
+          {
+            "fr": "Je ne comprends pas",
+            "en": "I do not understand"
+          },
+          {
+            "fr": "Parlez-vous anglais ?",
+            "en": "Do you speak English?",
+            "note": "Say Bonjour first, then ask. Starting in French shows respect, and people usually help more."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u4",
+    "title": "Dans la rue",
+    "blurb": "Starting conversations with kindness",
+    "lessons": [
+      {
+        "id": "u4-l1",
+        "title": "Starting a conversation",
+        "phrases": [
+          {
+            "fr": "Puis-je vous parler un instant ?",
+            "en": "May I talk with you for a moment?"
+          },
+          {
+            "fr": "Nous visitons Strasbourg avec notre groupe",
+            "en": "We are visiting Strasbourg with our group"
+          },
+          {
+            "fr": "Je parle un peu français",
+            "en": "I speak a little French"
+          },
+          {
+            "fr": "Pouvez-vous parler plus lentement ?",
+            "en": "Can you speak more slowly?"
+          },
+          {
+            "fr": "Pouvez-vous répéter, s'il vous plaît ?",
+            "en": "Could you repeat that, please?"
+          },
+          {
+            "fr": "Quelle belle ville !",
+            "en": "What a beautiful city!"
+          }
+        ]
+      },
+      {
+        "id": "u4-l2",
+        "title": "Offering kindness",
+        "phrases": [
+          {
+            "fr": "Puis-je prier pour vous ?",
+            "en": "May I pray for you?",
+            "note": "France values privacy around faith. Ask gently, and be gracious if the answer is no."
+          },
+          {
+            "fr": "Dieu vous aime",
+            "en": "God loves you",
+            "note": "Best said softly, once there is some warmth in the conversation."
+          },
+          {
+            "fr": "Avez-vous besoin de quelque chose ?",
+            "en": "Do you need anything?"
+          },
+          {
+            "fr": "Bonne chance !",
+            "en": "Good luck!"
+          },
+          {
+            "fr": "Que Dieu vous bénisse",
+            "en": "May God bless you"
+          },
+          {
+            "fr": "Merci de votre temps",
+            "en": "Thank you for your time"
+          }
+        ]
+      }
+    ]
+  }
 ]

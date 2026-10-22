@@ -9,7 +9,7 @@ import { speak } from "@/lib/french/speech";
 import Stork, { type Mood } from "@/components/art/Stork";
 import OdileSays from "@/components/art/OdileSays";
 
-type Report = (correct: boolean, answer: string) => void;
+type Report = (correct: boolean, answer: string, note?: string) => void;
 type ExProps<T extends Exercise> = { ex: T; locked: boolean; report: Report };
 
 function Speaker({ text }: { text: string }) {
@@ -37,7 +37,7 @@ function Choose({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "choos
             className={`card text-left font-semibold ${sel === c ? "!border-primary !bg-tint" : ""}`}>{c}</button>
         ))}
       </div>
-      <button className="btn" disabled={!sel || locked} onClick={() => report(sel === ex.answer, ex.answer)}>Check</button>
+      <button className="btn" disabled={!sel || locked} onClick={() => report(sel === ex.answer, ex.answer, ex.note)}>Check</button>
     </div>
   );
 }
@@ -119,7 +119,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   const [queue, setQueue] = useState<Exercise[] | null>(null);
   const [i, setI] = useState(0);
   const [total, setTotal] = useState(1);
-  const [result, setResult] = useState<{ ok: boolean; answer: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string } | null>(null);
   const [mood, setMood] = useState<Mood>("happy");
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
 
@@ -128,8 +128,8 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   if (!queue) return <p className="text-muted">Loading…</p>;
   const ex = queue[i];
 
-  const report: Report = (ok, answer) => {
-    setResult({ ok, answer });
+  const report: Report = (ok, answer, note) => {
+    setResult({ ok, answer, note });
     setMood(ok ? "cheer" : "sulk");
     if (!ok) setQueue((q) => [...q!, q![i]]); // missed ones come back at the end
   };
@@ -173,6 +173,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
         <div className={`card sticky bottom-24 flex flex-col gap-2 ${result.ok ? "!border-good" : "!border-primary"}`} role="status">
           <p className="font-extrabold">{result.ok ? "Bien !" : "Pas tout à fait"}</p>
           {!result.ok && result.answer && <p className="text-sm">Answer: <b>{result.answer}</b></p>}
+          {result.note && <p className="text-sm text-muted">💡 {result.note}</p>}
           <button className="btn" onClick={next}>Continue</button>
         </div>
       )}
