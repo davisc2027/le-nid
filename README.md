@@ -31,3 +31,6 @@ M4 scripture French, M5 translate. See `docs/plan.md`.
 
 ## French lessons
 Content is plain data in `content/french/units.json` (phrases only; exercises are generated from them in `lib/french/exercises.ts`). Add a phrase or lesson there; no code change needed. Progress, XP and streaks live in Supabase (`0003_french.sql`); streaks are written only by the `complete_lesson()` function. Audio uses the device's built-in `fr-FR` voice. Odile's lines are in `lib/odile.ts` (lines marked `sass` are hidden in gentle mode).
+
+## Scripture track
+Run `0004_scripture.sql`. Verse text is static JSON generated once from eBible.org: `node scripts/build-bible.mjs` writes `public/bible/fr` (Sainte Bible libre pour le monde, public domain, still a draft: proofread the verses you use) and `public/bible/en` (World English Bible). Commit the output. Run it on any machine that can reach ebible.org. Leaders publish verse sets from the Admin page; members add any verse by reference (e.g. "Jean 3:16-17"). Review scheduling uses FSRS (`ts-fsrs`). Scripture and French share one XP total and streak.

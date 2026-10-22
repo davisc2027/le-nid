@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UNITS } from "@/lib/french/content";
 import Backdrop from "@/components/art/Backdrop";
+import LandmarkArt from "@/components/art/LandmarkArt";
 import OdileSays from "@/components/art/OdileSays";
 import GentleToggle from "@/components/french/GentleToggle";
 import type { Mood } from "@/components/art/Stork";
@@ -37,9 +38,12 @@ export default async function French() {
       <OdileSays topic={topic} mood={mood} />
       {UNITS.map((u) => (
         <section key={u.id} className="flex flex-col gap-2">
-          <div>
-            <h2 className="font-extrabold text-primary">{u.title}</h2>
-            <p className="text-sm text-muted">{u.blurb}</p>
+          <div className="flex items-center gap-3">
+            <LandmarkArt unit={u.id} progress={u.lessons.filter((l) => finished.has(l.id)).length / u.lessons.length} />
+            <div>
+              <h2 className="font-extrabold text-primary">{u.title}</h2>
+              <p className="text-sm text-muted">{u.blurb}</p>
+            </div>
           </div>
           {u.lessons.map((l) => {
             const isDone = finished.has(l.id);

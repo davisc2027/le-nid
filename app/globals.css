@@ -77,3 +77,18 @@ body {
 .petal-on { animation: petal-in .6s ease-out both; transform-box: fill-box; transform-origin: bottom center; }
 @keyframes petal-in { from { opacity: 0; transform: scale(.6); } }
 @media (prefers-reduced-motion: reduce) { .petal-on { animation: none; } }
+
+/* Backdrop motion */
+.art-stars { opacity: var(--star-o, 0); }
+.art-sun { opacity: var(--sun-o, 1); }
+@media (prefers-color-scheme: dark) { .art-stars { opacity: 1; } .art-sun { opacity: 0; } }
+.art-cloud-a { animation: drift 90s linear infinite alternate; }
+.art-cloud-b { animation: drift 130s linear infinite alternate-reverse; }
+.art-fly { animation: fly 48s linear infinite; }
+.art-boat { animation: boat 40s ease-in-out infinite alternate; }
+.art-ripple { animation: ripple 9s linear infinite; }
+@keyframes drift { from { transform: translateX(-30px); } to { transform: translateX(60px); } }
+@keyframes fly { from { transform: translate(-40px, 40px); } to { transform: translate(440px, 14px); } }
+@keyframes boat { from { transform: translateX(0); } to { transform: translateX(260px); } }
+@keyframes ripple { to { transform: translateX(100px); } }
+@media (prefers-reduced-motion: reduce) { .art-cloud-a, .art-cloud-b, .art-fly, .art-boat, .art-ripple { animation: none; } }
