@@ -55,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 px-4">
-      <Backdrop />
+      <Backdrop aboveNav={false} />
       <h1 className="sr-only">Le Nid</h1>
       <Logo stacked size={120} />
       <div className="card">

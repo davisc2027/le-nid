@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UNITS } from "@/lib/french/content";
-import Backdrop from "@/components/art/Backdrop";
 import LandmarkArt from "@/components/art/LandmarkArt";
 import OdileSays, { StreakCount } from "@/components/art/OdileSays";
 import GentleToggle from "@/components/french/GentleToggle";
@@ -19,7 +18,6 @@ export default async function French() {
   let unlocked = true; // a lesson opens once the one before it is finished
   return (
     <div className="flex flex-col gap-5">
-      <Backdrop />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">French</h1>
         <p className="text-sm font-bold text-primary">🔥 <StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {total} XP</p>

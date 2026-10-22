@@ -4,6 +4,7 @@ import Script from "next/script";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import Logo from "@/components/art/Logo";
 import BottomNav from "@/components/BottomNav";
+import RouteBackdrop from "@/components/RouteBackdrop";
 import PendingScreen from "@/components/PendingScreen";
 
 const iconLink = "flex min-h-11 min-w-12 flex-col items-center justify-center rounded-xl text-lg leading-none hover:bg-tint";
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </Link>
         </div>
       </header>
+      <RouteBackdrop />
       <main className="flex-1 px-4 py-4">{children}</main>
       <Script id="sw" strategy="afterInteractive">{`if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});`}</Script>
       <BottomNav openTodos={count ?? 0} />
