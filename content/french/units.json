@@ -3,7 +3,7 @@
     { "id": "u1-l1", "title": "Hello and goodbye", "phrases": [
       { "fr": "Bonjour", "en": "Hello" },
       { "fr": "Bonsoir", "en": "Good evening" },
-      { "fr": "Salut", "en": "Hi" },
+      { "fr": "Salut", "en": "Hi (informal)" },
       { "fr": "Au revoir", "en": "Goodbye" },
       { "fr": "À bientôt", "en": "See you soon" },
       { "fr": "Bonne journée", "en": "Have a good day" } ] },
@@ -21,14 +21,18 @@
       { "fr": "Quel tram va à la cathédrale ?", "en": "Which tram goes to the cathedral?" },
       { "fr": "À quelle heure part le train ?", "en": "What time does the train leave?" },
       { "fr": "C'est loin ?", "en": "Is it far?" },
-      { "fr": "Pouvez-vous m'aider ?", "en": "Can you help me?" } ] },
+      { "fr": "Pouvez-vous m'aider ?", "en": "Can you help me?" },
+      { "fr": "Où est l'arrêt de tram ?", "en": "Where is the tram stop?" },
+      { "fr": "Faut-il valider le ticket ?", "en": "Does the ticket need to be validated?" },
+      { "fr": "Appelez les secours, s'il vous plaît !", "en": "Please call emergency services!" } ] },
     { "id": "u2-l2", "title": "Directions", "phrases": [
       { "fr": "Tout droit", "en": "Straight ahead" },
       { "fr": "À gauche", "en": "To the left" },
       { "fr": "À droite", "en": "To the right" },
       { "fr": "C'est près d'ici", "en": "It is near here" },
       { "fr": "Où sont les toilettes ?", "en": "Where is the restroom?" },
-      { "fr": "Merci beaucoup", "en": "Thank you very much" } ] } ] },
+      { "fr": "Merci beaucoup", "en": "Thank you very much" },
+      { "fr": "Je cherche mon groupe", "en": "I am looking for my group" } ] } ] },
   { "id": "u3", "title": "Au café", "blurb": "Food, drink and politeness", "lessons": [
     { "id": "u3-l1", "title": "Ordering", "phrases": [
       { "fr": "Un café, s'il vous plaît", "en": "A coffee, please" },
@@ -36,7 +40,9 @@
       { "fr": "De l'eau, s'il vous plaît", "en": "Some water, please" },
       { "fr": "L'addition, s'il vous plaît", "en": "The bill, please" },
       { "fr": "C'est délicieux !", "en": "It is delicious!" },
-      { "fr": "Je suis allergique aux noix", "en": "I am allergic to nuts" } ] },
+      { "fr": "Je suis allergique aux fruits à coque", "en": "I am allergic to tree nuts" },
+      { "fr": "Une carafe d'eau, s'il vous plaît", "en": "A jug of tap water, please" },
+      { "fr": "C'est combien ?", "en": "How much is it?" } ] },
     { "id": "u3-l2", "title": "Being polite", "phrases": [
       { "fr": "Merci", "en": "Thank you" },
       { "fr": "De rien", "en": "You are welcome" },
@@ -50,7 +56,7 @@
       { "fr": "Nous visitons Strasbourg avec notre groupe", "en": "We are visiting Strasbourg with our group" },
       { "fr": "Je parle un peu français", "en": "I speak a little French" },
       { "fr": "Pouvez-vous parler plus lentement ?", "en": "Can you speak more slowly?" },
-      { "fr": "Pouvez-vous répéter, s'il vous plaît ?", "en": "Can you repeat, please?" },
+      { "fr": "Pouvez-vous répéter, s'il vous plaît ?", "en": "Could you repeat that, please?" },
       { "fr": "Quelle belle ville !", "en": "What a beautiful city!" } ] },
     { "id": "u4-l2", "title": "Offering kindness", "phrases": [
       { "fr": "Puis-je prier pour vous ?", "en": "May I pray for you?" },
