@@ -3,6 +3,14 @@ const common = { stroke: "var(--foreground)", strokeWidth: 2, strokeLinejoin: "r
 
 function Scene({ unit }: { unit: string }) {
   switch (unit) {
+    case "u0": // a ringing church bell (first sounds of French)
+      return (<g {...common}>
+        <path d="M18 8h44" fill="none" strokeWidth="3" /><path d="M36 8h8v7h-8Z" fill="var(--art-beam)" />
+        <path d="M20 54c4-4 5-10 5-20 0-11 7-19 15-19s15 8 15 19c0 10 1 16 5 20Z" fill="#e0b04a" />
+        <path d="M27 44h26" fill="none" strokeWidth="1.4" /><circle cx="40" cy="60" r="5" fill="var(--art-beam)" />
+        <path d="M11 26c-5 7-5 17 0 24M17 30c-3 5-3 11 0 16M69 26c5 7 5 17 0 24M63 30c3 5 3 11 0 16" fill="none" strokeWidth="1.6" />
+        <path d="M2 72h76" />
+      </g>);
     case "u1": // Gare Centrale glass dome + clock
       return (<g {...common}>
         <path d="M6 64V44a34 34 0 0 1 68 0v20Z" fill="#9fc6e0" />

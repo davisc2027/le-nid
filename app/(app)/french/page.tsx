@@ -22,7 +22,11 @@ export default async function French() {
   const learned = learnedQ.count ?? 0;
   const total = xp?.reduce((n, e) => n + e.amount, 0) ?? 0;
 
-  let unlocked = true; // a lesson opens once the one before it is finished
+  // A lesson is open up to one past the furthest finished lesson. For a learner going in order this is "once the one
+  // before it is finished"; lessons added earlier in the course later on (the u0 sounds unit) never lock anyone out
+  // of where they had already reached.
+  const order = UNITS.flatMap((u) => u.lessons.map((l) => l.id));
+  const frontier = order.reduce((m, id, k) => (finished.has(id) ? k : m), -1);
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
@@ -46,8 +50,7 @@ export default async function French() {
           </div>
           {u.lessons.map((l) => {
             const isDone = finished.has(l.id);
-            const open = unlocked;
-            if (!isDone) unlocked = false;
+            const open = order.indexOf(l.id) <= frontier + 1;
             const body = (
               <>
                 <span className={`grid size-10 shrink-0 place-items-center rounded-full border-2 font-extrabold ${isDone ? "border-good bg-good text-surface" : open ? "border-accent text-accent" : "border-border text-muted"}`}>

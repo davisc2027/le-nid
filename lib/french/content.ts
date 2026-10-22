@@ -1,6 +1,7 @@
 import units from "@/content/french/units.json";
 
-export type Phrase = { fr: string; en: string; note?: string };
+/** `tu` is the informal version of a vous phrase, used only by the tu/vous exercise and accepted when typed. */
+export type Phrase = { fr: string; en: string; note?: string; tu?: string };
 export type Lesson = { id: string; title: string; phrases: Phrase[] };
 export type Unit = { id: string; title: string; blurb: string; lessons: Lesson[] };
 
