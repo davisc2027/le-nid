@@ -60,3 +60,6 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 - Passport copies live in the private `todo-uploads` bucket. After the trip, empty the bucket (Storage -> todo-uploads) and clear the path column: `update todo_assignments set upload_path = null;`
 - Back up: Supabase Project Settings -> Database -> Backups, or `pg_dump` from the connection string.
 - Content changes: lessons in `content/french/units.json`, Odile's lines in `lib/odile.ts`; push to deploy.
+
+## Sign-in code length
+Supabase -> Authentication -> Sign In / Providers -> Email -> **Email OTP Length**: set to 6 (new projects may default to 8). The login screen accepts 6 to 10 digits either way.
