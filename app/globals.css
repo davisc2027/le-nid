@@ -66,12 +66,30 @@ body {
   .btn { @apply inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-primary-fg disabled:opacity-50; }
   .label { @apply text-xs font-extrabold uppercase tracking-wider text-muted; }
   .tag { @apply rounded-full bg-tint px-2.5 py-1 text-xs font-extrabold text-primary; }
-  .btn.ghost { @apply bg-tint text-primary; }
+  .btn.ghost { @apply border-2 border-primary bg-surface text-primary; }
   .input { @apply min-h-12 w-full rounded-xl border border-border bg-surface px-3 py-2 text-base; }
 }
 
-/* Odile animations */
-.stork-bob { animation: stork-bob 3.2s ease-in-out infinite; }
+/* ==========================================================================
+   Odile motion
+   One vocabulary for the stork wherever she appears. Durations come from lib/odile-motion.ts through
+   --odile-d (set inline by OdileActor / useOdileIdle), so JS timers and CSS never drift.
+   Only transform and opacity animate. Nothing here takes pointer events.
+   Layers:  .odile        HTML box (size x size, aria-hidden), carries idle classes .odile-i-*
+            .odile-body   whole-body reactions .odile-r-* (origin at her feet)
+            .stork-live   the SVG; idles and reactions also move its parts
+                          (.stork-bob body, .stork-head, .stork-wing, .stork-eye, legs, .odile-fx bits)
+   Labels: [functional] tells the learner something (right, wrong, progress, done);
+           [decorative] is personality only.
+   ========================================================================== */
+:root {
+  --odile-ease: cubic-bezier(.3, .7, .4, 1);   /* settle: same curve as the cathedral */
+  --odile-ease-io: cubic-bezier(.45, 0, .55, 1); /* sway / hover */
+  --odile-walk: 600ms;                         /* matches REACTIONS.walk */
+}
+
+/* Static drawing (Logo, icons, loading) */
+.stork-bob { animation: stork-bob 3.2s ease-in-out infinite; }  /* [decorative] breathing */
 .stork-head { transform-box: view-box; transform-origin: 82px 70px; animation: stork-peck 6s ease-in-out infinite; }
 .stork-eye { transform-box: fill-box; transform-origin: center; animation: stork-blink 5s infinite; }
 .stork-wing { transform-box: view-box; transform-origin: 62px 72px; }
@@ -81,7 +99,140 @@ body {
 @keyframes stork-peck { 0%, 86%, 100% { transform: rotate(0); } 90% { transform: rotate(7deg); } 94% { transform: rotate(-3deg); } }
 @keyframes stork-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes stork-flap { from { transform: rotate(0); } to { transform: rotate(-16deg); } }
-@media (prefers-reduced-motion: reduce) { .stork *, .stork { animation: none !important; } }
+
+/* Live Odile: scheduled idles replace the fixed peck loop */
+.odile { position: relative; display: inline-block; flex: none; pointer-events: none; }
+.odile-body { display: block; width: 100%; height: 100%; transform-origin: 43% 95%;
+  animation-duration: var(--odile-d, 1s); animation-timing-function: var(--odile-ease); animation-fill-mode: both; }
+.odile-body > svg { display: block; }
+.stork-live .stork-head { animation: none; }
+.stork-live .stork-bob, .stork-live .stork-legs-a, .stork-live .stork-legs-b, .stork-live .stork-zzz, .stork-live .stork-tear { transform-box: view-box; transform-origin: 64px 140px; }
+.stork-live.stork-sleepy .stork-bob { animation-duration: 5s; }
+.stork-live .stork-tear { opacity: 0; }  /* only the "tear" reaction shows it */
+.stork-live .stork-zzz { animation: odile-zzz 2.4s ease-in-out infinite; }       /* [decorative] */
+.odile-nest-spot { position: absolute; left: 13%; top: 62%; width: 60%; line-height: 0; }
+.odile-in-nest .stork-legs-a, .odile-in-nest .stork-legs-b { opacity: 0; }       /* the nest hides her legs */
+/* lesson track: she walks/hops along the progress bar [functional: progress] */
+.odile-mover { position: absolute; left: 0; will-change: transform; }
+.odile-mover.ready { transition: transform var(--odile-walk) var(--odile-ease-io); }
+
+/* Idles [decorative]: one at a time, every 6 to 15 s, paused while the page is hidden */
+.odile-i-blink .stork-eye { animation: odile-blink var(--odile-d) linear both; }
+.odile-i-tilt .stork-head { animation: odile-tilt var(--odile-d) var(--odile-ease-io) both; }
+.odile-i-peck .stork-head { animation: odile-peck var(--odile-d) var(--odile-ease-io) both; }
+.odile-i-ruffle .stork-bob { animation: odile-ruffle var(--odile-d) linear both; }
+.odile-i-ruffle .stork-wing { animation: odile-wing-ruffle var(--odile-d) var(--odile-ease-io) both; }
+.odile-i-hop .stork-bob { animation: odile-hop var(--odile-d) var(--odile-ease) both; }
+.odile-i-look .stork-bob { transform-origin: 75px 100px; animation: odile-look var(--odile-d) var(--odile-ease-io) both; }
+.odile-i-legs .stork-legs-a { animation: odile-legs-out var(--odile-d) linear both; }
+.odile-i-legs .stork-legs-b { animation: odile-legs-in var(--odile-d) linear both; }
+@keyframes odile-blink { 0%, 40%, 100% { transform: scaleY(1); } 20%, 60% { transform: scaleY(.1); } 80% { transform: scaleY(1); } }
+@keyframes odile-tilt { 0%, 100% { transform: rotate(0); } 20%, 75% { transform: rotate(-12deg); } }
+@keyframes odile-peck { 0%, 100% { transform: rotate(0); } 25%, 55% { transform: rotate(16deg); } 40% { transform: rotate(5deg); } 75% { transform: rotate(-2deg); } }
+@keyframes odile-ruffle { 0%, 80%, 100% { transform: none; } 15% { transform: rotate(-2.5deg); } 30% { transform: rotate(2.5deg); } 45% { transform: rotate(-1.5deg); } 60% { transform: rotate(1deg); } }
+@keyframes odile-wing-ruffle { 0%, 100% { transform: rotate(0); } 25%, 55% { transform: rotate(-10deg); } }
+@keyframes odile-hop { 0%, 100% { transform: none; } 18% { transform: translateY(2px) scale(1.04, .95); } 45% { transform: translateY(-11px); } 72% { transform: translateY(1px) scale(1.03, .97); } }
+@keyframes odile-look { 0%, 100% { transform: scaleX(1); } 14%, 70% { transform: scaleX(-1); } 84% { transform: scaleX(1); } }
+@keyframes odile-legs-out { 0%, 12%, 88%, 100% { opacity: 1; } 16%, 84% { opacity: 0; } }
+@keyframes odile-legs-in { 0%, 12%, 88%, 100% { opacity: 0; } 16%, 84% { opacity: 1; } }
+@keyframes odile-zzz { 0% { opacity: 0; transform: translate(0, 8px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -6px); } }
+
+/* Reactions to right answers [functional: correct]. Pool: jump, twirl, bounce, salute, dance, hearts */
+.odile-r-jump { animation-name: odile-jump; }
+.odile-r-twirl { animation-name: odile-twirl; }
+.odile-r-bounce { animation-name: odile-bounce; }
+.odile-r-salute { animation-name: odile-lean-back; }
+.odile-r-dance { animation-name: odile-dance; animation-timing-function: var(--odile-ease-io); }
+.odile-r-hearts { animation-name: odile-swoon; }
+.odile-r-jump .stork-wing, .odile-r-bounce .stork-wing, .odile-r-victory .stork-wing, .odile-r-confetti .stork-wing, .odile-r-loop .stork-wing { animation: odile-flap 170ms ease-in-out infinite alternate; }
+.odile-r-salute .stork-wing { animation: odile-salute var(--odile-d) var(--odile-ease) both; }
+.odile-r-salute .stork-head { animation: odile-tilt var(--odile-d) var(--odile-ease) both; }
+.odile-r-hearts .stork-head { animation: odile-tilt var(--odile-d) var(--odile-ease-io) both; }
+.odile-r-dance .stork-legs-a { animation: odile-legs-out calc(var(--odile-d) / 2) linear 2 both; }
+.odile-r-dance .stork-legs-b { animation: odile-legs-in calc(var(--odile-d) / 2) linear 2 both; }
+@keyframes odile-jump { 0% { transform: none; } 14% { transform: scale(1.08, .9); } 40% { transform: translateY(-30%) scale(.96, 1.05); } 60% { transform: translateY(-30%); } 82% { transform: scale(1.07, .92); } 100% { transform: none; } }
+@keyframes odile-twirl { 0% { transform: none; } 15% { transform: translateY(-10%); } 50% { transform: translateY(-14%) rotateY(180deg); } 85% { transform: translateY(-4%) rotateY(360deg); } 100% { transform: rotateY(360deg); } }
+@keyframes odile-bounce { 0%, 100% { transform: none; } 12% { transform: scale(1.06, .92); } 26% { transform: translateY(-20%); } 42% { transform: translateY(0) scale(1.04, .95); } 56% { transform: translateY(-11%); } 70% { transform: none; } 82% { transform: translateY(-4%); } 92% { transform: none; } }
+@keyframes odile-lean-back { 0%, 100% { transform: none; } 20%, 75% { transform: rotate(-5deg) scale(1.03); } }
+@keyframes odile-salute { 0%, 100% { transform: rotate(0); } 22%, 72% { transform: rotate(-64deg); } 47% { transform: rotate(-56deg); } }
+@keyframes odile-dance { 0%, 100% { transform: none; } 12.5% { transform: translateX(-6%) rotate(-7deg); } 25%, 75% { transform: translateY(-7%); } 37.5% { transform: translateX(6%) rotate(7deg); } 50% { transform: none; } 62.5% { transform: translateX(-6%) rotate(-7deg); } 87.5% { transform: translateX(6%) rotate(7deg); } }
+@keyframes odile-swoon { 0%, 100% { transform: none; } 25%, 70% { transform: scale(1.06) rotate(-3deg); } 48% { transform: scale(1.04) rotate(-1deg); } }
+@keyframes odile-flap { from { transform: rotate(8deg); } to { transform: rotate(-36deg); } }
+
+/* Reactions to wrong answers [functional: incorrect]. Pool: tumble, dizzy, shrug, feather, tear, slip.
+   --odile-dir: 1 knocks her backward (left), -1 forward, chosen so she never lands on a button. */
+.odile-r-tumble { animation-name: odile-tumble; animation-timing-function: var(--odile-ease-io); transform-origin: 50% 55%; } /* pivots on her middle so she stays above the bar */
+.odile-r-dizzy { animation-name: odile-wobble; animation-timing-function: var(--odile-ease-io); }
+.odile-r-shrug { animation-name: odile-shrug; }
+.odile-r-shrug .stork-wing { animation: odile-wing-ruffle var(--odile-d) var(--odile-ease) both; }
+.odile-r-shrug .stork-head { animation: odile-droop var(--odile-d) var(--odile-ease) both; }
+.odile-r-feather { animation-name: odile-ruffle; animation-timing-function: linear; }
+.odile-r-feather .stork-head { animation: odile-droop var(--odile-d) var(--odile-ease-io) both; }
+.odile-r-tear { animation-name: odile-sink; }
+.odile-r-tear .stork-head { animation: odile-droop var(--odile-d) var(--odile-ease-io) both; }
+.odile-r-tear .stork-tear { animation: odile-tear var(--odile-d) ease-in both; }
+.odile-r-slip { animation-name: odile-slip; animation-timing-function: var(--odile-ease-io); }
+.odile-r-slip .stork-wing { animation: odile-flap 140ms ease-in-out 4 alternate; }
+.odile-r-slip .stork-legs-a { animation: odile-legs-out var(--odile-d) linear both; }
+.odile-r-slip .stork-legs-b { animation: odile-legs-in var(--odile-d) linear both; }
+@keyframes odile-tumble {
+  0% { transform: none; }
+  10% { transform: translateY(3%) scale(1.06, .9); }
+  30% { transform: translate(calc(var(--odile-dir, 1) * -30%), -42%) rotate(calc(var(--odile-dir, 1) * -180deg)); }
+  48%, 60% { transform: translate(calc(var(--odile-dir, 1) * -55%), 8%) rotate(calc(var(--odile-dir, 1) * -300deg)); }
+  64% { transform: translate(calc(var(--odile-dir, 1) * -55%), 8%) rotate(calc(var(--odile-dir, 1) * -294deg)); }
+  78% { transform: translate(calc(var(--odile-dir, 1) * -42%), -16%) rotate(calc(var(--odile-dir, 1) * -360deg)); }
+  90% { transform: translate(calc(var(--odile-dir, 1) * -10%), -14%) rotate(calc(var(--odile-dir, 1) * -360deg)); }
+  100% { transform: rotate(calc(var(--odile-dir, 1) * -360deg)); }
+}
+@keyframes odile-wobble { 0%, 100% { transform: none; } 15% { transform: rotate(-9deg); } 35% { transform: rotate(8deg); } 55% { transform: rotate(-6deg); } 75% { transform: rotate(3deg); } }
+@keyframes odile-shrug { 0%, 100% { transform: none; } 20% { transform: translateY(-5%); } 36% { transform: translateY(1%); } 52% { transform: translateY(-4%); } 68% { transform: none; } }
+@keyframes odile-droop { 0%, 100% { transform: rotate(0); } 25%, 80% { transform: rotate(12deg); } }
+@keyframes odile-sink { 0%, 100% { transform: none; } 22%, 80% { transform: translateY(3%) scale(1, .95); } }
+@keyframes odile-tear { 0%, 25% { opacity: 0; transform: none; } 38% { opacity: 1; transform: none; } 92% { opacity: .9; transform: translateY(14px); } 100% { opacity: 0; transform: translateY(16px); } }
+@keyframes odile-slip { 0% { transform: none; } 14% { transform: translateX(8%) rotate(-18deg); } 28% { transform: translateX(10%) rotate(-26deg); } 46% { transform: translateX(2%) rotate(9deg); } 62% { transform: rotate(-5deg); } 78% { transform: rotate(2deg); } 100% { transform: none; } }
+
+/* Finish and streak [functional: done]. Pool: victory, loop, confetti. Bigger, allowed up to ~1.8 s */
+.odile-r-victory { animation-name: odile-victory; }
+.odile-r-confetti { animation-name: odile-spin-jump; }
+.odile-r-loop { animation-name: odile-loop; transform-origin: 50% 45%; animation-timing-function: var(--odile-ease-io); }
+@keyframes odile-victory { 0%, 54%, 100% { transform: none; } 8%, 62% { transform: scale(1.08, .9); } 22%, 34% { transform: translateY(-34%); } 46%, 90% { transform: scale(1.05, .94); } 76% { transform: translateY(-26%) rotate(-6deg); } }
+@keyframes odile-spin-jump { 0% { transform: none; } 15% { transform: scale(1.06, .92); } 45% { transform: translateY(-28%) rotateY(180deg); } 75% { transform: rotateY(360deg); } 85% { transform: scale(1.05, .94) rotateY(360deg); } 100% { transform: rotateY(360deg); } }
+@keyframes odile-loop { 0% { transform: none; } 15% { transform: translateY(-12%); } 70% { transform: translateY(-12%) rotate(-360deg); } 86% { transform: translateY(-3%) rotate(-360deg); } 100% { transform: rotate(-360deg); } }
+
+/* Small utility moves */
+.odile-r-walk { animation-name: odile-walk; animation-timing-function: var(--odile-ease-io); }  /* [functional: progress] */
+.odile-r-land { animation-name: odile-land; }                                                  /* [decorative] */
+.odile-r-wave .stork-wing { animation: odile-wave var(--odile-d) var(--odile-ease-io) both; } /* [decorative] hello */
+@keyframes odile-walk { 0%, 50%, 100% { transform: none; } 25% { transform: translateY(-14%) rotate(4deg); } 75% { transform: translateY(-14%) rotate(-3deg); } }
+@keyframes odile-land { 0%, 100% { transform: none; } 40% { transform: scale(1.1, .88); } }
+@keyframes odile-wave { 0%, 100% { transform: rotate(0); } 20%, 60% { transform: rotate(-52deg); } 40%, 80% { transform: rotate(-30deg); } }
+
+/* Effect bits around her [decorative, echo the reaction]. Delays come from --i. */
+.odile-fx-bit { transform-box: fill-box; transform-origin: center; animation: var(--odile-d) var(--odile-ease) both; animation-delay: calc(var(--i, 0) * 120ms); }
+.odile-fx-sparkle .odile-fx-bit { animation-name: odile-twinkle; }
+.odile-fx-rise .odile-fx-bit { animation-name: odile-rise; }
+.odile-fx-drip .odile-fx-bit { animation-name: odile-drip; animation-timing-function: ease-in; }
+.odile-fx-fall .odile-fx-bit { animation-name: odile-fall; animation-timing-function: var(--odile-ease-io); }
+.odile-fx-burst .odile-fx-bit { animation-name: odile-burst; animation-delay: calc(var(--i, 0) * 70ms); }
+.odile-fx-stars { animation: odile-fade-io var(--odile-d) linear both; }
+.odile-fx-orbit { transform-box: view-box; transform-origin: 0 0; animation: odile-orbit 640ms linear infinite; }
+@keyframes odile-twinkle { 0% { opacity: 0; transform: scale(.3); } 30% { opacity: 1; transform: scale(1.15); } 100% { opacity: 0; transform: scale(.6) rotate(45deg); } }
+@keyframes odile-rise { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 25% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: translateY(-24px); } }
+@keyframes odile-drip { 0% { opacity: 0; transform: translateY(-4px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(16px); } }
+@keyframes odile-fall { 0% { opacity: 0; transform: none; } 10% { opacity: 1; } 35% { transform: translate(-7px, 14px) rotate(-28deg); } 65% { transform: translate(6px, 32px) rotate(22deg); } 88% { opacity: 1; } 100% { opacity: 0; transform: translate(-2px, 48px) rotate(-8deg); } }
+@keyframes odile-burst { 0% { opacity: 0; transform: translateY(40px) scale(.5); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px) rotate(170deg); } }
+@keyframes odile-orbit { to { transform: rotate(360deg); } }
+@keyframes odile-fade-io { 0%, 100% { opacity: 0; } 12%, 85% { opacity: 1; } }
+@keyframes odile-fade { from { opacity: .35; } }
+
+/* Reduced motion: no travel, no tumbles, no loops. Poses still swap for the reaction's length; a short fade marks it. */
+@media (prefers-reduced-motion: reduce) {
+  .stork *, .stork, .odile * { animation: none !important; }
+  .odile-mover.ready { transition: none; }
+  .odile-body { animation: none !important; }
+  .odile-body.odile-react { animation: odile-fade .3s ease-out both !important; }
+}
 
 .verse-text { font-family: var(--font-garamond), Georgia, serif; font-size: 1.25rem; line-height: 1.5; }
 .petal-on { animation: petal-in .6s ease-out both; transform-box: fill-box; transform-origin: bottom center; }
