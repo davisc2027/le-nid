@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Star } from "lucide-react";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
 import ActionForm from "@/components/admin/ActionForm";
@@ -240,7 +241,7 @@ export default async function Admin() {
         {people.map((p) => (
           <ActionForm key={p.id} action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
             <Id id={p.id} />
-            <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && " ★"}</span>
+            <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
             <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
           </ActionForm>
         ))}

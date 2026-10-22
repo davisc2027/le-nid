@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Flame, Turtle, Volume2, X } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { bibleInstalled, loadVerse } from "@/lib/bible/load";
@@ -25,8 +26,8 @@ function Read({ v, next }: { v: Verse; next: () => void }) {
       <p className="verse-text">{v.fr}</p>
       {v.en && <p className="text-sm italic text-muted">{v.en}</p>}
       <div className="flex gap-2">
-        <button className="btn" onClick={() => speak(v.fr)}>🔊 Listen</button>
-        <button className="btn ghost" onClick={() => speak(v.fr, true)}>🐢 Slow</button>
+        <button className="btn" onClick={() => speak(v.fr)}><Volume2 size={18} aria-hidden="true" /> Listen</button>
+        <button className="btn ghost" onClick={() => speak(v.fr, true)}><Turtle size={18} aria-hidden="true" /> Slow</button>
       </div>
       <button className="btn" onClick={next}>I've read it</button>
     </div>
@@ -143,7 +144,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
       <span role="img" aria-label="Odile celebrating" className="flex" style={{ paddingTop: 46 }}><OdileActor size={130} play={odile} /></span>
       <h1 className="text-2xl font-extrabold">Verset appris !</h1>
       <p className="verse-text">{v.fr}</p>
-      <p className="text-lg font-bold text-primary">+{sum.xp} XP · 🔥 {sum.streak}-day streak</p>
+      <p className="text-lg font-bold text-primary">+{sum.xp} XP · <Flame size={18} className="inline -mt-0.5 text-accent" aria-hidden="true" /> {sum.streak}-day streak</p>
       <Link href="/scripture" className="btn w-full">Back to the window</Link>
     </div>
   );
@@ -160,7 +161,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end gap-3">
-        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted">×</Link>
+        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted"><X size={26} aria-hidden="true" /></Link>
         <OdileTrack progress={step / STEPS.length} play={odile} />
       </div>
       <div><p className="label">{refLabel(verseKey)}</p><h1 className="text-lg font-extrabold">{LABELS[step]}</h1></div>

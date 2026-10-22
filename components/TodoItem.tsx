@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -44,7 +45,7 @@ export default function TodoItem(p: Props) {
   return (
     <div className={`card flex flex-col gap-2 ${p.completed ? "opacity-60" : ""}`}>
       <div className="flex justify-between gap-2">
-        <h2 className="font-bold">{p.completed && "✓ "}{p.title}</h2>
+        <h2 className="font-bold">{p.completed && <Check size={18} className="mr-1 inline -mt-0.5 text-good" aria-label="Done" />}{p.title}</h2>
         <span className={`shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-bold ${late ? "bg-primary text-primary-fg" : soon ? "bg-accent text-[#2b2118]" : "text-muted"}`}>
           {late ? "Overdue · " : "Due "}{due}
         </span>

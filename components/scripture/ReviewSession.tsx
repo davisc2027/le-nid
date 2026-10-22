@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Flame, X } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { bibleInstalled, loadVerse } from "@/lib/bible/load";
@@ -67,14 +68,14 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
     <div className="flex flex-col items-center gap-4 pt-4 text-center">
       <span role="img" aria-label="Odile celebrating" className="flex" style={{ paddingTop: 46 }}><OdileActor size={130} play={odile} /></span>
       <h1 className="text-2xl font-extrabold">Révision terminée !</h1>
-      <p className="text-lg font-bold text-primary">{passed}/{cards.length} recalled · +{sum.xp} XP · 🔥 {sum.streak}</p>
+      <p className="text-lg font-bold text-primary">{passed}/{cards.length} recalled · +{sum.xp} XP · <Flame size={18} className="inline -mt-0.5 text-accent" aria-hidden="true" /> {sum.streak}</p>
       <Link href="/scripture" className="btn w-full">Back to the window</Link>
     </div>
   );
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end gap-3">
-        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted">×</Link>
+        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted"><X size={26} aria-hidden="true" /></Link>
         <OdileTrack progress={i / cards.length} play={odile} />
       </div>
       <p className="label">{i + 1} of {cards.length}</p>

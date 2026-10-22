@@ -1,5 +1,6 @@
 // The group goal: everyone's XP builds Strasbourg Cathedral up to the tip of its 142 m spire.
 import Cathedral from "./Cathedral";
+import { Check } from "lucide-react";
 import { MILESTONES, SPIRE_M, toRatio } from "./cathedralPlan";
 
 export default function SpireGoal({ xp, target, title, size = "compact" }: { xp: number; target: number; title: string; size?: "compact" | "hero" }) {
@@ -26,7 +27,7 @@ export default function SpireGoal({ xp, target, title, size = "compact" }: { xp:
             const got = ratio >= m.at;
             return (
               <li key={m.at} className={`rounded-xl border px-3 py-2 text-sm ${got ? "border-transparent bg-tint" : "border-dashed border-border text-muted"}`}>
-                <span className={`block text-xs font-extrabold ${got ? "text-primary" : ""}`}>{got ? "✓ " : ""}{Math.round(m.at * 100)}%</span>
+                <span className={`block text-xs font-extrabold ${got ? "text-primary" : ""}`}>{got ? <Check size={12} className="mr-0.5 inline -mt-0.5" aria-label="Reached" /> : null}{Math.round(m.at * 100)}%</span>
                 <span className="font-bold">{m.label}</span>
               </li>
             );

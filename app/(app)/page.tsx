@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { ChevronRight, Trophy } from "lucide-react";
+import { ChevronRight, Pin, Trophy } from "lucide-react";
 import PushToggle from "@/components/PushToggle";
 import InstallBanner from "@/components/InstallBanner";
 import SpireGoal from "@/components/art/SpireGoal";
@@ -38,7 +38,7 @@ export default async function Home() {
       <Link href="/together" className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 10000} title={goal?.title ?? "Raise the spire"} /></Link>
       {items?.length ? items.map((a) => (
         <article key={a.id} className="card">
-          <h2 className="font-bold">{a.pinned && "📌 "}{a.title}</h2>
+          <h2 className="font-bold">{a.pinned && <Pin size={16} className="mr-1 inline -mt-0.5 text-primary" aria-label="Pinned" />}{a.title}</h2>
           <p className="whitespace-pre-wrap text-sm">{a.body}</p>
           <p className="mt-2 text-xs text-muted">{new Date(a.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" })} (Paris time)</p>
         </article>
