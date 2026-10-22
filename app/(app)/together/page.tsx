@@ -31,7 +31,7 @@ export default async function Together() {
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-2xl font-extrabold">Together</h1>
-      <div className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 10000} title={goal?.title ?? "Raise the spire"} /></div>
+      <div className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 10000} title={goal?.title ?? "Raise the spire"} size="hero" /></div>
 
       {!!teams?.length && (
         <section className="flex flex-col gap-2">

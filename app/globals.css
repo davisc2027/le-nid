@@ -14,6 +14,11 @@
   --parch: #f6ecd6; --glass-blue: #2d4f8f; --glass-red: #b3282d; --glass-gold: #d9a21b;
   --art-stone: #c98a74; --art-roof: #a8412e; --art-roof-2: #7e6a8f; --art-wall: #f1e2c8;
   --art-beam: #7a4f38; --art-window: #8fb0d6; --art-water: #9fbdd6; --art-glow: #f6c58a;
+  /* group-goal cathedral (red Vosges sandstone) */
+  --cath-stone: #dca08a; --cath-stone-hi: #efc6b1; --cath-stone-lo: #b9725c; --cath-line: #6a2f22;
+  --cath-recess: #7d3a2b; --cath-door: #5a3324; --cath-door-lit: #ffcf6e; --cath-hole: var(--surface);
+  --cath-blueprint: #5f86c9; --cath-scaffold: #a5774c; --cath-crane: #e8a02e; --cath-gold: #f0b43c;
+  --cath-bronze: #a87a3c; --cath-ground: #ecdfc9; --cath-glass-green: #2f7d5a;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -29,6 +34,10 @@
     --parch: #221b14; --glass-blue: #4d73c4; --glass-red: #d9524f; --glass-gold: #e8b53a;
     --art-stone: #5c3a30; --art-roof: #7a2f22; --art-roof-2: #3f3550; --art-wall: #3a2d24;
     --art-beam: #8a6a52; --art-window: #e8c46a; --art-water: #26394d; --art-glow: #5a3a22;
+    --cath-stone: #9a5c4a; --cath-stone-hi: #b97660; --cath-stone-lo: #6e3d31; --cath-line: #23140f;
+    --cath-recess: #2e1a15; --cath-door: #24150f; --cath-door-lit: #ffc95e;
+    --cath-blueprint: #7d9fe0; --cath-scaffold: #a3805e; --cath-crane: #f0a04b; --cath-gold: #f4c04f;
+    --cath-bronze: #b8894a; --cath-ground: #30261d; --cath-glass-green: #3f9a70;
   }
 }
 
@@ -93,3 +102,37 @@ body {
 @keyframes boat { from { transform: translateX(0); } to { transform: translateX(260px); } }
 @keyframes ripple { to { transform: translateX(100px); } }
 @media (prefers-reduced-motion: reduce) { .art-cloud-a, .art-cloud-b, .art-fly, .art-boat, .art-ripple { animation: none; } }
+
+/* Group-goal cathedral: new stone drops in as slabs, milestones play once, all transform/opacity. */
+.cath .cath-band { animation: cath-drop .56s cubic-bezier(.3,.7,.4,1) both; }
+.cath .cath-seam { animation: cath-seam .9s ease-out both; }
+.cath .cath-glow-in { animation: cath-fade-in .9s ease-out both; }
+.cath .cath-fade-in { animation: cath-fade-in .6s ease-out both; }
+.cath .cath-halo-in { animation: cath-fade-in 1.6s ease-out both; }
+.cath .cath-rose-in { transform-box: fill-box; transform-origin: center; animation: cath-rose 1.3s cubic-bezier(.2,.8,.3,1) both; }
+.cath .cath-burst { transform-box: fill-box; transform-origin: center; animation: cath-burst 1.1s ease-out both; }
+.cath .cath-bell { transform-box: fill-box; transform-origin: 50% 0; }
+.cath .cath-ring { animation: cath-swing 1.8s ease-in-out both; }
+.cath .cath-drop-in { animation: cath-drop-big .8s cubic-bezier(.3,.7,.4,1) both; }
+.cath .cath-land { animation: cath-land 1s cubic-bezier(.25,.8,.35,1) both; }
+.cath .cath-confetti { transform-box: fill-box; transform-origin: center; animation: cath-confetti 1.3s ease-out both; }
+.cath .cath-confetti.far { animation-name: cath-confetti-far; }
+.cath .cath-crane-leave { animation: cath-fade-out .9s ease-in both; }
+.cath .cath-hook { transform-box: fill-box; transform-origin: 50% 0; animation: cath-sway 3.6s ease-in-out infinite; }
+.cath .cath-sparkle { transform-box: fill-box; transform-origin: center; animation: cath-twinkle 2.6s ease-in-out infinite; }
+.cath .cath-badge { animation: cath-pop .5s cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes cath-drop { 0% { opacity: 0; transform: translateY(-16px); } 55% { opacity: 1; transform: translateY(1.2px); } 78% { transform: translateY(-.5px); } 100% { opacity: 1; transform: none; } }
+@keyframes cath-seam { 0%, 45% { opacity: 0; } 60% { opacity: .9; } 100% { opacity: 0; } }
+@keyframes cath-fade-in { from { opacity: 0; } }
+@keyframes cath-fade-out { to { opacity: 0; } }
+@keyframes cath-rose { 0% { opacity: 0; transform: scale(.55) rotate(-40deg); } 55% { opacity: 1; transform: scale(1.12) rotate(4deg); } 100% { opacity: 1; transform: none; } }
+@keyframes cath-burst { 0% { opacity: 0; transform: scale(.6); } 20% { opacity: 1; } 100% { opacity: 0; transform: scale(2.3); } }
+@keyframes cath-swing { 0%, 100% { transform: none; } 12% { transform: rotate(22deg); } 30% { transform: rotate(-18deg); } 48% { transform: rotate(12deg); } 66% { transform: rotate(-7deg); } 84% { transform: rotate(3deg); } }
+@keyframes cath-drop-big { 0% { opacity: 0; transform: translateY(-26px); } 60% { opacity: 1; transform: translateY(1.5px); } 100% { opacity: 1; transform: none; } }
+@keyframes cath-land { 0% { opacity: 0; transform: translate(46px, -70px) rotate(-12deg); } 70% { opacity: 1; transform: translate(0, 2px); } 100% { opacity: 1; transform: none; } }
+@keyframes cath-confetti { 0% { opacity: 0; transform: translateY(0) rotate(0); } 12% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px) rotate(220deg); } }
+@keyframes cath-confetti-far { 0% { opacity: 0; transform: translateY(0) rotate(0); } 12% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40px) rotate(-260deg); } }
+@keyframes cath-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes cath-twinkle { 0%, 100% { opacity: .25; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes cath-pop { 0% { opacity: 0; transform: scale(.4) translateY(6px); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cath *, .cath { animation: none !important; transition: none !important; } }

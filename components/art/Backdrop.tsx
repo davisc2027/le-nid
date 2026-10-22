@@ -66,21 +66,29 @@ export default function Backdrop() {
           <path d="M0 0 q5 -5 10 0 q5 -5 10 0" /><path d="M26 6 q4 -4 8 0 q4 -4 8 0" />
         </g>
 
-        {/* cathedral: single asymmetrical spire, rose window, buttresses */}
+        {/* Strasbourg Cathedral: west facade, north octagon with stair turrets, stepped openwork spire */}
         <g fill="var(--art-stone)">
-          <path d="M262 300V176h30V300Z" />
-          <path d="M264 176 L277 24 L290 176 Z" />
-          <rect x="296" y="196" width="34" height="104" />
-          <rect x="246" y="206" width="18" height="94" />
-          <path d="M330 220l12 80h-12zM246 220l-10 80h10z" />
+          <path d="M244 300V200H334V300Z" />
+          <path d="M250 200V158H266V200ZM245.5 200V163h4V200ZM266.5 200V163h4V200ZM245 163l2.5 -10l2.5 10ZM266 163l2.5 -10l2.5 10Z" />
+          {[158, 142, 126, 110, 94].map((y, k) => {
+            const w = (yy: number) => 1.5 + (8.5 * (yy - 62)) / 96, t = y - 16;
+            return <path key={k} d={`M${258 - w(y)} ${y}L${258 - w(t)} ${t}l-1.4 -5l2.4 3H${258 + w(t) - 1}l2.4 -3l-1.4 5L${258 + w(y)} ${y}Z`} />;
+          })}
+          <path d="M254.5 78V68h7V78ZM255 68L258 54L261 68Z" />
+          <path d="M306 200V190l2.5 -9l2.5 9V200ZM329 200V190l2.5 -9l2.5 9V200ZM314 200V193l6 -6l6 6V200Z" />
+          <path d="M240 300V214h5V300ZM333 300V214h5V300Z" />
         </g>
-        <path d="M277 24V8" stroke="var(--art-stone)" strokeWidth="2" />
-        <g stroke="var(--art-wall)" strokeWidth="1.6" fill="none" opacity="0.75">
-          <path d="M277 60V168M270 92H284M269 124H285M268 152H286" />
-          <path d="M270 300v-26a7 7 0 0 1 14 0v26" /><path d="M300 300v-16a6 6 0 0 1 12 0v16" />
+        <path d="M258 54V42M255 46h6" stroke="var(--art-stone)" strokeWidth="1.6" />
+        <g stroke="var(--art-wall)" strokeWidth="1.3" fill="none" opacity="0.7">
+          <path d="M244 268H334M244 230H334M244 203H334M272 300V203M306 300V203" />
+          <path d="M282 300v-14a7 7 0 0 1 14 0v14M253 300v-9a5 5 0 0 1 10 0v9M315 300v-9a5 5 0 0 1 10 0v9" />
+          <path d="M279 274l10 -12l10 12M251 280l7 -9l7 9M313 280l7 -9l7 9" />
+          <path d="M252 262v-22a6 6 0 0 1 12 0v22M314 262v-22a6 6 0 0 1 12 0v22M255 160v24M261 160v24" />
+          <path d="M249 214v14M253 214v14M257 214v14M261 214v14M265 214v14M311 214v14M315 214v14M319 214v14M323 214v14M327 214v14" strokeWidth="0.8" />
         </g>
-        <circle cx="313" cy="222" r="11" fill="var(--art-window)" stroke="var(--art-wall)" strokeWidth="1.6" opacity="0.9" />
-        <path d="M313 211v22M302 222h22M305 214l16 16M321 214l-16 16" stroke="var(--art-wall)" strokeWidth="1" opacity="0.8" />
+        <circle cx="289" cy="248" r="11" fill="var(--art-window)" stroke="var(--art-wall)" strokeWidth="1.6" opacity="0.9" />
+        <path d="M289 237v22M278 248h22M281 240l16 16M297 240l-16 16" stroke="var(--art-wall)" strokeWidth="1" opacity="0.8" />
+        <circle cx="289" cy="248" r="3.4" fill="var(--art-wall)" opacity="0.85" />
 
         <House x={8} w={54} h={112} nest />
         <House x={66} w={46} h={86} roof="var(--art-roof-2)" />

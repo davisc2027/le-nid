@@ -1,30 +1,50 @@
-// The group goal: everyone's XP raises the cathedral spire (142 m). Stone below the line, gold above it fills as XP grows.
-const SPIRE_M = 142;
+// The group goal: everyone's XP builds Strasbourg Cathedral up to the tip of its 142 m spire.
+import Cathedral from "./Cathedral";
+import { MILESTONES, SPIRE_M, toRatio } from "./cathedralPlan";
 
-export default function SpireGoal({ xp, target, title }: { xp: number; target: number; title: string }) {
-  const ratio = Math.min(1, xp / target);
+export default function SpireGoal({ xp, target, title, size = "compact" }: { xp: number; target: number; title: string; size?: "compact" | "hero" }) {
+  const ratio = toRatio(xp, target);
   const reached = ratio >= 1;
-  const h = 150, top = 8;
-  const fillY = top + h * (1 - ratio);
+  const meters = Math.round(ratio * SPIRE_M);
+  const next = MILESTONES.find((m) => ratio < m.at);
+  const toGo = next ? Math.max(1, Math.ceil(next.at * target - xp)) : 0;
+  const nextLine = next && <p className="mt-1 text-xs font-bold text-accent">Next: {next.label.toLowerCase()} at {Math.round(next.at * 100)}% · {toGo.toLocaleString()} XP to go</p>;
+
+  if (size === "hero") {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <Cathedral ratio={ratio} hero className="w-full max-w-[300px]" />
+        <div className="text-center">
+          <p className="label">{title}</p>
+          <p className="text-4xl font-extrabold text-primary">{meters} <span className="text-base text-muted">of {SPIRE_M} m</span></p>
+          <p className="text-sm text-muted">{xp.toLocaleString()} of {target.toLocaleString()} XP, all of us together</p>
+          {reached && <p className="mt-1 font-bold text-good">Goal reached. Bravo, tout le monde !</p>}
+          {nextLine}
+        </div>
+        <ol className="grid w-full grid-cols-2 gap-2" aria-label="Milestones">
+          {MILESTONES.map((m) => {
+            const got = ratio >= m.at;
+            return (
+              <li key={m.at} className={`rounded-xl border px-3 py-2 text-sm ${got ? "border-transparent bg-tint" : "border-dashed border-border text-muted"}`}>
+                <span className={`block text-xs font-extrabold ${got ? "text-primary" : ""}`}>{got ? "✓ " : ""}{Math.round(m.at * 100)}%</span>
+                <span className="font-bold">{m.label}</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-4">
-      <svg viewBox="0 0 80 170" width="76" height="162" role="img" aria-label={`${Math.round(ratio * SPIRE_M)} of ${SPIRE_M} meters raised`}>
-        <defs>
-          <clipPath id="spire"><path d="M30 158V86L40 8L50 86V158Z" /></clipPath>
-          <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f6c04a" /><stop offset="1" stopColor="#d9694f" /></linearGradient>
-        </defs>
-        {reached && <circle cx="40" cy="60" r="44" fill="#f6c58a" opacity="0.4" className="petal-on" />}
-        <path d="M30 158V86L40 8L50 86V158Z" fill="var(--border)" stroke="var(--foreground)" strokeWidth="2" strokeLinejoin="round" />
-        <rect x="0" y={fillY} width="80" height={top + h - fillY + 10} fill="url(#gold)" clipPath="url(#spire)" />
-        <path d="M30 158V86L40 8L50 86V158Z" fill="none" stroke="var(--foreground)" strokeWidth="2" strokeLinejoin="round" />
-        <path d="M40 22V150M34 70H46M33 100H47M32 128H48" stroke="var(--foreground)" strokeOpacity="0.25" strokeWidth="1" />
-        <rect x="14" y="158" width="52" height="8" rx="2" fill="var(--art-stone)" stroke="var(--foreground)" strokeWidth="2" />
-      </svg>
+    <div className="flex items-center gap-3">
+      <Cathedral ratio={ratio} className="w-[150px] shrink-0" />
       <div className="min-w-0">
         <p className="label">{title}</p>
-        <p className="text-3xl font-extrabold text-primary">{Math.round(ratio * SPIRE_M)} <span className="text-base text-muted">of {SPIRE_M} m</span></p>
+        <p className="text-3xl font-extrabold text-primary">{meters} <span className="text-base text-muted">of {SPIRE_M} m</span></p>
         <p className="text-sm text-muted">{xp.toLocaleString()} of {target.toLocaleString()} XP, all of us together</p>
         {reached && <p className="mt-1 font-bold text-good">Goal reached. Bravo, tout le monde !</p>}
+        {nextLine}
       </div>
     </div>
   );
