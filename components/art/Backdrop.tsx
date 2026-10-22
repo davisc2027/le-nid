@@ -39,12 +39,12 @@ function House({ x, w, h, roof = "var(--art-roof)", nest = false }: { x: number;
   );
 }
 
-export default function Backdrop({ aboveNav = true, faded = false }: { aboveNav?: boolean; faded?: boolean }) {
+export default function Backdrop({ aboveNav = true, faded = false, soft = false }: { aboveNav?: boolean; faded?: boolean; soft?: boolean }) {
   const [phase, setPhase] = useState<Phase>("day");
   useEffect(() => setPhase(phaseOf(new Date().getHours())), []);
   const s = SKY[phase];
   return (
-    <div aria-hidden="true" className={`art pointer-events-none fixed inset-x-0 -z-10 h-[52vh] max-h-[460px] ${faded ? "opacity-30" : ""} ${aboveNav ? "bottom-[calc(4rem+env(safe-area-inset-bottom))]" : "bottom-0"}`}
+    <div aria-hidden="true" className={`art pointer-events-none fixed inset-x-0 -z-10 h-[52vh] max-h-[460px] ${faded ? "opacity-30" : ""} ${soft ? "origin-bottom scale-105 blur-[3px]" : ""} ${aboveNav ? "bottom-[calc(4rem+env(safe-area-inset-bottom))]" : "bottom-0"}`}
       style={{ ["--sun-o" as string]: s.sun, ["--star-o" as string]: s.star }}>
       <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" className="h-full w-full">
         <defs>
