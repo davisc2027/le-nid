@@ -33,7 +33,7 @@ export default function BottomNav({ openTodos }: { openTodos: number }) {
           const on = t.match(path);
           return (
             <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}
-              className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold ${on ? "text-primary" : "text-muted"}`}>
+              className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-extrabold ${on ? "text-primary" : "text-muted"}`}>
               {on && <span className="absolute top-0 h-1 w-10 rounded-b-full bg-primary" />}
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth={on ? 2.4 : 1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[t.icon]} /></svg>
               {t.label}

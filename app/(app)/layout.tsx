@@ -6,7 +6,7 @@ import RouteTransition from "@/components/ui/RouteTransition";
 import BottomNav from "@/components/BottomNav";
 
 const iconLink = "flex min-h-11 min-w-12 flex-col items-center justify-center rounded-xl text-lg leading-none hover:bg-tint";
-const iconLabel = "mt-0.5 text-[11px] font-bold text-muted";
+const iconLabel = "mt-0.5 text-[13px] font-bold text-muted";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();

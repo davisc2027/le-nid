@@ -15,7 +15,7 @@ import VerseDiff from "./VerseDiff";
 type Verse = { fr: string; en: string | null };
 type Done = (ok: boolean, expected?: string, marks?: { word: string; ok: boolean }[]) => void;
 const STEPS = ["read", "cloze30", "cloze60", "letters", "reorder", "type"] as const;
-const LABELS = ["Read and listen", "Fill the blanks", "Fill more blanks", "First letters", "Put it in order", "From memory"];
+const LABELS = ["Read and listen", "Fill the blanks", "Fewer hints", "First letters", "Put it in order", "From memory"];
 
 function Read({ v, next }: { v: Verse; next: () => void }) {
   return (

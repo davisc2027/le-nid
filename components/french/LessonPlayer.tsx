@@ -9,6 +9,8 @@ import { ALL_PHRASES, type Lesson } from "@/lib/french/content";
 import { speak, speechUnlocked } from "@/lib/french/speech";
 import Stork, { type Mood } from "@/components/art/Stork";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import InstallBanner from "@/components/InstallBanner";
+import PushToggle from "@/components/PushToggle";
 import OdileSays from "@/components/art/OdileSays";
 import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
 
@@ -186,6 +188,8 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
         <h1 className="text-2xl font-extrabold">Leçon terminée !</h1>
         <p className="text-lg font-bold text-primary">+{summary.xp} XP · 🔥 {summary.streak}-day streak</p>
         <div className="w-full"><OdileSays topic="done" mood="cheer" size={120} /></div>
+        <div className="w-full text-left"><InstallBanner /></div>
+        <div className="flex w-full flex-col gap-1 text-left"><p className="text-sm font-bold">Keep your streak: get a daily reminder.</p><PushToggle /></div>
         <Link href={nextHref} className="btn w-full">Continue</Link>
       </div>
     );

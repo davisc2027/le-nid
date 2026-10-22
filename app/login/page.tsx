@@ -68,7 +68,7 @@ export default function LoginPage() {
           </form>
         ) : (
           <form onSubmit={verify} className="flex flex-col gap-3">
-            <p className="text-muted">We sent a code to <b>{email}</b>. Enter it here. Don&apos;t tap the link in the email; the code keeps you signed in inside this app.</p>
+            <p className="text-muted">We sent a code to <b>{email}</b>. Type the code here. Ignore the link in the email; it signs you in on the browser, not in this app.</p>
             <label htmlFor="code" className="sr-only">Code</label>
             <input id="code" className="input text-center text-2xl tracking-[0.4em]" inputMode="numeric" pattern="[0-9]{8}" maxLength={8} autoComplete="one-time-code" required placeholder="12345678" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))} />
             <button className="btn" type="submit" disabled={busy || code.length !== 8}>{busy ? "Checking..." : "Sign in"}</button>
