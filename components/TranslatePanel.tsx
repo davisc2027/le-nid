@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowLeftRight, ChevronRight, MessagesSquare, Mic, Square, Turtle, Volume2 } from "lucide-react";
 import { speak } from "@/lib/french/speech";
 import Stork from "@/components/art/Stork";
 
@@ -110,20 +112,28 @@ export default function TranslatePanel() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">Translate</h1>
-        <button className="btn ghost" onClick={flip} aria-label="Swap languages">⇄ {dir === "en-fr" ? "English → Français" : "Français → English"}</button>
+        <button className="btn ghost" onClick={flip} aria-label="Swap languages"><ArrowLeftRight size={18} aria-hidden="true" /> {dir === "en-fr" ? "English → Français" : "Français → English"}</button>
       </div>
+      <Link href="/translate/talk" className="card flex items-center gap-3 border-2 border-primary bg-tint">
+        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary text-primary-fg"><MessagesSquare size={26} aria-hidden="true" /></span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-lg font-extrabold text-primary">Conversation mode</span>
+          <span className="text-sm text-muted">Talk back and forth. Each sentence is translated as you go.</span>
+        </span>
+        <ChevronRight size={22} className="shrink-0 text-primary" aria-hidden="true" />
+      </Link>
       <label htmlFor="src" className="sr-only">Text to translate</label>
       <textarea id="src" ref={box} className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { armed.current = false; setCoach(false); }}
         lang={dir === "en-fr" ? "en" : "fr"} placeholder={dir === "en-fr" ? "Type or speak in English" : "Parlez ou écrivez en français"} />
       {coach && (
         <div className="card !border-primary gap-1 text-sm" role="note">
-          <p className="font-extrabold">Tap the 🎤 on your keyboard</p>
+          <p className="font-extrabold">Tap the microphone on your keyboard</p>
           <p>It's the microphone key at the bottom right of your iPhone keyboard (next to the space bar). Tap it, say your sentence, and tap it again. Le Nid translates a moment after you stop.</p>
           <p className="text-xs text-muted">No microphone key? Turn on Dictation in Settings → General → Keyboard.</p>
         </div>
       )}
       <div className="flex gap-2">
-        <button className={`btn ${listening ? "" : "ghost"}`} onClick={speakNow}>{listening ? "■ Stop" : "🎤 Speak"}</button>
+        <button className={`btn ${listening ? "" : "ghost"}`} onClick={speakNow}>{listening ? <><Square size={16} fill="currentColor" aria-hidden="true" /> Stop</> : <><Mic size={18} aria-hidden="true" /> Speak</>}</button>
         <button className="btn flex-1" disabled={busy || !text.trim()} onClick={() => { armed.current = false; void translate(); }}>{busy ? "Translating…" : "Translate"}</button>
       </div>
       {error && (
@@ -136,8 +146,8 @@ export default function TranslatePanel() {
         <div className="card gap-3 !border-primary">
           <p className="verse-text !text-2xl">{shown.to}</p>
           <div className="flex flex-wrap gap-2">
-            {shown.dir === "en-fr" && <button className="btn" onClick={() => speak(shown.to)}>🔊 Say it</button>}
-            {shown.dir === "en-fr" && <button className="btn ghost" onClick={() => speak(shown.to, true)}>🐢 Slow</button>}
+            {shown.dir === "en-fr" && <button className="btn" onClick={() => speak(shown.to)}><Volume2 size={18} aria-hidden="true" /> Say it</button>}
+            {shown.dir === "en-fr" && <button className="btn ghost" onClick={() => speak(shown.to, true)}><Turtle size={18} aria-hidden="true" /> Slow</button>}
             <button className="btn ghost" onClick={() => setFull(true)}>Show them</button>
           </div>
         </div>

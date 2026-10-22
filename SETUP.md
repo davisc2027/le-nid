@@ -4,7 +4,7 @@ Everything here is free-tier. Do it once; any computer can repeat it from this f
 
 ## 1. Supabase
 1. Create a project at supabase.com (free). Note its region.
-2. SQL editor: run `supabase/migrations/0001` through `0007` in order (or `npx supabase link` then `npx supabase db push`; the bundled `supabase` CLI needs `supabase link` first). `0006` fixes the profile trigger; `0007` adds the sign-up allowlist and hardening.
+2. SQL editor: run `supabase/migrations/0001` through `0009` in order (or `npx supabase link` then `npx supabase db push`; the bundled `supabase` CLI needs `supabase link` first). `0006` fixes the profile trigger; `0007` adds the sign-up allowlist and hardening. `0009` adds `vocab_cards` for French spaced repetition (end-of-lesson review and the Practice button; the app still works without it, minus those features).
 3. Authentication -> Providers -> Email: keep "Allow new users to sign up" on (new accounts wait for admin approval, from `0008`), and leave the OTP length at 8 (the app's code box expects 8 digits).
 4. Authentication -> Email Templates: edit **both Confirm signup and Magic Link** (new users get Confirm signup, returning users get Magic Link). Put `{{ .Token }}` in the body, for example "Your Le Nid code is {{ .Token }}". The app asks for this 8-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
 5. Authentication -> SMTP Settings: **set a custom SMTP provider**. Supabase's built-in mail allows only a few emails per hour, which 35 people signing in will exceed. Options: Resend or Brevo (free, needs a domain), or a Gmail account with an app password (`smtp.gmail.com`, port 465; turn on 2-step verification, then create an app password and use that, not your normal password).
@@ -22,6 +22,7 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 | `VAPID_SUBJECT` | Must start with `mailto:` (for example `mailto:you@example.com`) or `https:`. |
 | `CRON_SECRET` | Any long random string. The reminder endpoint rejects requests without it. |
 | `DEEPL_API_KEY` | Free key from deepl.com/pro-api (translate). |
+| `GROQ_API_KEY` | Free key from console.groq.com (speech to text for Conversation mode). Server only. See "Conversation mode" below. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Optional, for emailed reminders. |
 
 **Never commit `vercel-env.txt`, `.env.local` or any file holding these values.** If one was ever committed or shared, rotate the keys (especially the service-role key).
@@ -30,6 +31,25 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 1. Import the repo and add every variable from section 2, then deploy.
 2. Project Settings -> Functions: set the function region to the one closest to your Supabase region (Hobby allows one). This cuts the latency of every page load.
 3. The daily reminder job in `vercel.json` also touches the database, which keeps the free Supabase project from pausing.
+
+## 3a. Conversation mode (live two-way translation)
+Translate -> Conversation mode (`/translate/talk`) listens continuously, cuts speech into sentences, works out whether each one is English or French, and shows it with its translation.
+
+**Keys.** These are three separate free accounts and keys; one does not replace another:
+- `GROQ_API_KEY` turns speech into text (Groq's hosted Whisper, model `whisper-large-v3-turbo`).
+- `DEEPL_API_KEY` translates the text (the same key the Translate page already uses).
+- The Bible text needs no key; it comes from ebible.org at build time (section 4).
+
+**Create the Groq key.**
+1. Sign in at console.groq.com (free, no card needed) -> API Keys -> Create API Key. Copy it.
+2. Vercel -> Project Settings -> Environment Variables: add `GROQ_API_KEY` (Production and Preview), then redeploy. Locally, put it in `.env.local`.
+3. Without the key, Conversation mode still opens and offers the Safari backup instead.
+
+**What leaves the phone.** Each sentence is recorded as a short audio clip and sent to Le Nid's server, which forwards it to Groq to be turned into text, then sends that text to DeepL to be translated. Le Nid does not keep recordings or transcripts (nothing is saved to the database or logged); the conversation lives only on the screen until the page is closed or cleared. The page shows a small "AI audio processing used" line. Groq's and DeepL's own policies apply to what they receive.
+
+**Limits (free tiers).** Groq allows about 20 transcription requests per minute and about 8 hours of audio per day **for the whole key, so for the whole group together** (it counts at least 10 seconds per request). Le Nid also limits each person to 30 sentences per minute and 300 per hour, and holds back when the group is near Groq's per-minute limit. Each sentence is also one DeepL request, so it counts toward the Translate limit of 40 per person per hour and DeepL's 500,000 characters per month. Limits are kept in memory per server instance, so they are approximate.
+
+**Safari backup.** When Groq can't be used (limit reached, not set up, or failing), the page switches to Safari's built-in speech recognition: two big buttons, English and Français, choose the language being spoken. It doesn't use Groq at all. It only works in Safari, not in the installed Home Screen app, so in the app the page shows "Copy Safari link" instead. That link signs the person into Safari as themselves (Safari doesn't share the app's login): it is made by `/api/handoff` from the signed-in session's own email (using `SUPABASE_SERVICE_ROLE_KEY`), works once, expires with Supabase's email-link expiry (Authentication -> Providers -> Email -> Email OTP Expiration, 1 hour by default), and each person can make 5 per hour. Steps for the person: tap Copy Safari link, open Safari, paste into the address bar, tap Go. Anyone can also open the backup from "Having trouble? Use the Safari backup".
 
 ## 4. Bible text
 On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-check a few verses (for example John 3:16, Psalm 23:1, Romans 8:38-39), commit `public/bible`, push. Without it, verse memory has no text.
@@ -45,6 +65,7 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 - Post a test announcement; the time shown is Paris time.
 - Open Files and tap a file (the link is generated on tap, so it never expires).
 - Translate a phrase.
+- Conversation mode: Translate -> Conversation mode -> Start listening, say one English and one French sentence; both appear with translations.
 - Reminders: `curl -H "Authorization: Bearer $CRON_SECRET" https://YOUR-SITE/api/cron/reminders` returns 200; without the header it returns 401.
 
 ## 7. iPhone testing checklist (do this before the group does)
@@ -53,6 +74,8 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 - Turn on notifications on the Me page, post a test announcement with push, confirm it arrives.
 - Run a French lesson with sound on and the silent switch off; confirm audio plays.
 - Translate: type, and dictate with the keyboard microphone.
+- Conversation mode in the installed app: allow the microphone, talk in English and French, check the screen stays on, turn Read aloud on and confirm French translations are spoken (and not re-transcribed), switch to Side by side, lock the phone and confirm listening pauses.
+- Safari backup: in the app tap "Having trouble? Use the Safari backup" -> Copy Safari link, paste it in Safari, confirm it opens Conversation mode signed in, tap English / Français and talk. Paste the same link into a Private tab: it should say the link was already used.
 - Turn on airplane mode and check what loads.
 - Check light and dark mode and the bottom nav above the home bar.
 

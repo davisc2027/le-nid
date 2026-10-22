@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_CHARS = 500;
-const PER_HOUR = 40;
+const PER_HOUR = 300; // conversation mode translates every sentence; DeepL's monthly characters are the real cap
 const hits = new Map<string, number[]>(); // per-instance and best effort; fine for a 35-person group
 
 // DeepL API Free (500k characters per month). The key stays on the server.
