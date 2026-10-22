@@ -4,6 +4,7 @@ import { ALL_LESSONS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
 import Rosace from "@/components/art/Rosace";
 import { StreakCount } from "@/components/art/OdileSays";
+import OdileActor from "@/components/art/OdileActor";
 
 export default async function Learn() {
   const supabase = await createClient();
@@ -17,8 +18,8 @@ export default async function Learn() {
   const due = cards?.filter((c) => c.learned_at && c.due && new Date(c.due) <= new Date()).length ?? 0;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-extrabold">Learn</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-end gap-1.5"><OdileActor size={40} /><h1 className="text-2xl font-extrabold">Learn</h1></div>
         <p className="font-bold text-primary">🔥 <StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
       </div>
       <Link href="/french" className="card flex min-h-28 flex-row items-center gap-4">

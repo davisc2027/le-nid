@@ -111,9 +111,9 @@ body {
 .stork-live .stork-tear { opacity: 0; }  /* only the "tear" reaction shows it */
 .stork-live .stork-zzz { animation: odile-zzz 2.4s ease-in-out infinite; }       /* [decorative] */
 .odile-nest-spot { position: absolute; left: 13%; top: 62%; width: 60%; line-height: 0; }
-.odile-in-nest .stork-legs-a, .odile-in-nest .stork-legs-b { opacity: 0; }       /* the nest hides her legs */
+.odile-in-nest .stork-legs-a, .odile-in-nest .stork-legs-b { visibility: hidden; } /* the nest hides her legs (leg-swap animations only touch opacity) */
 /* lesson track: she walks/hops along the progress bar [functional: progress] */
-.odile-mover { position: absolute; left: 0; will-change: transform; }
+.odile-mover { position: absolute; left: 0; display: flex; will-change: transform; }
 .odile-mover.ready { transition: transform var(--odile-walk) var(--odile-ease-io); }
 
 /* Idles [decorative]: one at a time, every 6 to 15 s, paused while the page is hidden */

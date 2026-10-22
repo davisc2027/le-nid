@@ -9,7 +9,9 @@ import { normalize } from "@/lib/french/exercises";
 import { speak } from "@/lib/french/speech";
 import { chunks, firstLetters, gradeRecall, PASS, pickBlanks, words } from "@/lib/scripture/drills";
 import { Rating, schedule } from "@/lib/srs";
-import Stork from "@/components/art/Stork";
+import OdileActor from "@/components/art/OdileActor";
+import OdileTrack from "@/components/art/OdileTrack";
+import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import VerseDiff from "./VerseDiff";
 
 type Verse = { fr: string; en: string | null };
@@ -79,7 +81,7 @@ function Reorder({ v, done }: { v: Verse; done: Done }) {
   const [picked, setPicked] = useState<number[]>([]);
   return (
     <div className="flex flex-col gap-3">
-      <div className="card min-h-20 flex-row flex-wrap gap-2">
+      <div className="card flex min-h-20 flex-row flex-wrap gap-2">
         {picked.map((p, n) => <button key={n} className="verse-text rounded bg-tint px-2" onClick={() => setPicked(picked.filter((_, k) => k !== n))}>{parts[p]}</button>)}
       </div>
       <div className="flex flex-col gap-2">
@@ -100,6 +102,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
   const [noBible, setNoBible] = useState(false);
+  const [odile, setOdile] = useState<Cue | null>(null);
 
   useEffect(() => {
     loadVerse(verseKey).then(async (x) => { if (!x) setNoBible(!(await bibleInstalled())); setV(x); });
@@ -112,7 +115,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
     </div>
   );
 
-  const done: Done = (ok, _e, marks) => setFb({ ok, marks });
+  const done: Done = (ok, _e, marks) => { setFb({ ok, marks }); setOdile(cue(pickReaction(ok ? "calmRight" : "calmWrong"))); };
   async function advance() {
     const ok = fb?.ok ?? true;
     setFb(null);
@@ -132,11 +135,12 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
     if (xpErr) return setSaveErr(true);
     const row = Array.isArray(data) ? data[0] : data;
     setSum({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
+    setOdile(cue(pickReaction("finish")));
   }
 
   if (sum) return (
     <div className="flex flex-col items-center gap-4 pt-4 text-center">
-      <Stork mood="cheer" size={130} label="Odile celebrating" />
+      <span role="img" aria-label="Odile celebrating" className="flex" style={{ paddingTop: 46 }}><OdileActor size={130} play={odile} /></span>
       <h1 className="text-2xl font-extrabold">Verset appris !</h1>
       <p className="verse-text">{v.fr}</p>
       <p className="text-lg font-bold text-primary">+{sum.xp} XP · 🔥 {sum.streak}-day streak</p>
@@ -155,9 +159,9 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
   const kind = STEPS[step];
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Link href="/scripture" aria-label="Quit" className="text-2xl text-muted">×</Link>
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-border"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(step / STEPS.length) * 100}%` }} /></div>
+      <div className="flex items-end gap-3">
+        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted">×</Link>
+        <OdileTrack progress={step / STEPS.length} play={odile} />
       </div>
       <div><p className="label">{refLabel(verseKey)}</p><h1 className="text-lg font-extrabold">{LABELS[step]}</h1></div>
       <div key={`${step}-${attempt}`}>

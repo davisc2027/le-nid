@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { buildLesson, isCorrect, tokenize, type Exercise } from "@/lib/french/exercises";
 import { ALL_PHRASES, type Lesson } from "@/lib/french/content";
 import { speak, speechUnlocked } from "@/lib/french/speech";
-import Stork, { type Mood } from "@/components/art/Stork";
+import OdileTrack from "@/components/art/OdileTrack";
+import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import OdileSays from "@/components/art/OdileSays";
 import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
 
@@ -84,7 +85,7 @@ function Listen({ ex, locked, report, skip }: ExProps<Extract<Exercise, { kind: 
   );
 }
 
-function Match({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "match" }>>) {
+function Match({ ex, locked, report, miss }: ExProps<Extract<Exercise, { kind: "match" }>> & { miss: () => void }) {
   const [fr, setFr] = useState<string | null>(null);
   const [done, setDone] = useState<string[]>([]);
   const [bad, setBad] = useState<string | null>(null);
@@ -96,7 +97,7 @@ function Match({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "match"
       const next = [...done, fr];
       setDone(next); setFr(null);
       if (next.length === ex.pairs.length) setTimeout(() => report(true, ""), 400); else playTick();
-    } else { playError(); setBad(e); setTimeout(() => setBad(null), 500); }
+    } else { playError(); miss(); setBad(e); setTimeout(() => setBad(null), 500); }
   }
   return (
     <div className="flex flex-col gap-3">
@@ -131,7 +132,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   const [i, setI] = useState(0);
   const [total, setTotal] = useState(1);
   const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string } | null>(null);
-  const [mood, setMood] = useState<Mood>("happy");
+  const [odile, setOdile] = useState<Cue | null>(null);
   const [sound, setSoundState] = useState(true);
   useEffect(() => setSoundState(soundOn()), []);
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
@@ -152,14 +153,13 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
 
   const report: Report = (ok, answer, note) => {
     setResult({ ok, answer, note });
-    setMood(ok ? "cheer" : "sulk");
     if (ok) playSuccess(); else playError();
+    setOdile(cue(pickReaction(ok ? "right" : "wrong"))); // starts with the sound; the feedback card is text
     if (!ok) setQueue((q) => [...q!, q![i]]); // missed ones come back at the end
   };
 
   async function next() {
     if (saving) return;
-    setMood("happy");
     if (i + 1 < queue!.length) { setResult(null); return setI(i + 1); }
     setSaving(true); setSaveErr(false);
     try {
@@ -183,27 +183,24 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
       <div className="flex flex-col items-center gap-4 pt-4 text-center">
         <h1 className="text-2xl font-extrabold">Leçon terminée !</h1>
         <p className="text-lg font-bold text-primary">+{summary.xp} XP · 🔥 {summary.streak}-day streak</p>
-        <div className="w-full"><OdileSays topic="done" mood="cheer" size={120} /></div>
+        <div className="w-full"><OdileSays topic="done" size={120} celebrate /></div>
         <Link href={nextHref} className="btn w-full">Continue</Link>
       </div>
     );
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-end gap-3">
         <button onClick={quit} aria-label="Quit lesson" className="grid size-11 place-items-center text-2xl text-muted">×</button>
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
-          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(i / Math.max(queue.length, total)) * 100}%` }} />
-        </div>
+        <OdileTrack progress={i / Math.max(queue.length, total)} play={odile} />
         <button onClick={() => { const on = !sound; setSound(on); setSoundState(on); if (on) playTick(); }} aria-label={sound ? "Turn sounds off" : "Turn sounds on"}
           className="grid size-11 place-items-center text-xl">{sound ? "🔊" : "🔇"}</button>
-        <Stork mood={mood} size={44} />
       </div>
       <div key={i}>
         {ex.kind === "choose" && <Choose ex={ex} locked={!!result} report={report} />}
         {ex.kind === "bank" && <Bank ex={ex} locked={!!result} report={report} />}
         {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} skip={() => setNoAudio(true)} />}
-        {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} />}
+        {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} miss={() => setOdile(cue(pickReaction("miss")))} />}
       </div>
       {result && (
         <div className={`card sticky bottom-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-2 ${result.ok ? "!border-good" : "!border-primary"}`} role="status">

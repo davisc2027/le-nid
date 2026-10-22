@@ -7,7 +7,9 @@ import { bibleInstalled, loadVerse } from "@/lib/bible/load";
 import { refLabel } from "@/lib/bible/reference";
 import { firstLetters, gradeRecall, PASS } from "@/lib/scripture/drills";
 import { Rating, schedule } from "@/lib/srs";
-import Stork from "@/components/art/Stork";
+import OdileActor from "@/components/art/OdileActor";
+import OdileTrack from "@/components/art/OdileTrack";
+import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import VerseDiff from "./VerseDiff";
 
 type Card = { ref: string; state: Record<string, unknown> | null };
@@ -23,6 +25,7 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [missing, setMissing] = useState<"bible" | "verse" | null>(null);
+  const [odile, setOdile] = useState<Cue | null>(null);
   const card = cards[i];
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
     setBusy(false);
     if (error) return setErr("Couldn't save your answer. Check your connection and tap Check again.");
     setRes({ ok, marks: g.marks });
+    setOdile(cue(pickReaction(ok ? "calmRight" : "calmWrong")));
     if (ok) setPassed((n) => n + 1);
   }
 
@@ -55,12 +59,13 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
     if (error) return setErr("Couldn't save your XP. Check your connection and tap Continue again.");
     const row = Array.isArray(data) ? data[0] : data;
     setSum({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
+    setOdile(cue(pickReaction("finish")));
   }
 
   if (!cards.length) return <p className="card">Nothing due. Odile approves.</p>;
   if (sum) return (
     <div className="flex flex-col items-center gap-4 pt-4 text-center">
-      <Stork mood="cheer" size={130} label="Odile celebrating" />
+      <span role="img" aria-label="Odile celebrating" className="flex" style={{ paddingTop: 46 }}><OdileActor size={130} play={odile} /></span>
       <h1 className="text-2xl font-extrabold">Révision terminée !</h1>
       <p className="text-lg font-bold text-primary">{passed}/{cards.length} recalled · +{sum.xp} XP · 🔥 {sum.streak}</p>
       <Link href="/scripture" className="btn w-full">Back to the window</Link>
@@ -68,6 +73,10 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
   );
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-end gap-3">
+        <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted">×</Link>
+        <OdileTrack progress={i / cards.length} play={odile} />
+      </div>
       <p className="label">{i + 1} of {cards.length}</p>
       <h1 className="text-xl font-extrabold">{refLabel(card.ref)}</h1>
       {hint && verse && <p className="verse-text tracking-widest text-muted">{firstLetters(verse)}</p>}

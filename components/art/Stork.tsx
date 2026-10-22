@@ -61,11 +61,11 @@ function Effect({ fx }: { fx: Fx }) {
     </g>
   );
   if (fx === "stars") return (
-    <g className="odile-fx odile-fx-stars" transform="translate(94 8) scale(1 .45)">
+    <g className="odile-fx odile-fx-stars" transform="translate(92 -4)">
       <g className="odile-fx-orbit" fill={GOLD} stroke={LINE} strokeWidth="1">
-        <path d={STAR} transform="translate(22 0) scale(.7)" />
-        <path d={STAR} transform="translate(-11 19) scale(.7)" />
-        <path d={STAR} transform="translate(-11 -19) scale(.7)" />
+        <path d={STAR} transform="translate(16 0) scale(.85)" />
+        <path d={STAR} transform="translate(-8 14) scale(.85)" />
+        <path d={STAR} transform="translate(-8 -14) scale(.85)" />
       </g>
     </g>
   );
@@ -76,7 +76,7 @@ function Effect({ fx }: { fx: Fx }) {
   );
   if (fx === "feather") return (
     <g className="odile-fx odile-fx-fall">
-      <g transform="translate(52 74)">
+      <g transform="translate(50 76) scale(1.5)">
         <g {...bit(0)}>
           <path d="M0 0 Q7 -9 0 -20 Q-7 -9 0 0 Z" fill={WHITE} stroke={LINE} strokeWidth="1.4" />
           <path d="M0 2 L0 -18" stroke={LINE} strokeWidth="1" />
@@ -96,12 +96,12 @@ function Effect({ fx }: { fx: Fx }) {
   );
 }
 
-export default function Stork({ mood = "happy", size = 120, label = "", live = false, fx }: { mood?: Mood; size?: number; label?: string; live?: boolean; fx?: Fx | null }) {
+export default function Stork({ mood = "happy", size = 120, label = "", live = false, fx, className = "", style }: { mood?: Mood; size?: number; label?: string; live?: boolean; fx?: Fx | null; className?: string; style?: CSSProperties }) {
   const cheeky = mood === "happy" || mood === "cheer";
   const flying = mood === "fly";
   return (
     <svg viewBox="0 0 150 150" width={size} height={(size * 150) / 150} role={label ? "img" : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : true}
-      className={`stork stork-${mood}${live ? " stork-live" : ""}`} overflow={live ? "visible" : undefined}>
+      className={`stork stork-${mood}${live ? " stork-live" : ""}${className ? ` ${className}` : ""}`} style={style} overflow={live ? "visible" : undefined}>
       <g className="stork-bob">
         {flying ? (
           /* legs trail behind in flight */

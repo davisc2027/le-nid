@@ -1,17 +1,17 @@
 // Odile's motion vocabulary: what she can do, how long each takes, and pickers that never repeat
 // the previous choice. Keyframes live in app/globals.css under "Odile motion"; each class there reads
-// its duration from --odile-d, which OdileActor sets from the numbers below, so the two never drift.
+// its duration from --odile-d, which OdileActor (and useOdileIdle) set from the numbers below, so the two never drift.
 import type { Fx, Mood } from "@/components/art/Stork";
 
 export type Reaction =
   // right answer
   | "jump" | "twirl" | "bounce" | "salute" | "dance" | "hearts"
   // wrong answer
-  | "tumble" | "dizzy" | "shrug" | "feather" | "tear" | "oops"
+  | "tumble" | "dizzy" | "shrug" | "feather" | "tear" | "slip"
   // lesson / streak finished
   | "victory" | "loop" | "confetti"
   // small utility moves
-  | "walk" | "land" | "wave";
+  | "walk" | "wave";
 
 export type Idle = "blink" | "tilt" | "peck" | "ruffle" | "hop" | "look" | "legs" | "sleepy";
 
@@ -28,14 +28,13 @@ export const REACTIONS: Record<Reaction, Spec> = {
   tumble: { ms: 1200, mood: "oops" },
   dizzy: { ms: 1150, mood: "dizzy", fx: "stars" },
   shrug: { ms: 1000, mood: "oops", fx: "sweat" },
-  feather: { ms: 1150, mood: "sulk", fx: "feather" },
+  feather: { ms: 1150, mood: "oops", fx: "feather" },
   tear: { ms: 1150, mood: "sulk" },
-  oops: { ms: 900, mood: "oops" },
+  slip: { ms: 950, mood: "oops" },
   victory: { ms: 1800, mood: "cheer", fx: "confetti" },
   loop: { ms: 1700, mood: "fly", fx: "sparkle" },
   confetti: { ms: 1600, mood: "cheer", fx: "confetti" },
   walk: { ms: 600, mood: "happy" },
-  land: { ms: 320, mood: "happy" },
   wave: { ms: 700, mood: "happy" },
 };
 
@@ -45,7 +44,9 @@ export const IDLES: Record<Idle, number> = {
 
 export const POOLS = {
   right: ["jump", "twirl", "bounce", "salute", "dance", "hearts"],
-  wrong: ["tumble", "dizzy", "shrug", "feather", "tear", "oops"],
+  wrong: ["tumble", "dizzy", "shrug", "feather", "tear", "slip"],
+  // a wrong pair inside a matching round: small and quick, no pratfalls
+  miss: ["shrug", "slip", "feather"],
   // scripture drills are the calm skin: no spinning or pratfalls
   calmRight: ["bounce", "hearts", "salute"],
   calmWrong: ["feather", "tear", "shrug"],
@@ -55,6 +56,10 @@ export const POOLS = {
 export const IDLE_POOLS = {
   perch: ["blink", "tilt", "peck", "ruffle", "hop", "look", "legs"],
   nest: ["blink", "tilt", "peck", "ruffle", "look"],
+  // streak at risk: she keeps nodding off
+  sleepy: ["sleepy", "blink", "sleepy", "tilt"],
+  // streak lost: quiet and a bit droopy, no hops
+  sad: ["blink", "peck", "tilt"],
 } satisfies Record<string, Idle[]>;
 
 /** Random pick that is never the same as `last` (when the pool has a choice). */
@@ -74,7 +79,13 @@ export function pickReaction(pool: keyof typeof POOLS): Reaction {
 /** Idle cadence: rare, with jitter (6 to 15 seconds). */
 export const idleDelay = () => 6000 + Math.random() * 9000;
 
-export const FLIGHT_MS = { min: 560, max: 900 };
+/** Idles that change the drawn pose, not just move parts. */
+export const IDLE_MOOD: Partial<Record<Idle, Mood>> = { sleepy: "sleepy" };
+
+/** Ever-increasing id so a repeated cue (two walks in a row) still restarts its CSS animation. */
+let cueId = 0;
+export type Cue = { name: Reaction; key: number };
+export const cue = (name: Reaction): Cue => ({ name, key: ++cueId });
 
 export function reducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

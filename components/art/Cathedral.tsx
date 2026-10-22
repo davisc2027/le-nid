@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useState, type CSSProperties, type ReactNode } from "react";
 import Stork from "./Stork";
+import { useOdileIdle } from "./OdileActor";
 import { MILESTONES, SPIRE_M, yAt } from "./cathedralPlan";
 
 // Notre-Dame de Strasbourg, built course by course as the group earns XP.
@@ -346,6 +347,8 @@ export default function Cathedral({ ratio, hero = false, className = "" }: { rat
   }, [anim, total]);
 
   const running = !!anim?.run;
+  // Odile in her nest on the finished spire: cheers while landing, then idles quietly
+  const nestIdle = useOdileIdle(r >= 1 && !running ? "perch" : null);
   const shownR = anim && !anim.run ? anim.from : r; // what the crane/base show right now
   const baseY = yAt(anim ? anim.from : r);
   const builtY = yAt(r);
@@ -474,7 +477,7 @@ export default function Cathedral({ ratio, hero = false, className = "" }: { rat
             <g className={m100.cls && "cath-land"} style={m100.cls ? { animationDelay: `${doneAt(1) + 350}ms` } : undefined}>
               <ellipse cx="146.5" cy="163.2" rx="10" ry="3.2" fill="var(--art-beam)" stroke={LN} strokeWidth=".4" />
               <path d="M137.5 162.5l18 1.4M138 164.2l17-1.6M140 161.6l14 3" stroke={LN} strokeWidth=".4" opacity=".6" />
-              <g transform="translate(130.5 125.6) scale(.26)"><Stork mood="cheer" size={150} /></g>
+              <g transform="translate(130.5 125.6) scale(.26)"><Stork mood={running ? "cheer" : "happy"} size={150} live className={nestIdle.className} style={nestIdle.style} /></g>
             </g>
             <g className={m100.cls && "cath-glow-in"} style={m100.style}>
               <Sparkle x={NX - 13} y={28} s={1.1} d={0} />
