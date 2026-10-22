@@ -35,11 +35,19 @@ export default function TodoItem(p: Props) {
     router.refresh();
   }
 
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+  const days = Math.round((Date.parse(p.dueDate) - Date.parse(today)) / 86_400_000);
+  const late = !p.completed && days < 0;
+  const soon = !p.completed && days >= 0 && days <= 3;
+  const due = new Date(p.dueDate + "T12:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
+
   return (
     <div className={`card flex flex-col gap-2 ${p.completed ? "opacity-60" : ""}`}>
       <div className="flex justify-between gap-2">
         <h2 className="font-bold">{p.completed && "✓ "}{p.title}</h2>
-        <span className="shrink-0 text-xs text-muted">Due {p.dueDate}</span>
+        <span className={`shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-bold ${late ? "bg-primary text-primary-fg" : soon ? "bg-accent text-[#2b2118]" : "text-muted"}`}>
+          {late ? "Overdue · " : "Due "}{due}
+        </span>
       </div>
       {p.description && <p className="whitespace-pre-wrap text-sm">{p.description}</p>}
       {p.completed ? (

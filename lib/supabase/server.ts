@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/env";
 
 export async function createClient() {
@@ -32,14 +33,15 @@ export function createServiceClient() {
   );
 }
 
-export async function getProfile() {
+export const getProfile = cache(async () => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("profiles").select("id, name, role").eq("id", user.id).maybeSingle();
+  const { data: claims } = await supabase.auth.getClaims();
+  const id = claims?.claims.sub;
+  if (!id) return null;
+  const { data } = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
   if (data) return data;
   // Safety net: the sign-up trigger should have created this row.
-  await supabase.from("profiles").insert({ id: user.id, email: user.email });
-  const { data: created } = await supabase.from("profiles").select("id, name, role").eq("id", user.id).maybeSingle();
+  await supabase.from("profiles").insert({ id, email: claims.claims.email });
+  const { data: created } = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
   return created;
-}
+});

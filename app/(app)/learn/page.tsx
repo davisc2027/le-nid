@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ALL_LESSONS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
 import Rosace from "@/components/art/Rosace";
+import { StreakCount } from "@/components/art/OdileSays";
 import Backdrop from "@/components/art/Backdrop";
 
 export default async function Learn() {
@@ -10,7 +11,7 @@ export default async function Learn() {
   const [{ data: lessons }, { data: cards }, { data: streak }, { data: xp }] = await Promise.all([
     supabase.from("lesson_progress").select("lesson_id"),
     supabase.from("srs_cards").select("learned_at, due"),
-    supabase.from("streaks").select("current").maybeSingle(),
+    supabase.from("streaks").select("current, last_day").maybeSingle(),
     supabase.from("xp_events").select("amount"),
   ]);
   const learned = cards?.filter((c) => c.learned_at).length ?? 0;
@@ -20,7 +21,7 @@ export default async function Learn() {
       <Backdrop />
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-extrabold">Learn</h1>
-        <p className="font-bold text-primary">🔥 {streak?.current ?? 0} · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
+        <p className="font-bold text-primary">🔥 <StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
       </div>
       <Link href="/french" className="card min-h-28 flex-row items-center gap-4">
         <LandmarkArt unit="u4" progress={(lessons?.length ?? 0) / ALL_LESSONS.length} size={72} />

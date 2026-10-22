@@ -1,106 +1,235 @@
 import { redirect } from "next/navigation";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
-import { postAnnouncement, addItineraryItem, addMeeting, addTodo, assignMissing, addVerseSet, setTeam, updateGoal } from "./actions";
+import ActionForm from "@/components/admin/ActionForm";
+import Section from "@/components/admin/Section";
+import UploadLink from "@/components/admin/UploadLink";
+import {
+  postAnnouncement, updateAnnouncement, deleteAnnouncement,
+  addItineraryItem, updateItineraryItem, deleteItineraryItem,
+  addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
+  addTodo, updateTodo, deleteTodo, assignMissing,
+  addVerseSet, updateVerseSet, deleteVerseSet, setTeam, updateGoal,
+  addAllowedEmails, removeAllowedEmail,
+} from "./actions";
+
+type Person = { id: string; name: string; email: string | null; team: string | null; role: string };
+const del = "min-h-11 px-3 text-sm text-red-600 underline";
+const KINDS = ["recap", "homework", "slides", "other"];
+
+function Row({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <details className="rounded-xl border border-border px-3">
+      <summary className="min-h-11 cursor-pointer py-2 text-sm"><span className="font-semibold">{title}</span>{sub && <span className="text-muted"> {sub}</span>}</summary>
+      <div className="flex flex-col gap-2 pb-3">{children}</div>
+    </details>
+  );
+}
+
+const Id = ({ id }: { id: string }) => <input type="hidden" name="id" value={id} />;
 
 export default async function Admin() {
   const profile = await getProfile();
   if (profile?.role !== "admin") redirect("/");
   const supabase = await createClient();
-  const { data: meetings } = await supabase.from("meetings").select("id, title").order("meeting_date", { ascending: false });
-  const [{ data: todos }, { data: assignments }, { data: people }] = await Promise.all([
-    supabase.from("todos").select("id, title, due_date, requires_upload").order("due_date"),
-    supabase.from("todo_assignments").select("todo_id, user_id, completed_at"),
-    supabase.from("profiles").select("id, name, email, team, role").order("name"),
+  const [
+    { data: meetings }, { data: todos }, { data: assignments }, { data: peopleRaw }, { data: goal },
+    { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
+  ] = await Promise.all([
+    supabase.from("meetings").select("id, title, meeting_date").order("meeting_date", { ascending: false }),
+    supabase.from("todos").select("id, title, description, due_date, requires_upload").order("due_date"),
+    supabase.from("todo_assignments").select("todo_id, user_id, completed_at, upload_path"),
+    supabase.rpc("admin_list_people"),
+    supabase.from("trip_goal").select("title, target_xp").single(),
+    supabase.from("announcements").select("id, title, body, pinned").order("created_at", { ascending: false }).limit(20),
+    supabase.from("itinerary_items").select("id, day, start_time, end_time, title, location, map_url, notes").order("day", { ascending: false }).order("start_time").limit(60),
+    supabase.from("files").select("id, title, kind, meeting_id").order("created_at", { ascending: false }),
+    supabase.from("verse_sets").select("id, title, description").order("created_at", { ascending: false }),
+    supabase.from("verse_set_items").select("set_id, ref, position").order("position"),
+    supabase.from("allowed_emails").select("email").order("email"),
   ]);
-  const { data: goal } = await supabase.from("trip_goal").select("title, target_xp").single();
-  const who = new Map(people?.map((p) => [p.id, p.name || p.email]));
+  const people = (peopleRaw ?? []) as Person[];
+  const who = new Map(people.map((p) => [p.id, p.name || p.email]));
+  const meetingOptions = (sel: string | null) => (
+    <select className="input" name="meeting_id" defaultValue={sel ?? ""}>
+      <option value="">No meeting</option>
+      {meetings?.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
+    </select>
+  );
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-extrabold">Admin</h1>
 
-      <form action={addTodo} className="card flex flex-col gap-2">
-        <h2 className="font-bold">New to-do (assigned to all members)</h2>
-        <input className="input" name="title" placeholder="e.g. Submit passport copy" required />
-        <textarea className="input" name="description" placeholder="Details" rows={2} />
-        <input className="input" name="due_date" type="date" required />
-        <label className="text-sm"><input type="checkbox" name="requires_upload" /> Requires a file upload</label>
-        <button className="btn">Create and notify</button>
-        <p className="text-xs text-muted">Reminders go out automatically 5 days, 1 day, and 0 days before the due date.</p>
-      </form>
-
-      {todos?.map((t) => {
-        const mine = assignments?.filter((a) => a.todo_id === t.id) ?? [];
-        const open = mine.filter((a) => !a.completed_at);
-        return (
-          <div key={t.id} className="card">
-            <p className="font-bold">{t.title} <span className="text-xs font-normal text-muted">due {t.due_date}</span></p>
-            <p className="text-sm">{mine.length - open.length}/{mine.length} done</p>
-            {open.length > 0 && <p className="text-sm text-muted">Waiting on: {open.map((a) => who.get(a.user_id)).join(", ")}</p>}
+      <Section title={`Who can sign up (${allowed?.length ?? 0} emails)`}>
+        <p className="text-xs text-muted">Only these emails can create an account. People who already have one are not affected.</p>
+        <ActionForm action={addAllowedEmails} label="Add emails" reset>
+          <textarea className="input" name="emails" rows={4} placeholder={"One per line or comma separated:\nanna@example.com, ben@example.com"} required />
+        </ActionForm>
+        {allowed?.map((a) => (
+          <div key={a.email} className="flex items-center gap-2 text-sm">
+            <span className="min-w-0 flex-1 truncate">{a.email}</span>
+            <ActionForm action={removeAllowedEmail} label="Remove" buttonClass={del} className="flex items-center gap-2">
+              <input type="hidden" name="email" value={a.email} />
+            </ActionForm>
           </div>
-        );
-      })}
-      <form action={assignMissing}><button className="text-sm text-muted underline">Assign existing to-dos to new members</button></form>
+        ))}
+      </Section>
 
-      <form action={postAnnouncement} className="card flex flex-col gap-2">
-        <h2 className="font-bold">New announcement</h2>
-        <input className="input" name="title" placeholder="Title" required />
-        <textarea className="input" name="body" placeholder="Message" rows={4} />
-        <label className="text-sm"><input type="checkbox" name="push" defaultChecked /> Send push notification</label>
-        <label className="text-sm"><input type="checkbox" name="pinned" /> Pin to top</label>
-        <button className="btn">Post</button>
-      </form>
+      <Section title="To-dos" open>
+        <ActionForm action={addTodo} label="Create and notify" reset>
+          <input className="input" name="title" placeholder="e.g. Submit passport copy" required />
+          <textarea className="input" name="description" placeholder="Details" rows={2} />
+          <input className="input" name="due_date" type="date" required />
+          <label className="text-sm"><input type="checkbox" name="requires_upload" /> Requires a file upload</label>
+          <p className="text-xs text-muted">Assigned to everyone, including people who sign in later. Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
+        </ActionForm>
+        {todos?.map((t) => {
+          const mine = assignments?.filter((a) => a.todo_id === t.id) ?? [];
+          const open = mine.filter((a) => !a.completed_at);
+          const uploads = mine.filter((a) => a.upload_path);
+          return (
+            <Row key={t.id} title={t.title} sub={`due ${t.due_date}, ${mine.length - open.length}/${mine.length} done`}>
+              {open.length > 0 && <p className="text-sm text-muted">Waiting on: {open.map((a) => who.get(a.user_id)).join(", ")}</p>}
+              {uploads.length > 0 && (
+                <div className="flex flex-col text-sm">
+                  <p className="font-semibold">Uploads</p>
+                  {uploads.map((a) => <UploadLink key={a.user_id} todoId={t.id} userId={a.user_id} name={String(who.get(a.user_id) ?? "file")} />)}
+                </div>
+              )}
+              <ActionForm action={updateTodo} label="Save">
+                <Id id={t.id} />
+                <input className="input" name="title" defaultValue={t.title} required />
+                <textarea className="input" name="description" defaultValue={t.description} rows={2} />
+                <input className="input" name="due_date" type="date" defaultValue={t.due_date} required />
+                <label className="text-sm"><input type="checkbox" name="requires_upload" defaultChecked={t.requires_upload} /> Requires a file upload</label>
+              </ActionForm>
+              <ActionForm action={deleteTodo} label="Delete to-do" buttonClass={del} confirm="Delete this to-do for everyone?"><Id id={t.id} /></ActionForm>
+            </Row>
+          );
+        })}
+        <ActionForm action={assignMissing} label="Repair missing assignments" buttonClass="min-h-11 px-3 text-sm text-muted underline" />
+      </Section>
 
-      <form action={addMeeting} className="card flex flex-col gap-2">
-        <h2 className="font-bold">New prep meeting</h2>
-        <input className="input" name="title" placeholder="e.g. Prep meeting 2" required />
-        <input className="input" name="meeting_date" type="date" required />
-        <button className="btn">Add</button>
-      </form>
+      <Section title="Announcements">
+        <ActionForm action={postAnnouncement} label="Post" reset>
+          <input className="input" name="title" placeholder="Title" required />
+          <textarea className="input" name="body" placeholder="Message" rows={4} />
+          <label className="text-sm"><input type="checkbox" name="push" defaultChecked /> Send push notification</label>
+          <label className="text-sm"><input type="checkbox" name="pinned" /> Pin to top</label>
+        </ActionForm>
+        {announcements?.map((a) => (
+          <Row key={a.id} title={a.title} sub={a.pinned ? "(pinned)" : undefined}>
+            <ActionForm action={updateAnnouncement} label="Save (no new push)">
+              <Id id={a.id} />
+              <input className="input" name="title" defaultValue={a.title} required />
+              <textarea className="input" name="body" defaultValue={a.body} rows={4} />
+              <label className="text-sm"><input type="checkbox" name="pinned" defaultChecked={a.pinned} /> Pin to top</label>
+            </ActionForm>
+            <ActionForm action={deleteAnnouncement} label="Delete" buttonClass={del} confirm="Delete this announcement?"><Id id={a.id} /></ActionForm>
+          </Row>
+        ))}
+      </Section>
 
-      <form action={addVerseSet} className="card flex flex-col gap-2">
-        <h2 className="font-bold">New verse set</h2>
-        <input className="input" name="title" placeholder="e.g. Core verses for the trip" required />
-        <input className="input" name="description" placeholder="Short description" />
-        <textarea className="input" name="refs" placeholder={"One reference per line:\nJean 3:16\nRomains 8:38-39"} rows={4} required />
-        <button className="btn">Publish set</button>
-      </form>
+      <Section title="Itinerary">
+        <ActionForm action={addItineraryItem} label="Add" reset>
+          <input className="input" name="day" type="date" required />
+          <div className="flex gap-2">
+            <input className="input" name="start_time" type="time" />
+            <input className="input" name="end_time" type="time" />
+          </div>
+          <input className="input" name="title" placeholder="Title" required />
+          <input className="input" name="location" placeholder="Location" />
+          <input className="input" name="map_url" placeholder="Map link (optional)" />
+          <textarea className="input" name="notes" placeholder="Notes" rows={2} />
+        </ActionForm>
+        {items?.map((i) => (
+          <Row key={i.id} title={i.title} sub={`${i.day} ${i.start_time?.slice(0, 5) ?? ""}`}>
+            <ActionForm action={updateItineraryItem} label="Save">
+              <Id id={i.id} />
+              <input className="input" name="day" type="date" defaultValue={i.day} required />
+              <div className="flex gap-2">
+                <input className="input" name="start_time" type="time" defaultValue={i.start_time?.slice(0, 5) ?? ""} />
+                <input className="input" name="end_time" type="time" defaultValue={i.end_time?.slice(0, 5) ?? ""} />
+              </div>
+              <input className="input" name="title" defaultValue={i.title} required />
+              <input className="input" name="location" defaultValue={i.location ?? ""} placeholder="Location" />
+              <input className="input" name="map_url" defaultValue={i.map_url ?? ""} placeholder="Map link (optional)" />
+              <textarea className="input" name="notes" defaultValue={i.notes ?? ""} rows={2} />
+            </ActionForm>
+            <ActionForm action={deleteItineraryItem} label="Delete" buttonClass={del} confirm="Delete this itinerary item?"><Id id={i.id} /></ActionForm>
+          </Row>
+        ))}
+      </Section>
 
-      <form action={updateGoal} className="card flex flex-col gap-2">
-        <h2 className="font-bold">Group goal</h2>
-        <input className="input" name="title" defaultValue={goal?.title} required />
-        <label className="text-sm text-muted">Total XP to raise the full spire
-          <input className="input" name="target_xp" type="number" min="100" defaultValue={goal?.target_xp} required /></label>
-        <button className="btn">Save goal</button>
-      </form>
+      <Section title="Meetings and files">
+        <ActionForm action={addMeeting} label="Add meeting" reset>
+          <input className="input" name="title" placeholder="e.g. Prep meeting 2" required />
+          <input className="input" name="meeting_date" type="date" required />
+        </ActionForm>
+        {meetings?.map((m) => (
+          <Row key={m.id} title={m.title} sub={m.meeting_date}>
+            <ActionForm action={updateMeeting} label="Save">
+              <Id id={m.id} />
+              <input className="input" name="title" defaultValue={m.title} required />
+              <input className="input" name="meeting_date" type="date" defaultValue={m.meeting_date} required />
+            </ActionForm>
+            <ActionForm action={deleteMeeting} label="Delete" buttonClass={del} confirm="Delete this meeting? Its files stay."><Id id={m.id} /></ActionForm>
+          </Row>
+        ))}
+        <h3 className="mt-2 font-bold">Upload file</h3>
+        <FileUpload meetings={meetings ?? []} />
+        {files?.map((f) => (
+          <Row key={f.id} title={f.title} sub={f.kind}>
+            <ActionForm action={updateFile} label="Save">
+              <Id id={f.id} />
+              <input className="input" name="title" defaultValue={f.title} required />
+              <select className="input" name="kind" defaultValue={f.kind}>
+                {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+              </select>
+              {meetingOptions(f.meeting_id)}
+            </ActionForm>
+            <ActionForm action={deleteFile} label="Delete file" buttonClass={del} confirm="Delete this file for everyone?"><Id id={f.id} /></ActionForm>
+          </Row>
+        ))}
+      </Section>
 
-      <section className="card gap-2">
-        <h2 className="font-bold">People and teams ({people?.length ?? 0})</h2>
-        {people?.map((p) => (
-          <form key={p.id} action={setTeam} className="flex items-center gap-2 text-sm">
-            <input type="hidden" name="id" value={p.id} />
+      <Section title="Verse sets">
+        <ActionForm action={addVerseSet} label="Publish set" reset>
+          <input className="input" name="title" placeholder="e.g. Core verses for the trip" required />
+          <input className="input" name="description" placeholder="Short description" />
+          <textarea className="input" name="refs" placeholder={"One reference per line:\nJean 3:16\nRomains 8:38-39"} rows={4} required />
+        </ActionForm>
+        {sets?.map((s) => (
+          <Row key={s.id} title={s.title}>
+            <ActionForm action={updateVerseSet} label="Save">
+              <Id id={s.id} />
+              <input className="input" name="title" defaultValue={s.title} required />
+              <input className="input" name="description" defaultValue={s.description} />
+              <textarea className="input" name="refs" defaultValue={setItems?.filter((i) => i.set_id === s.id).map((i) => i.ref).join("\n")} rows={4} required />
+            </ActionForm>
+            <ActionForm action={deleteVerseSet} label="Delete set" buttonClass={del} confirm="Delete this verse set?"><Id id={s.id} /></ActionForm>
+          </Row>
+        ))}
+      </Section>
+
+      <Section title="Group goal">
+        <ActionForm action={updateGoal} label="Save goal">
+          <input className="input" name="title" defaultValue={goal?.title} required />
+          <label className="text-sm text-muted">Total XP to raise the full spire
+            <input className="input" name="target_xp" type="number" min="100" defaultValue={goal?.target_xp} required /></label>
+        </ActionForm>
+      </Section>
+
+      <Section title={`People and teams (${people?.length ?? 0})`}>
+        {people.map((p) => (
+          <ActionForm key={p.id} action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
+            <Id id={p.id} />
             <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && " ★"}</span>
             <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
-            <button className="btn !px-3 !py-1">Set</button>
-          </form>
+          </ActionForm>
         ))}
-      </section>
-
-      <FileUpload meetings={meetings ?? []} />
-
-      <form action={addItineraryItem} className="card flex flex-col gap-2">
-        <h2 className="font-bold">New itinerary item</h2>
-        <input className="input" name="day" type="date" required />
-        <div className="flex gap-2">
-          <input className="input" name="start_time" type="time" />
-          <input className="input" name="end_time" type="time" />
-        </div>
-        <input className="input" name="title" placeholder="Title" required />
-        <input className="input" name="location" placeholder="Location" />
-        <input className="input" name="map_url" placeholder="Map link (optional)" />
-        <textarea className="input" name="notes" placeholder="Notes" rows={2} />
-        <button className="btn">Add</button>
-      </form>
+      </Section>
     </div>
   );
 }

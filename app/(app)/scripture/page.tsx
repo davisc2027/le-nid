@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getProfile } from "@/lib/supabase/server";
 import { refLabel } from "@/lib/bible/reference";
 import Rosace from "@/components/art/Rosace";
 import ScriptureBackdrop from "@/components/art/ScriptureBackdrop";
 import AddVerse from "@/components/scripture/AddVerse";
 import AdoptSet from "@/components/scripture/AdoptSet";
+import BibleNotice from "@/components/scripture/BibleNotice";
 
 export default async function Scripture() {
   const supabase = await createClient();
-  const [{ data: cards }, { data: sets }, { data: items }] = await Promise.all([
+  const [profile, { data: cards }, { data: sets }, { data: items }] = await Promise.all([
+    getProfile(),
     supabase.from("srs_cards").select("ref, learned_at, due").order("created_at"),
     supabase.from("verse_sets").select("id, title, description").order("created_at"),
     supabase.from("verse_set_items").select("set_id, ref, position").order("position"),
@@ -26,6 +28,8 @@ export default async function Scripture() {
         <Rosace filled={learned} total={mine.length || 6} size={210} />
         <p className="verse-text">{learned} of {mine.length} verses learned</p>
       </div>
+
+      <BibleNotice leader={profile?.role === "admin"} />
 
       {due > 0 && <Link href="/scripture/review" className="btn">Review {due} due {due === 1 ? "verse" : "verses"}</Link>}
 

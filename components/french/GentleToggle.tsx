@@ -12,7 +12,7 @@ export default function GentleToggle() {
     try { localStorage.setItem(GENTLE_KEY, next ? "1" : "0"); } catch {}
   }
   return (
-    <button onClick={toggle} className="self-start text-xs text-muted underline">
+    <button onClick={toggle} className="min-h-11 self-start px-3 text-xs text-muted underline">
       {gentle ? "Odile is gentle. Bring back the sass" : "Odile too sassy? Make her gentler"}
     </button>
   );

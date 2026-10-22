@@ -19,7 +19,8 @@ export default async function proxy(request: NextRequest) {
       },
     },
   );
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims(); // verifies the JWT locally
+  const user = data?.claims;
   const path = request.nextUrl.pathname;
   if (!user && !path.startsWith("/login") && !path.startsWith("/auth") && !path.startsWith("/api/cron")) {
     const url = request.nextUrl.clone();
@@ -30,5 +31,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sw.js|bible/|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|ico)$).*)"],
 };

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { loadVerse } from "@/lib/bible/load";
+import { bibleInstalled, loadVerse } from "@/lib/bible/load";
 import { refLabel } from "@/lib/bible/reference";
 import { normalize } from "@/lib/french/exercises";
 import { speak } from "@/lib/french/speech";
@@ -97,10 +97,20 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
   const [attempt, setAttempt] = useState(0);
   const [fb, setFb] = useState<{ ok: boolean; marks?: { word: string; ok: boolean }[] } | null>(null);
   const [sum, setSum] = useState<{ xp: number; streak: number } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState(false);
+  const [noBible, setNoBible] = useState(false);
 
-  useEffect(() => { loadVerse(verseKey).then(setV); }, [verseKey]);
+  useEffect(() => {
+    loadVerse(verseKey).then(async (x) => { if (!x) setNoBible(!(await bibleInstalled())); setV(x); });
+  }, [verseKey]);
   if (v === undefined) return <p className="text-muted">Loading…</p>;
-  if (v === null) return <p className="card">This verse's text isn't installed yet. Ask a leader to run the Bible build script.</p>;
+  if (v === null) return (
+    <div className="flex flex-col gap-3">
+      <p className="card" role="alert">{noBible ? "The Bible text isn't installed yet. Ask a leader to run the Bible build script (node scripts/build-bible.mjs) and commit public/bible." : "I couldn't find this verse's text. Check the reference."}</p>
+      <Link href="/scripture" className="btn ghost">Back to the window</Link>
+    </div>
+  );
 
   const done: Done = (ok, _e, marks) => setFb({ ok, marks });
   async function advance() {
@@ -108,10 +118,18 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
     setFb(null);
     if (!ok) return setAttempt(attempt + 1);
     if (step + 1 < STEPS.length) return setStep(step + 1);
+    await save();
+  }
+  async function save() {
+    if (saving) return;
+    setSaving(true); setSaveErr(false);
     const supabase = createClient();
     const s = schedule(state, Rating.Good);
-    await supabase.from("srs_cards").upsert({ ref: verseKey, state: s.state, due: s.due, learned_at: new Date().toISOString() });
-    const { data } = await supabase.rpc("award_xp", { p_source: `verse:${verseKey}`, p_amount: firstTime ? 15 : 8, p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    const { error } = await supabase.from("srs_cards").upsert({ ref: verseKey, state: s.state, due: s.due, learned_at: new Date().toISOString() });
+    if (error) { setSaving(false); return setSaveErr(true); }
+    const { data, error: xpErr } = await supabase.rpc("award_xp", { p_source: `verse:${verseKey}`, p_amount: firstTime ? 15 : 8, p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    setSaving(false);
+    if (xpErr) return setSaveErr(true);
     const row = Array.isArray(data) ? data[0] : data;
     setSum({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
   }
@@ -123,6 +141,14 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
       <p className="verse-text">{v.fr}</p>
       <p className="text-lg font-bold text-primary">+{sum.xp} XP · 🔥 {sum.streak}-day streak</p>
       <Link href="/scripture" className="btn w-full">Back to the window</Link>
+    </div>
+  );
+
+  if (saveErr || (saving && step + 1 >= STEPS.length)) return (
+    <div className="flex flex-col gap-3 pt-4 text-center">
+      <h1 className="text-xl font-extrabold">{saving ? "Saving…" : "Couldn't save"}</h1>
+      {saveErr && <p className="text-muted" role="alert">Check your connection, then try again. Your work on this verse is kept until you leave this page.</p>}
+      <button className="btn" onClick={save} disabled={saving}>{saving ? "Saving…" : "Retry"}</button>
     </div>
   );
 

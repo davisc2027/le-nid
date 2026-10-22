@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { buildLesson, isCorrect, tokenize, type Exercise } from "@/lib/french/exercises";
-import type { Lesson } from "@/lib/french/content";
-import { speak } from "@/lib/french/speech";
+import { ALL_PHRASES, type Lesson } from "@/lib/french/content";
+import { speak, speechUnlocked } from "@/lib/french/speech";
 import Stork, { type Mood } from "@/components/art/Stork";
 import OdileSays from "@/components/art/OdileSays";
 
@@ -20,6 +21,7 @@ function Speaker({ text }: { text: string }) {
       <button className="btn" onClick={() => play(false)} aria-label="Play audio">🔊 Listen</button>
       <button className="btn ghost" onClick={() => play(true)} aria-label="Play slowly">🐢 Slow</button>
       {warn && <span className="text-xs text-muted">Audio is not available on this device.</span>}
+      {!warn && <span className="text-xs text-muted">No sound? Flip the silent switch off.</span>}
     </div>
   );
 }
@@ -65,9 +67,9 @@ function Bank({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "bank" }
   );
 }
 
-function Listen({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "listen" }>>) {
+function Listen({ ex, locked, report, skip }: ExProps<Extract<Exercise, { kind: "listen" }>> & { skip: () => void }) {
   const [text, setText] = useState("");
-  useEffect(() => { speak(ex.fr); }, [ex.fr]);
+  useEffect(() => { if (speechUnlocked()) speak(ex.fr); }, [ex.fr]);
   return (
     <div className="flex flex-col gap-3">
       <p className="label">Type what you hear</p>
@@ -76,6 +78,7 @@ function Listen({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "liste
         onChange={(e) => setText(e.target.value)} placeholder="Écrivez en français" />
       <p className="text-xs text-muted">Accents and small typos are fine.</p>
       <button className="btn" disabled={!text.trim() || locked} onClick={() => report(isCorrect(text, ex.fr), ex.fr)}>Check</button>
+      <button className="min-h-11 self-start px-3 text-sm text-muted underline" disabled={locked} onClick={skip}>Can&apos;t listen now</button>
     </div>
   );
 }
@@ -115,6 +118,13 @@ function Match({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "match"
   );
 }
 
+function asChoose(fr: string): Exercise | null {
+  const p = ALL_PHRASES.find((x) => x.fr === fr);
+  if (!p) return null;
+  const wrong = ALL_PHRASES.filter((o) => o.en !== p.en).sort(() => Math.random() - 0.5).slice(0, 3).map((o) => o.en);
+  return { kind: "choose", fr: p.fr, answer: p.en, note: p.note, choices: [p.en, ...wrong].sort(() => Math.random() - 0.5) };
+}
+
 export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nextHref: string }) {
   const [queue, setQueue] = useState<Exercise[] | null>(null);
   const [i, setI] = useState(0);
@@ -122,11 +132,20 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string } | null>(null);
   const [mood, setMood] = useState<Mood>("happy");
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState(false);
+  const [noAudio, setNoAudio] = useState(false);
+  const router = useRouter();
 
-  useEffect(() => { const q = buildLesson(lesson); setQueue(q); setTotal(q.length); }, [lesson]);
+  useEffect(() => {
+    let n = 0; // at most 3 listening rounds per lesson
+    const q = buildLesson(lesson).filter((e) => e.kind !== "listen" || ++n <= 3);
+    setQueue(q); setTotal(q.length);
+  }, [lesson]);
 
   if (!queue) return <p className="text-muted">Loading…</p>;
-  const ex = queue[i];
+  const cur = queue[i];
+  const ex = cur.kind === "listen" && noAudio ? asChoose(cur.fr) ?? cur : cur;
 
   const report: Report = (ok, answer, note) => {
     setResult({ ok, answer, note });
@@ -135,13 +154,23 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   };
 
   async function next() {
-    setResult(null);
+    if (saving) return;
     setMood("happy");
-    if (i + 1 < queue!.length) return setI(i + 1);
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const { data } = await createClient().rpc("complete_lesson", { p_lesson: lesson.id, p_tz: tz });
-    const row = Array.isArray(data) ? data[0] : data;
-    setSummary({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
+    if (i + 1 < queue!.length) { setResult(null); return setI(i + 1); }
+    setSaving(true); setSaveErr(false);
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const { data, error } = await createClient().rpc("complete_lesson", { p_lesson: lesson.id, p_tz: tz });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      setSummary({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
+    } catch { setSaveErr(true); }
+    setSaving(false);
+  }
+
+  function quit() {
+    if ((i > 0 || result) && !confirm("Leave this lesson? Your progress in it will be lost.")) return;
+    router.push("/french");
   }
 
   if (summary)
@@ -157,7 +186,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <Link href="/french" aria-label="Quit lesson" className="text-2xl text-muted">×</Link>
+        <button onClick={quit} aria-label="Quit lesson" className="grid size-11 place-items-center text-2xl text-muted">×</button>
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
           <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(i / Math.max(queue.length, total)) * 100}%` }} />
         </div>
@@ -166,7 +195,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
       <div key={i}>
         {ex.kind === "choose" && <Choose ex={ex} locked={!!result} report={report} />}
         {ex.kind === "bank" && <Bank ex={ex} locked={!!result} report={report} />}
-        {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} />}
+        {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} skip={() => setNoAudio(true)} />}
         {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} />}
       </div>
       {result && (
@@ -174,7 +203,8 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
           <p className="font-extrabold">{result.ok ? "Bien !" : "Pas tout à fait"}</p>
           {!result.ok && result.answer && <p className="text-sm">Answer: <b>{result.answer}</b></p>}
           {result.note && <p className="text-sm text-muted">💡 {result.note}</p>}
-          <button className="btn" onClick={next}>Continue</button>
+          {saveErr && <p className="text-sm font-bold text-primary">Couldn&apos;t save. Check your connection and try again.</p>}
+          <button className="btn" disabled={saving} onClick={next}>{saving ? "Saving…" : saveErr ? "Retry" : "Continue"}</button>
         </div>
       )}
     </div>

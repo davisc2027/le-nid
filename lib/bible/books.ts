@@ -85,6 +85,7 @@ BY_NAME.set("apoc", BY_NAME.get("apocalypse")!);
 BY_NAME.set("ps", BY_NAME.get("psaumes")!);
 BY_NAME.set("psaume", BY_NAME.get("psaumes")!);
 BY_NAME.set("psalm", BY_NAME.get("psalms")!);
+BY_NAME.set("isaie", BY_NAME.get("esaie")!);
 BY_NAME.set("cantique", BY_NAME.get("cantiquedescantiques")!);
 
 export const findBook = (name: string) => BY_NAME.get(fold(name));

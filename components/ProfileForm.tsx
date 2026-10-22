@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import PushToggle from "./PushToggle";
+import PushToggle, { unsubscribePush } from "./PushToggle";
 
 export default function ProfileForm({ id, name: initial, optIn: initialOptIn, team }: { id: string; name: string; optIn: boolean; team: string | null }) {
   const router = useRouter();
@@ -18,7 +18,9 @@ export default function ProfileForm({ id, name: initial, optIn: initialOptIn, te
     router.refresh();
   }
   async function signOut() {
+    await unsubscribePush();
     await createClient().auth.signOut();
+    try { await Promise.all((await caches.keys()).map((k) => caches.delete(k))); } catch {}
     router.replace("/login");
   }
 

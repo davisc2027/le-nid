@@ -26,7 +26,7 @@ export default async function Home() {
         <article key={a.id} className="card">
           <h2 className="font-bold">{a.pinned && "📌 "}{a.title}</h2>
           <p className="whitespace-pre-wrap text-sm">{a.body}</p>
-          <p className="mt-2 text-xs text-muted">{new Date(a.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
+          <p className="mt-2 text-xs text-muted">{new Date(a.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" })} (Paris time)</p>
         </article>
       )) : <p className="text-muted">Nothing yet.</p>}
     </div>

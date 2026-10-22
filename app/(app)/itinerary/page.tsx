@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 
+const mapHref = (url: string | null, location: string | null) => {
+  const u = url?.trim();
+  if (u) return /^https?:\/\//i.test(u) ? u : `https://${u}`;
+  return location ? `https://maps.apple.com/?q=${encodeURIComponent(location)}` : null;
+};
+
 export default async function Itinerary() {
   const supabase = await createClient();
   const { data: items } = await supabase
@@ -13,7 +19,7 @@ export default async function Itinerary() {
       {[...days].map(([day, list]) => (
         <section key={day} className="flex flex-col gap-2">
           <h2 className="font-bold text-primary">
-            {new Date(day + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            {new Date(day + "T12:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" })}
           </h2>
           {list.map((i) => (
             <div key={i.id} className="card">
@@ -21,7 +27,7 @@ export default async function Itinerary() {
               <p className="font-bold">{i.title}</p>
               {i.location && (
                 <p className="text-sm">
-                  {i.map_url ? <a className="underline" href={i.map_url}>{i.location}</a> : i.location}
+                  <a className="inline-block min-h-11 py-2 underline" href={mapHref(i.map_url, i.location)!} target="_blank" rel="noreferrer">{i.location}</a>
                 </p>
               )}
               {i.notes && <p className="whitespace-pre-wrap text-sm text-muted">{i.notes}</p>}

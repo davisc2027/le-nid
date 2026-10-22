@@ -56,8 +56,9 @@ export default function TranslatePanel() {
     setBusy(true); setError("");
     try {
       const res = await fetch("/api/translate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: input, target: dir === "en-fr" ? "FR" : "EN-US" }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Translation failed.");
+      const json = res.headers.get("content-type")?.includes("application/json");
+      const data = json ? await res.json() : null;
+      if (!res.ok || !data?.text) throw new Error(data?.error ?? "Translation failed.");
       const entry: Entry = { dir, from: input, to: data.text };
       setShown(entry);
       const next = [entry, ...history].slice(0, 20);

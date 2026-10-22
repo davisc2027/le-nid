@@ -16,7 +16,7 @@
           {
             "fr": "Bonsoir",
             "en": "Good evening",
-            "note": "Bonsoir is only a greeting. To say goodbye in the evening, use Bonne soirée."
+            "note": "Bonsoir works for hello and goodbye in the evening; Bonne soirée is the warmer goodbye."
           },
           {
             "fr": "Salut",
@@ -53,7 +53,7 @@
           {
             "fr": "Enchanté",
             "en": "Nice to meet you",
-            "note": "It sounds the same for everyone. Women often write enchantée."
+            "note": "A woman writes enchantée; it sounds the same."
           },
           {
             "fr": "Comment allez-vous ?",
@@ -66,7 +66,7 @@
           {
             "fr": "Je viens des États-Unis",
             "en": "I come from the United States",
-            "note": "Pays take an article: les États-Unis, so it becomes des États-Unis."
+            "note": "Country names take an article: les États-Unis, so it becomes des États-Unis."
           }
         ]
       }
@@ -118,7 +118,8 @@
           },
           {
             "fr": "Appelez les secours, s'il vous plaît !",
-            "en": "Please call emergency services!"
+            "en": "Please call emergency services!",
+            "note": "112 works everywhere in Europe; 15 = SAMU (medical), 17 = police."
           }
         ]
       },
@@ -299,7 +300,8 @@
           },
           {
             "fr": "Que Dieu vous bénisse",
-            "en": "May God bless you"
+            "en": "May God bless you",
+            "note": "Unusual in everyday French; use it with people who are already open about faith. Otherwise, Je vous souhaite une belle journée."
           },
           {
             "fr": "Merci de votre temps",

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_CHARS = 500;
-const PER_HOUR = 120;
+const PER_HOUR = 40;
 const hits = new Map<string, number[]>(); // per-instance and best effort; fine for a 35-person group
 
 // DeepL API Free (500k characters per month). The key stays on the server.
@@ -10,8 +10,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: "Sign in first." }, { status: 401 });
 
-  const { text, target } = (await request.json()) as { text?: string; target?: "FR" | "EN-US" };
-  const clean = (text ?? "").trim();
+  let body: { text?: unknown; target?: unknown };
+  try { body = await request.json(); } catch { return Response.json({ error: "Nothing to translate." }, { status: 400 }); }
+  const { text, target } = body;
+  const clean = typeof text === "string" ? text.trim() : "";
   if (!clean || (target !== "FR" && target !== "EN-US")) return Response.json({ error: "Nothing to translate." }, { status: 400 });
   if (clean.length > MAX_CHARS) return Response.json({ error: `Keep it under ${MAX_CHARS} characters.` }, { status: 400 });
   if (!process.env.DEEPL_API_KEY) return Response.json({ error: "Translation isn't set up yet." }, { status: 503 });
