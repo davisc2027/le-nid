@@ -21,8 +21,8 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | `npx web-push generate-vapid-keys`. |
 | `VAPID_SUBJECT` | Must start with `mailto:` (for example `mailto:you@example.com`) or `https:`. |
 | `CRON_SECRET` | Any long random string. The reminder endpoint rejects requests without it. |
-| `DEEPL_API_KEY` | Free key from deepl.com/pro-api (translate). |
-| `GROQ_API_KEY` | Free key from console.groq.com (speech to text for Conversation mode). Server only. See "Conversation mode" below. |
+| `DEEPL_API_KEY` | Optional. DeepL key (translate, tried first). Without it, translation uses Groq. See "DeepL setup" below. |
+| `GROQ_API_KEY` | Free key from console.groq.com. Used for speech to text in Conversation mode and as the fallback translator. Server only. See "Conversation mode" below. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Optional, for the weekly to-do summary email (Mondays). |
 
 **Never commit `vercel-env.txt`, `.env.local` or any file holding these values.** If one was ever committed or shared, rotate the keys (especially the service-role key).
@@ -37,7 +37,7 @@ Translate -> Conversation mode (`/translate/talk`) listens continuously, cuts sp
 
 **Keys.** These are three separate free accounts and keys; one does not replace another:
 - `GROQ_API_KEY` turns speech into text (Groq's hosted Whisper, model `whisper-large-v3-turbo`).
-- `DEEPL_API_KEY` translates the text (the same key the Translate page already uses).
+- Translation goes through a chain (`lib/translate/providers.ts`): DeepL when `DEEPL_API_KEY` is set, then Groq `llama-3.3-70b-versatile`, then `llama-3.1-8b-instant`. If one is out of quota or fails, the next answers. With no DeepL key, Groq alone translates.
 - The Bible text needs no key; it comes from ebible.org at build time (section 4).
 
 **Create the Groq key.**
@@ -86,3 +86,10 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 
 ## Sign-in code length
 Supabase sends 8-digit codes by default (Authentication -> Sign In / Providers -> Email -> **Email OTP Length**). The login screen expects exactly 8 digits, so if you change that setting, change the length in `app/login/page.tsx` too.
+
+## DeepL setup (optional)
+1. Go to deepl.com/pro-api and choose the free API plan. Read the plan shown on that page before entering anything: DeepL has changed its free offer over time (monthly characters vs a one-time pool), and a card may be requested for verification. If the page only offers paid plans or asks you to pay, skip DeepL: Groq translates without it.
+2. Create or sign in to a DeepL account and finish the API plan sign-up.
+3. Open your DeepL account page, then the API Keys tab, and copy the key. A free-plan key ends in `:fx`.
+4. In Vercel: Project Settings -> Environment Variables -> add `DEEPL_API_KEY` (Production and Preview), then Deployments -> Redeploy.
+5. Check usage any time on your DeepL account page. When the allowance runs out, translation continues on Groq automatically.
