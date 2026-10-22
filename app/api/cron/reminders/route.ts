@@ -22,7 +22,8 @@ export async function GET(request: Request) {
   const today = parisToday();
   const { data: rows, error } = await db
     .from("todo_assignments")
-    .select("todo_id, user_id, todos(title, due_date), profiles(email)")
+    .select("todo_id, user_id, todos(title, due_date), profiles!inner(email, status)")
+    .eq("profiles.status", "approved")
     .is("completed_at", null);
   if (error) return Response.json({ error: error.message }, { status: 500 });
 

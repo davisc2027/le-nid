@@ -5,7 +5,7 @@ Everything here is free-tier. Do it once; any computer can repeat it from this f
 ## 1. Supabase
 1. Create a project at supabase.com (free). Note its region.
 2. SQL editor: run `supabase/migrations/0001` through `0007` in order (or `npx supabase link` then `npx supabase db push`; the bundled `supabase` CLI needs `supabase link` first). `0006` fixes the profile trigger; `0007` adds the sign-up allowlist and hardening.
-3. Authentication -> Providers -> Email: keep "Allow new users to sign up" on (the allowlist in `0007` blocks anyone not on the trip list), and set the OTP length to **6** to match the app's code box.
+3. Authentication -> Providers -> Email: keep "Allow new users to sign up" on (new accounts wait for admin approval, from `0008`), and leave the OTP length at 8 (the app's code box expects 8 digits).
 4. Authentication -> Email Templates: edit **both Confirm signup and Magic Link** (new users get Confirm signup, returning users get Magic Link). Put `{{ .Token }}` in the body, for example "Your Le Nid code is {{ .Token }}". The app asks for this 8-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
 5. Authentication -> SMTP Settings: **set a custom SMTP provider**. Supabase's built-in mail allows only a few emails per hour, which 35 people signing in will exceed. Options: Resend or Brevo (free, needs a domain), or a Gmail account with an app password (`smtp.gmail.com`, port 465; turn on 2-step verification, then create an app password and use that, not your normal password).
 6. Authentication -> URL Configuration: set Site URL to your Vercel URL and add `<your url>/auth/callback` and `http://localhost:3000/auth/callback` to Redirect URLs.
@@ -35,13 +35,13 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-check a few verses (for example John 3:16, Psalm 23:1, Romans 8:38-39), commit `public/bible`, push. Without it, verse memory has no text.
 
 ## 5. First run
-1. Open the site, sign in with your email, enter the code. (The first admin must be able to sign up: if the allowlist is already active, insert your email into `allowed_emails` in the SQL editor first.)
+1. Open the site, sign in with your email, enter the code.
 2. In the SQL editor: `update profiles set role = 'admin' where email in ('you@example.com', 'coleader@example.com');`
-3. **Add every trip member's email on the Admin page (allowed emails) BEFORE they sign in.** The admin's own email must be on the list too, or already signed up. Anyone not listed sees "This email isn't on the trip list. Ask a leader." Remove unknown accounts that signed up earlier.
+3. **Approve people on the Admin page.** Anyone can sign in with their email, but their account stays on a waiting screen until a leader taps Approve under "Access requests" (the Admin icon shows a count). Optionally pre-approve emails under "Pre-approved emails" so they skip the wait. Your own account is approved automatically if you sign up before any admin exists; otherwise run `update profiles set status = 'approved' where email = 'you@example.com';`.
 4. Admin page: set the group goal, create teams, add the itinerary, a first announcement, a prep meeting, a verse set, and a to-do.
 
 ## 6. Smoke test
-- Sign in with an allowed email; an unlisted email is refused.
+- Sign in with a new email: it shows the waiting screen; approve it from Admin and the screen opens up within about 20 seconds.
 - Post a test announcement; the time shown is Paris time.
 - Open Files and tap a file (the link is generated on tap, so it never expires).
 - Translate a phrase.

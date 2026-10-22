@@ -289,3 +289,11 @@ export async function removeAllowedEmail(_: State, f: FormData) {
     return "Removed";
   });
 }
+
+export async function setAccess(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const status = text(f, "status");
+    fail((await supabase.rpc("admin_set_status", { p_id: text(f, "id"), p_status: status })).error);
+    return status === "approved" ? "Approved" : "Denied";
+  });
+}

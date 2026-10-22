@@ -3,13 +3,18 @@ import Script from "next/script";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import Logo from "@/components/art/Logo";
 import BottomNav from "@/components/BottomNav";
+import PendingScreen from "@/components/PendingScreen";
 
 const iconLink = "flex min-h-11 min-w-12 flex-col items-center justify-center rounded-xl text-lg leading-none hover:bg-tint";
 const iconLabel = "mt-0.5 text-[11px] font-bold text-muted";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();
+  if (profile && profile.status !== "approved") return <PendingScreen id={profile.id} name={profile.name} rejected={profile.status === "rejected"} />;
   const supabase = await createClient();
+  const waiting = profile?.role === "admin"
+    ? ((await supabase.rpc("admin_list_people")).data as { status?: string }[] | null)?.filter((p) => p.status === "pending").length ?? 0
+    : 0;
   const { count } = profile
     ? await supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null)
     : { count: 0 };
@@ -19,7 +24,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <Link href="/" aria-label="Home"><Logo size={36} /></Link>
         <div className="flex items-center">
           <Link href="/together" className={iconLink}><span aria-hidden="true">🏆</span><span className={iconLabel}>Together</span></Link>
-          {profile?.role === "admin" && <Link href="/admin" className={iconLink}><span aria-hidden="true">⚙️</span><span className={iconLabel}>Admin</span></Link>}
+          {profile?.role === "admin" && <Link href="/admin" className={iconLink}><span aria-hidden="true" className="relative">⚙️{waiting > 0 && <span className="absolute -right-3 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] font-extrabold leading-4 text-[#2b2118]">{waiting}</span>}</span><span className={iconLabel}>Admin</span></Link>}
           <Link href="/me" aria-label="Me" className="grid size-11 place-items-center">
             <span className="grid size-9 place-items-center rounded-full bg-primary text-sm font-extrabold text-primary-fg">{(profile?.name || "?")[0].toUpperCase()}</span>
           </Link>

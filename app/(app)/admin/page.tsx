@@ -10,10 +10,10 @@ import {
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
   addVerseSet, updateVerseSet, deleteVerseSet, setTeam, updateGoal,
-  addAllowedEmails, removeAllowedEmail,
+  addAllowedEmails, removeAllowedEmail, setAccess,
 } from "./actions";
 
-type Person = { id: string; name: string; email: string | null; team: string | null; role: string };
+type Person = { id: string; name: string; email: string | null; team: string | null; role: string; status: string; created_at: string };
 const del = "min-h-11 px-3 text-sm text-red-600 underline";
 const KINDS = ["recap", "homework", "slides", "other"];
 
@@ -61,8 +61,23 @@ export default async function Admin() {
     <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-extrabold">Admin</h1>
 
-      <Section title={`Who can sign up (${allowed?.length ?? 0} emails)`}>
-        <p className="text-xs text-muted">Only these emails can create an account. People who already have one are not affected.</p>
+      <Section title={`Access requests (${people.filter((p) => p.status === "pending").length} waiting)`} open={people.some((p) => p.status === "pending")}>
+        <p className="text-xs text-muted">Anyone can ask to join by signing in. They see nothing until you approve them here.</p>
+        {people.filter((p) => p.status !== "approved").length === 0 && <p className="text-sm text-muted">No requests right now.</p>}
+        {people.filter((p) => p.status !== "approved").map((p) => (
+          <div key={p.id} className="rounded-xl border border-border p-3">
+            <p className="font-semibold">{p.name || "(no name yet)"} <span className="text-xs font-normal text-muted">{p.status === "rejected" ? "denied" : "waiting"}</span></p>
+            <p className="break-all text-sm text-muted">{p.email}</p>
+            <div className="mt-2 flex gap-2">
+              <ActionForm action={setAccess} label="Approve" className="flex-1"><Id id={p.id} /><input type="hidden" name="status" value="approved" /></ActionForm>
+              {p.status !== "rejected" && <ActionForm action={setAccess} label="Deny" buttonClass="btn ghost" confirm={`Deny ${p.name || p.email}?`}><Id id={p.id} /><input type="hidden" name="status" value="rejected" /></ActionForm>}
+            </div>
+          </div>
+        ))}
+      </Section>
+
+      <Section title={`Pre-approved emails (${allowed?.length ?? 0})`}>
+        <p className="text-xs text-muted">Optional. Emails listed here are approved automatically when they first sign in, with no request step.</p>
         <ActionForm action={addAllowedEmails} label="Add emails" reset>
           <textarea className="input" name="emails" rows={4} placeholder={"One per line or comma separated:\nanna@example.com, ben@example.com"} required />
         </ActionForm>

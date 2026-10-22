@@ -38,10 +38,16 @@ export const getProfile = cache(async () => {
   const { data: claims } = await supabase.auth.getClaims();
   const id = claims?.claims.sub;
   if (!id) return null;
-  const { data } = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
+  // `status` exists after migration 0008; fall back so the app keeps working if the SQL has not been run yet.
+  const read = async () => {
+    const r = await supabase.from("profiles").select("id, name, role, status").eq("id", id).maybeSingle();
+    if (!r.error) return r.data;
+    const old = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
+    return old.data ? { ...old.data, status: "approved" as string } : null;
+  };
+  const data = await read();
   if (data) return data;
   // Safety net: the sign-up trigger should have created this row.
   await supabase.from("profiles").insert({ id, email: claims.claims.email });
-  const { data: created } = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
-  return created;
+  return read();
 });
