@@ -70,8 +70,8 @@ export default function LoginPage() {
           <form onSubmit={verify} className="flex flex-col gap-3">
             <p className="text-muted">We sent a code to <b>{email}</b>. Enter it here. Don&apos;t tap the link in the email; the code keeps you signed in inside this app.</p>
             <label htmlFor="code" className="sr-only">Code</label>
-            <input id="code" className="input text-center text-2xl tracking-[0.4em]" inputMode="numeric" pattern="[0-9]{6,10}" maxLength={10} autoComplete="one-time-code" required placeholder="123456" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))} />
-            <button className="btn" type="submit" disabled={busy || code.length < 6}>{busy ? "Checking..." : "Sign in"}</button>
+            <input id="code" className="input text-center text-2xl tracking-[0.4em]" inputMode="numeric" pattern="[0-9]{8}" maxLength={8} autoComplete="one-time-code" required placeholder="12345678" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))} />
+            <button className="btn" type="submit" disabled={busy || code.length !== 8}>{busy ? "Checking..." : "Sign in"}</button>
             <button type="button" className="min-h-11 text-sm text-muted underline disabled:no-underline" disabled={busy || wait > 0} onClick={() => sendCode()}>
               {wait > 0 ? `Send a new code (${wait}s)` : "Send a new code"}
             </button>

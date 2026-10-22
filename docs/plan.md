@@ -1,7 +1,7 @@
 # Strasbourg Mission Trip App: Plan (merged)
 
 ## Decisions (Davis)
-PWA; Supabase + Vercel, must stay free; email sign-in with a 6-digit code (not a link, because links open in Safari instead of the installed iPhone app), restricted to an allowlist of trip emails; Sainte Bible libre pour le monde (eBible.org id frasbl, public domain, draft: have a French speaker proofread the verses used; convert USFM to JSON; replaces LSG 1910 everywhere below); translate = typed + mic via DeepL free tier. Cut order and timeline: no preference. Opt-in weekly leaderboard; leader core verse set + personal additions; Claude drafts lessons and an Opus agent reviews them internally; grading always lenient (accents/typos accepted).
+PWA; Supabase + Vercel, must stay free; email sign-in with a 8-digit code (not a link, because links open in Safari instead of the installed iPhone app), restricted to an allowlist of trip emails; Sainte Bible libre pour le monde (eBible.org id frasbl, public domain, draft: have a French speaker proofread the verses used; convert USFM to JSON; replaces LSG 1910 everywhere below); translate = typed + mic via DeepL free tier. Cut order and timeline: no preference. Opt-in weekly leaderboard; leader core verse set + personal additions; Claude drafts lessons and an Opus agent reviews them internally; grading always lenient (accents/typos accepted).
 
 ## Stack (reuse, don't build)
 - Supabase free: Postgres, Auth, Storage. No Edge Functions or pg_cron; server work runs in Next.js route handlers and server actions on Vercel. Plain Next.js App Router + `@supabase/ssr`.

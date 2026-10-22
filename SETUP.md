@@ -6,7 +6,7 @@ Everything here is free-tier. Do it once; any computer can repeat it from this f
 1. Create a project at supabase.com (free). Note its region.
 2. SQL editor: run `supabase/migrations/0001` through `0007` in order (or `npx supabase link` then `npx supabase db push`; the bundled `supabase` CLI needs `supabase link` first). `0006` fixes the profile trigger; `0007` adds the sign-up allowlist and hardening.
 3. Authentication -> Providers -> Email: keep "Allow new users to sign up" on (the allowlist in `0007` blocks anyone not on the trip list), and set the OTP length to **6** to match the app's code box.
-4. Authentication -> Email Templates: edit **both Confirm signup and Magic Link** (new users get Confirm signup, returning users get Magic Link). Put `{{ .Token }}` in the body, for example "Your Le Nid code is {{ .Token }}". The app asks for this 6-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
+4. Authentication -> Email Templates: edit **both Confirm signup and Magic Link** (new users get Confirm signup, returning users get Magic Link). Put `{{ .Token }}` in the body, for example "Your Le Nid code is {{ .Token }}". The app asks for this 8-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
 5. Authentication -> SMTP Settings: **set a custom SMTP provider**. Supabase's built-in mail allows only a few emails per hour, which 35 people signing in will exceed. Options: Resend or Brevo (free, needs a domain), or a Gmail account with an app password (`smtp.gmail.com`, port 465; turn on 2-step verification, then create an app password and use that, not your normal password).
 6. Authentication -> URL Configuration: set Site URL to your Vercel URL and add `<your url>/auth/callback` and `http://localhost:3000/auth/callback` to Redirect URLs.
 7. Project Settings -> API: copy the URL, anon key, and service_role key.
@@ -62,4 +62,4 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 - Content changes: lessons in `content/french/units.json`, Odile's lines in `lib/odile.ts`; push to deploy.
 
 ## Sign-in code length
-Supabase -> Authentication -> Sign In / Providers -> Email -> **Email OTP Length**: set to 6 (new projects may default to 8). The login screen accepts 6 to 10 digits either way.
+Supabase sends 8-digit codes by default (Authentication -> Sign In / Providers -> Email -> **Email OTP Length**). The login screen expects exactly 8 digits, so if you change that setting, change the length in `app/login/page.tsx` too.
