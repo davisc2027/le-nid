@@ -28,7 +28,8 @@ export async function unsubscribePush() {
   } catch {}
 }
 
-export default function PushToggle() {
+/** `quietWhenOn` hides the "Notifications on" line (manage it under Me). */
+export default function PushToggle({ quietWhenOn = false }: { quietWhenOn?: boolean }) {
   const [status, setStatus] = useState<"unsupported" | "off" | "on" | "denied">("off");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -68,6 +69,7 @@ export default function PushToggle() {
   if (status === "unsupported")
     return <p className="card text-sm">To get notifications on iPhone: tap Share, then &ldquo;Add to Home Screen&rdquo;, and open Le Nid from there.</p>;
   if (status === "denied") return <p className="text-sm text-muted">Notifications are blocked in your phone settings.</p>;
+  if (status === "on" && quietWhenOn) return null;
   return (
     <div className="flex flex-col gap-2">
       {status === "on" ? (

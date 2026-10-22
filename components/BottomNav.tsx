@@ -13,7 +13,7 @@ const ICONS: Record<string, string> = {
 };
 const TABS = [
   { href: "/", label: "Home", icon: "home", match: (p: string) => p === "/" },
-  { href: "/itinerary", label: "Itinerary", icon: "trip", match: (p: string) => p.startsWith("/itinerary") },
+  { href: "/itinerary", label: "Trip", icon: "trip", match: (p: string) => p.startsWith("/itinerary") },
   { href: "/todos", label: "To-dos", icon: "todos", match: (p: string) => p.startsWith("/todos") },
   { href: "/learn", label: "Learn", icon: "learn", match: (p: string) => /^\/(learn|french|scripture)/.test(p) },
   { href: "/translate", label: "Translate", icon: "translate", match: (p: string) => p.startsWith("/translate") },
@@ -33,7 +33,7 @@ export default function BottomNav({ openTodos }: { openTodos: number }) {
           const on = t.match(path);
           return (
             <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}
-              className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-extrabold ${on ? "text-primary" : "text-muted"}`}>
+              className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-extrabold tracking-tight ${on ? "text-primary" : "text-muted"}`}>
               {on && <span className="absolute top-0 h-1 w-10 rounded-b-full bg-primary" />}
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth={on ? 2.4 : 1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[t.icon]} /></svg>
               {t.label}

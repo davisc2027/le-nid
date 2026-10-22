@@ -33,7 +33,7 @@ export default async function Home() {
       <InstallBanner />
       <h1 className="text-2xl font-extrabold">Announcements</h1>
       {!me?.name && <Link href="/me" className="card !border-primary font-bold">Add your name so the group knows who you are →</Link>}
-      <PushToggle />
+      <PushToggle quietWhenOn />
       <Link href="/together" className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 10000} title={goal?.title ?? "Raise the spire"} /></Link>
       {items?.length ? items.map((a) => (
         <article key={a.id} className="card">

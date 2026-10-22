@@ -7,15 +7,15 @@ import { bibleInstalled, loadVerse } from "@/lib/bible/load";
 import { refLabel } from "@/lib/bible/reference";
 import { normalize } from "@/lib/french/exercises";
 import { speak } from "@/lib/french/speech";
-import { chunks, firstLetters, gradeRecall, PASS, pickBlanks, words } from "@/lib/scripture/drills";
+import { firstLetters, gradeRecall, PASS, pickBlanks, words } from "@/lib/scripture/drills";
 import { Rating, schedule } from "@/lib/srs";
 import Stork from "@/components/art/Stork";
 import VerseDiff from "./VerseDiff";
 
 type Verse = { fr: string; en: string | null };
 type Done = (ok: boolean, expected?: string, marks?: { word: string; ok: boolean }[]) => void;
-const STEPS = ["read", "cloze30", "cloze60", "letters", "reorder", "type"] as const;
-const LABELS = ["Read and listen", "Fill the blanks", "Fewer hints", "First letters", "Put it in order", "From memory"];
+const STEPS = ["read", "cloze30", "letters", "type"] as const;
+const LABELS = ["Read and listen", "Fill the blanks", "First letters", "From memory"];
 
 function Read({ v, next }: { v: Verse; next: () => void }) {
   return (
@@ -69,24 +69,6 @@ function Typing({ v, hint, threshold, done }: { v: Verse; hint?: string; thresho
         onChange={(e) => setText(e.target.value)} placeholder="Écrivez le verset" />
       <p className="text-xs text-muted">Accents and small slips are fine.</p>
       <button className="btn" disabled={!text.trim()} onClick={() => { const g = gradeRecall(text, v.fr); done(g.score >= threshold, v.fr, g.marks); }}>Check</button>
-    </div>
-  );
-}
-
-function Reorder({ v, done }: { v: Verse; done: Done }) {
-  const parts = useMemo(() => chunks(v.fr), [v.fr]);
-  const order = useMemo(() => parts.map((_, i) => i).sort(() => Math.random() - 0.5), [parts]);
-  const [picked, setPicked] = useState<number[]>([]);
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="card min-h-20 flex-row flex-wrap gap-2">
-        {picked.map((p, n) => <button key={n} className="verse-text rounded bg-tint px-2" onClick={() => setPicked(picked.filter((_, k) => k !== n))}>{parts[p]}</button>)}
-      </div>
-      <div className="flex flex-col gap-2">
-        {order.map((p) => <button key={p} disabled={picked.includes(p)} className="card text-left disabled:opacity-30" onClick={() => setPicked([...picked, p])}><span className="verse-text">{parts[p]}</span></button>)}
-      </div>
-      <button className="btn" disabled={picked.length < parts.length}
-        onClick={() => done(picked.every((p, n) => p === n), v.fr, parts.map((word, i) => ({ word, ok: picked[i] === i })))}>Check</button>
     </div>
   );
 }
@@ -163,9 +145,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
       <div key={`${step}-${attempt}`}>
         {kind === "read" && <Read v={v} next={advance} />}
         {kind === "cloze30" && <Cloze v={v} ratio={0.3} done={done} />}
-        {kind === "cloze60" && <Cloze v={v} ratio={0.6} done={done} />}
         {kind === "letters" && <Typing v={v} hint={firstLetters(v.fr)} threshold={0.85} done={done} />}
-        {kind === "reorder" && <Reorder v={v} done={done} />}
         {kind === "type" && <Typing v={v} threshold={PASS} done={done} />}
       </div>
       {fb && (
