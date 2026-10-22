@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export type State = { ok?: string; error?: string } | null;
 
@@ -26,13 +27,18 @@ export default function ActionForm({ action, label, children, className = "flex 
     return res;
   }, null);
   const ref = useRef<HTMLFormElement>(null);
+  const confirmed = useRef(false);
+  const [asking, setAsking] = useState(false);
   return (
+    <>
     <form ref={ref} action={formAction} className={className}
-      onSubmit={confirm ? (e) => { if (!window.confirm(confirm)) e.preventDefault(); } : undefined}>
+      onSubmit={confirm ? (e) => { if (confirmed.current) { confirmed.current = false; return; } e.preventDefault(); setAsking(true); } : undefined}>
       {children}
       <Submit label={label} className={buttonClass} />
       {state?.ok && <p className="text-sm text-primary" role="status">{state.ok}</p>}
       {state?.error && <p className="text-sm text-red-600" role="alert">{state.error}</p>}
     </form>
+    <ConfirmDialog request={asking ? { title: "Are you sure?", message: confirm ?? "", confirmLabel: label, danger: true, onConfirm: () => { confirmed.current = true; ref.current?.requestSubmit(); } } : null} onClose={() => setAsking(false)} />
+    </>
   );
 }

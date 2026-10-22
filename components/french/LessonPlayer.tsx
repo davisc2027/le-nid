@@ -8,6 +8,7 @@ import { buildLesson, isCorrect, tokenize, type Exercise } from "@/lib/french/ex
 import { ALL_PHRASES, type Lesson } from "@/lib/french/content";
 import { speak, speechUnlocked } from "@/lib/french/speech";
 import Stork, { type Mood } from "@/components/art/Stork";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import OdileSays from "@/components/art/OdileSays";
 import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
 
@@ -136,6 +137,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   useEffect(() => setSoundState(soundOn()), []);
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
   const [noAudio, setNoAudio] = useState(false);
   const router = useRouter();
@@ -174,7 +176,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   }
 
   function quit() {
-    if ((i > 0 || result) && !confirm("Leave this lesson? Your progress in it will be lost.")) return;
+    if (i > 0 || result) { setLeaving(true); return; }
     router.push("/french");
   }
 
@@ -214,6 +216,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
           <button className="btn" disabled={saving} onClick={next}>{saving ? "Saving…" : saveErr ? "Retry" : "Continue"}</button>
         </div>
       )}
+      <ConfirmDialog request={leaving ? { title: "Leave this lesson?", message: "Your progress in it will be lost.", confirmLabel: "Leave", danger: true, onConfirm: () => router.push("/french") } : null} onClose={() => setLeaving(false)} />
     </div>
   );
 }

@@ -39,7 +39,7 @@ export default async function Together() {
           {(teams as Team[]).map((t) => (
             <div key={t.team} className="card gap-1">
               <div className="flex justify-between"><b>{t.team}</b><span className="tabular-nums">{Number(t.xp)} XP</span></div>
-              <div className="h-2 overflow-hidden rounded-full bg-border"><div className="h-full rounded-full bg-accent" style={{ width: `${(Number(t.xp) / topTeam) * 100}%` }} /></div>
+              <div className="h-2 overflow-hidden rounded-full bg-border"><div className="animate-bar-grow h-full rounded-full bg-accent" style={{ "--bar-w": `${(Number(t.xp) / topTeam) * 100}%` } as React.CSSProperties} /></div>
             </div>
           ))}
         </section>

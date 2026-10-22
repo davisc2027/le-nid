@@ -93,3 +93,62 @@ body {
 @keyframes boat { from { transform: translateX(0); } to { transform: translateX(260px); } }
 @keyframes ripple { to { transform: translateX(100px); } }
 @media (prefers-reduced-motion: reduce) { .art-cloud-a, .art-cloud-b, .art-fly, .art-boat, .art-ripple { animation: none; } }
+
+/* ---- Motion system (normalize-animation). Entrances use fill-mode backwards (never both). ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-fade-up { animation: fadeUp .35s ease-out backwards; }
+
+/* Route-level page transition. Fires on EVERY navigation, so it is opacity
+   only and fast - anything heavier gets old within a day. */
+@keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-page-in { animation: pageIn .18s ease-out backwards; }
+
+/* Modal: backdrop fades, panel springs in. Exit is quicker. */
+@keyframes modalBackdropIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modalPanelIn  { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes modalPanelOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.96); } }
+.animate-modal-backdrop-in  { animation: modalBackdropIn .18s ease-out backwards; }
+.animate-modal-backdrop-out { animation: modalBackdropOut .15s ease-in both; }
+.animate-modal-panel-in     { animation: modalPanelIn .22s cubic-bezier(.34,1.56,.64,1) backwards; }
+.animate-modal-panel-out    { animation: modalPanelOut .15s ease-in both; }
+
+/* Press feedback for filled buttons / icon buttons. NOT for plain text links
+   (a scale/translate on inline text looks broken).
+
+   The `transition` list is long ON PURPOSE. Unlayered custom CSS beats
+   Tailwind v4's layered utilities regardless of source order, so a short
+   `transition: transform ...` here silently deleted every `transition-colors`
+   it was paired with (hover colour started snapping). List every property a
+   button might need so this class is self-sufficient. */
+.btn-press, .btn {
+  transition: transform .15s ease-in, box-shadow .15s ease-in,
+    background-color .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease;
+}
+.btn-press:active, .btn:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+
+
+/* Bar grow-in. Works from a SERVER component with zero JS. Set the target
+   with a custom property:  style={{ "--bar-w": "62%" }}  (or --bar-h).
+   The base width lives on the class and the keyframe only animates FROM 0,
+   so nothing snaps when the animation ends. (A transition would never fire -
+   a static first-paint value is not a change.) */
+@keyframes barGrow  { from { width: 0; } }
+@keyframes barGrowV { from { height: 0; } }
+.animate-bar-grow   { width:  var(--bar-w, 100%); animation: barGrow  .7s cubic-bezier(.4,0,.2,1) backwards; }
+.animate-bar-grow-v { height: var(--bar-h, 100%); animation: barGrowV .7s cubic-bezier(.4,0,.2,1) backwards; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .animate-page-in,
+  .animate-modal-backdrop-in, .animate-modal-backdrop-out,
+  .animate-modal-panel-in, .animate-modal-panel-out,
+  .animate-bar-grow {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+  }
+  .btn-press, .btn { transition-duration: .01ms !important; }
+}
