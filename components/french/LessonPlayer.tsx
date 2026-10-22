@@ -9,6 +9,7 @@ import { ALL_PHRASES, type Lesson } from "@/lib/french/content";
 import { speak, speechUnlocked } from "@/lib/french/speech";
 import Stork, { type Mood } from "@/components/art/Stork";
 import OdileSays from "@/components/art/OdileSays";
+import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
 
 type Report = (correct: boolean, answer: string, note?: string) => void;
 type ExProps<T extends Exercise> = { ex: T; locked: boolean; report: Report };
@@ -94,8 +95,8 @@ function Match({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "match"
     if (pair.en === e) {
       const next = [...done, fr];
       setDone(next); setFr(null);
-      if (next.length === ex.pairs.length) setTimeout(() => report(true, ""), 400);
-    } else { setBad(e); setTimeout(() => setBad(null), 500); }
+      if (next.length === ex.pairs.length) setTimeout(() => report(true, ""), 400); else playTick();
+    } else { playError(); setBad(e); setTimeout(() => setBad(null), 500); }
   }
   return (
     <div className="flex flex-col gap-3">
@@ -131,6 +132,8 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   const [total, setTotal] = useState(1);
   const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string } | null>(null);
   const [mood, setMood] = useState<Mood>("happy");
+  const [sound, setSoundState] = useState(true);
+  useEffect(() => setSoundState(soundOn()), []);
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
@@ -150,6 +153,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
   const report: Report = (ok, answer, note) => {
     setResult({ ok, answer, note });
     setMood(ok ? "cheer" : "sulk");
+    if (ok) playSuccess(); else playError();
     if (!ok) setQueue((q) => [...q!, q![i]]); // missed ones come back at the end
   };
 
@@ -164,6 +168,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
       setSummary({ xp: row?.xp ?? 0, streak: row?.streak ?? 0 });
+      playDone();
     } catch { setSaveErr(true); }
     setSaving(false);
   }
@@ -190,6 +195,8 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
           <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(i / Math.max(queue.length, total)) * 100}%` }} />
         </div>
+        <button onClick={() => { const on = !sound; setSound(on); setSoundState(on); if (on) playTick(); }} aria-label={sound ? "Turn sounds off" : "Turn sounds on"}
+          className="grid size-11 place-items-center text-xl">{sound ? "🔊" : "🔇"}</button>
         <Stork mood={mood} size={44} />
       </div>
       <div key={i}>
