@@ -54,10 +54,11 @@ body {
 
 @layer components {
   .card { @apply rounded-2xl border border-border bg-surface p-4; }
-  .btn { @apply inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-primary-fg disabled:opacity-50; }
+  .btn { @apply inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-primary-fg disabled:opacity-50; }
   .label { @apply text-xs font-extrabold uppercase tracking-wider text-muted; }
+  .tag { @apply rounded-full bg-tint px-2.5 py-1 text-xs font-extrabold text-primary; }
   .btn.ghost { @apply bg-tint text-primary; }
-  .input { @apply w-full rounded-xl border border-border bg-surface px-3 py-2; }
+  .input { @apply min-h-12 w-full rounded-xl border border-border bg-surface px-3 py-2 text-base; }
 }
 
 /* Odile animations */

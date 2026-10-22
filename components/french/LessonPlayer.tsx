@@ -51,12 +51,12 @@ function Bank({ ex, locked, report }: ExProps<Extract<Exercise, { kind: "bank" }
       <p className="text-2xl font-extrabold">{ex.en}</p>
       <div className="flex min-h-14 flex-wrap gap-2 border-b-2 border-border pb-2">
         {picked.map((i, n) => (
-          <button key={n} disabled={locked} className="card !px-3 !py-1.5 font-semibold" onClick={() => setPicked(picked.filter((_, k) => k !== n))}>{ex.tokens[i]}</button>
+          <button key={n} disabled={locked} className="card !px-3 !py-2.5 font-semibold" onClick={() => setPicked(picked.filter((_, k) => k !== n))}>{ex.tokens[i]}</button>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
         {ex.tokens.map((t, i) => (
-          <button key={i} disabled={locked || picked.includes(i)} className="card !px-3 !py-1.5 font-semibold disabled:opacity-30"
+          <button key={i} disabled={locked || picked.includes(i)} className="card !px-3 !py-2.5 font-semibold disabled:opacity-30"
             onClick={() => setPicked([...picked, i])}>{t}</button>
         ))}
       </div>
@@ -170,7 +170,7 @@ export default function LessonPlayer({ lesson, nextHref }: { lesson: Lesson; nex
         {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} />}
       </div>
       {result && (
-        <div className={`card sticky bottom-24 flex flex-col gap-2 ${result.ok ? "!border-good" : "!border-primary"}`} role="status">
+        <div className={`card sticky bottom-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-2 ${result.ok ? "!border-good" : "!border-primary"}`} role="status">
           <p className="font-extrabold">{result.ok ? "Bien !" : "Pas tout à fait"}</p>
           {!result.ok && result.answer && <p className="text-sm">Answer: <b>{result.answer}</b></p>}
           {result.note && <p className="text-sm text-muted">💡 {result.note}</p>}

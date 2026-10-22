@@ -51,7 +51,7 @@ function Cloze({ v, ratio, done }: { v: Verse; ratio: number; done: Done }) {
       </p>
       <div className="flex flex-wrap gap-2">
         {bank.map((b, k) => (
-          <button key={k} disabled={used.has(k)} className="card !px-3 !py-1.5 font-semibold disabled:opacity-30"
+          <button key={k} disabled={used.has(k)} className="card !px-3 !py-2.5 font-semibold disabled:opacity-30"
             onClick={() => { const slot = blanks.find((i) => fill[i] === undefined); if (slot !== undefined) setFill({ ...fill, [slot]: k }); }}>{b.word}</button>
         ))}
       </div>
@@ -143,7 +143,7 @@ export default function LearnFlow({ verseKey, state, firstTime }: { verseKey: st
         {kind === "type" && <Typing v={v} threshold={PASS} done={done} />}
       </div>
       {fb && (
-        <div className={`card sticky bottom-24 ${fb.ok ? "!border-good" : "!border-primary"}`} role="status">
+        <div className={`card sticky bottom-[max(1rem,env(safe-area-inset-bottom))] ${fb.ok ? "!border-good" : "!border-primary"}`} role="status">
           <p className="font-extrabold">{fb.ok ? "Bien !" : "Pas tout à fait. Look again and retry."}</p>
           {!fb.ok && fb.marks && <VerseDiff marks={fb.marks} />}
           <button className="btn" onClick={advance}>{fb.ok ? "Continue" : "Try again"}</button>

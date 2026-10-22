@@ -1,37 +1,29 @@
 import Link from "next/link";
-import { getProfile } from "@/lib/supabase/server";
+import { createClient, getProfile } from "@/lib/supabase/server";
 import Logo from "@/components/art/Logo";
-import TranslateFab from "@/components/TranslateFab";
+import BottomNav from "@/components/BottomNav";
+
+const iconLink = "grid size-11 place-items-center rounded-full text-xl hover:bg-tint";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();
-  const tabs = [
-    { href: "/", label: "Home" },
-    { href: "/itinerary", label: "Itinerary" },
-    { href: "/todos", label: "To-dos" },
-    { href: "/french", label: "French" },
-    { href: "/scripture", label: "Verses" },
-    { href: "/files", label: "Files" },
-    ...(profile?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
-  ];
+  const supabase = await createClient();
+  const { count } = await supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).is("completed_at", null);
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-20">
-      <header className="flex items-center justify-between px-4 pt-3">
-        <Logo size={36} />
-        <div className="flex gap-2 text-sm font-bold text-primary">
-          <Link href="/together" aria-label="Together: leaderboard and group goal">🏆</Link>
-          <Link href="/me">Me</Link>
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <header className="flex items-center justify-between px-4 pt-2">
+        <Link href="/" aria-label="Home"><Logo size={36} /></Link>
+        <div className="flex items-center">
+          <Link href="/translate" aria-label="Translate" className={iconLink}>🌐</Link>
+          <Link href="/together" aria-label="Together: leaderboard and group goal" className={iconLink}>🏆</Link>
+          {profile?.role === "admin" && <Link href="/admin" aria-label="Admin" className={iconLink}>⚙️</Link>}
+          <Link href="/me" aria-label="Me" className="grid size-11 place-items-center">
+            <span className="grid size-9 place-items-center rounded-full bg-primary text-sm font-extrabold text-primary-fg">{(profile?.name || "?")[0].toUpperCase()}</span>
+          </Link>
         </div>
       </header>
       <main className="flex-1 px-4 py-4">{children}</main>
-      <TranslateFab />
-      <nav className="fixed inset-x-0 bottom-0 border-t border-border bg-surface">
-        <div className="mx-auto flex max-w-xl justify-around py-3 text-xs font-bold">
-          {tabs.map((t) => (
-            <Link key={t.href} href={t.href} className="px-3 text-primary">{t.label}</Link>
-          ))}
-        </div>
-      </nav>
+      <BottomNav openTodos={count ?? 0} />
     </div>
   );
 }

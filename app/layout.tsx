@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Le Nid", statusBarStyle: "default" },
 };
 
-export const viewport: Viewport = { themeColor: "#a8412e" };
+export const viewport: Viewport = { themeColor: "#a8412e", viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
