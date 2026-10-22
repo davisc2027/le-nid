@@ -21,16 +21,42 @@ export default function TranslatePanel() {
   const [history, setHistory] = useState<Entry[]>([]);
   const [listening, setListening] = useState(false);
   const [canListen, setCanListen] = useState(false);
-  const [dictate, setDictate] = useState(false);
+  const [coach, setCoach] = useState(false);
   const rec = useRef<Recognizer | null>(null);
+  const box = useRef<HTMLTextAreaElement>(null);
+  const armed = useRef(false); // set by Speak: translate on its own once the person stops talking
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textRef = useRef("");
+  textRef.current = text;
 
   useEffect(() => {
     try { setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]")); } catch {}
     const w = window as unknown as { SpeechRecognition?: new () => Recognizer; webkitSpeechRecognition?: new () => Recognizer };
     const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
     setCanListen(!!(w.SpeechRecognition || w.webkitSpeechRecognition) && !standalone);
-    setDictate(standalone || !(w.SpeechRecognition || w.webkitSpeechRecognition));
   }, []);
+
+  // After Speak, translate about 2 seconds after the text stops changing, then close the keyboard so the result is visible.
+  useEffect(() => {
+    if (!armed.current || !text.trim()) return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { armed.current = false; setCoach(false); box.current?.blur(); void translate(); }, 2000);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+
+  /** iPhone cannot start keyboard dictation from a web page, so open the keyboard and point at its microphone key. */
+  function dictateOnKeyboard() {
+    armed.current = true;
+    setError(""); setCoach(true);
+    box.current?.focus();
+  }
+
+  function speakNow() {
+    if (listening) return rec.current?.stop();
+    if (canListen) return listen();
+    dictateOnKeyboard();
+  }
 
   function listen() {
     if (listening) return rec.current?.stop();
@@ -41,8 +67,8 @@ export default function TranslatePanel() {
     r.interimResults = true;
     r.continuous = false;
     r.onresult = (e) => setText(Array.from(e.results).map((x) => x[0].transcript).join(" "));
-    r.onend = () => setListening(false);
-    r.onerror = () => { setListening(false); setError("The microphone isn't available. You can type instead."); };
+    r.onend = () => { setListening(false); if (textRef.current.trim()) void translate(); };
+    r.onerror = () => { setListening(false); setCanListen(false); dictateOnKeyboard(); };
     rec.current = r;
     setError("");
     setListening(true);
@@ -50,7 +76,7 @@ export default function TranslatePanel() {
   }
 
   async function translate() {
-    const input = text.trim();
+    const input = textRef.current.trim();
     if (!input) return;
     if (!navigator.onLine) return setError("You're offline. Translation needs internet. Try Google Translate's offline mode.");
     setBusy(true); setError("");
@@ -70,7 +96,7 @@ export default function TranslatePanel() {
     } finally { setBusy(false); }
   }
 
-  const flip = () => { setDir(dir === "en-fr" ? "fr-en" : "en-fr"); setText(""); setShown(null); };
+  const flip = () => { armed.current = false; setCoach(false); setDir(dir === "en-fr" ? "fr-en" : "en-fr"); setText(""); setShown(null); };
 
   if (full && shown)
     return (
@@ -87,12 +113,18 @@ export default function TranslatePanel() {
         <button className="btn ghost" onClick={flip} aria-label="Swap languages">⇄ {dir === "en-fr" ? "English → Français" : "Français → English"}</button>
       </div>
       <label htmlFor="src" className="sr-only">Text to translate</label>
-      <textarea id="src" className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)}
+      <textarea id="src" ref={box} className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { armed.current = false; setCoach(false); }}
         lang={dir === "en-fr" ? "en" : "fr"} placeholder={dir === "en-fr" ? "Type or speak in English" : "Parlez ou écrivez en français"} />
-      {dictate && <p className="text-xs text-muted">To speak, tap the 🎤 on your iPhone keyboard and dictate into the box.</p>}
+      {coach && (
+        <div className="card !border-primary gap-1 text-sm" role="note">
+          <p className="font-extrabold">Tap the 🎤 on your keyboard</p>
+          <p>It's the microphone key at the bottom right of your iPhone keyboard (next to the space bar). Tap it, say your sentence, and tap it again. Le Nid translates a moment after you stop.</p>
+          <p className="text-xs text-muted">No microphone key? Turn on Dictation in Settings → General → Keyboard.</p>
+        </div>
+      )}
       <div className="flex gap-2">
-        {canListen && <button className={`btn ${listening ? "" : "ghost"}`} onClick={listen}>{listening ? "■ Stop" : "🎤 Speak"}</button>}
-        <button className="btn flex-1" disabled={busy || !text.trim()} onClick={translate}>{busy ? "Translating…" : "Translate"}</button>
+        <button className={`btn ${listening ? "" : "ghost"}`} onClick={speakNow}>{listening ? "■ Stop" : "🎤 Speak"}</button>
+        <button className="btn flex-1" disabled={busy || !text.trim()} onClick={() => { armed.current = false; void translate(); }}>{busy ? "Translating…" : "Translate"}</button>
       </div>
       {error && (
         <div className="card text-sm" role="alert">
