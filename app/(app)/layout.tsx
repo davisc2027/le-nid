@@ -6,6 +6,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const tabs = [
     { href: "/", label: "Home" },
     { href: "/itinerary", label: "Itinerary" },
+    { href: "/todos", label: "To-dos" },
     { href: "/files", label: "Files" },
     ...(profile?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
   ];

@@ -46,3 +46,37 @@ export async function addMeeting(f: FormData) {
   revalidatePath("/admin");
   revalidatePath("/files");
 }
+
+export async function addTodo(f: FormData) {
+  const supabase = await requireAdmin();
+  const title = text(f, "title");
+  const due_date = text(f, "due_date");
+  const { data: todo, error } = await supabase.from("todos")
+    .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on" })
+    .select("id").single();
+  if (error) throw new Error(error.message);
+  const { data: people } = await supabase.from("profiles").select("id").eq("role", "member");
+  const ids = (people ?? []).map((p) => p.id);
+  if (ids.length) {
+    const { error: e2 } = await supabase.from("todo_assignments").insert(ids.map((user_id) => ({ todo_id: todo.id, user_id })));
+    if (e2) throw new Error(e2.message);
+    await sendPushToAll({ title: "New to-do", body: `${title} (due ${due_date})`, url: "/todos" }, ids);
+  }
+  revalidatePath("/admin");
+  revalidatePath("/todos");
+}
+
+/** Assigns every existing to-do to members who joined after it was created. */
+export async function assignMissing() {
+  const supabase = await requireAdmin();
+  const [{ data: todos }, { data: people }, { data: have }] = await Promise.all([
+    supabase.from("todos").select("id"),
+    supabase.from("profiles").select("id").eq("role", "member"),
+    supabase.from("todo_assignments").select("todo_id, user_id"),
+  ]);
+  const existing = new Set(have?.map((a) => `${a.todo_id}:${a.user_id}`));
+  const rows = (todos ?? []).flatMap((t) => (people ?? [])
+    .filter((p) => !existing.has(`${t.id}:${p.id}`)).map((p) => ({ todo_id: t.id, user_id: p.id })));
+  if (rows.length) await supabase.from("todo_assignments").insert(rows);
+  revalidatePath("/admin");
+}

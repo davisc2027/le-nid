@@ -1,15 +1,20 @@
 import webpush from "web-push";
 import { createServiceClient } from "@/lib/supabase/server";
 
-/** Sends a push to every subscribed device and prunes dead subscriptions. */
-export async function sendPushToAll(payload: { title: string; body?: string; url?: string }) {
+/** Sends a push to subscribed devices (everyone, or only `userIds`) and prunes dead subscriptions. */
+export async function sendPushToAll(
+  payload: { title: string; body?: string; url?: string },
+  userIds?: string[],
+) {
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT!,
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!,
   );
   const db = createServiceClient();
-  const { data: subs } = await db.from("push_subscriptions").select("endpoint, p256dh, auth");
+  let q = db.from("push_subscriptions").select("endpoint, p256dh, auth");
+  if (userIds) q = q.in("user_id", userIds);
+  const { data: subs } = await q;
   const dead: string[] = [];
   await Promise.all(
     (subs ?? []).map(async (s) => {

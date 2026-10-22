@@ -24,4 +24,7 @@ Import the repo into Vercel and add the same env vars from `.env.example`. Push 
 - Next.js 16 here differs from older versions; see `AGENTS.md` and `node_modules/next/dist/docs/`.
 
 ## Roadmap
-M2 to-dos and reminders, M3 conversational French, M4 scripture French, M5 translate. See `docs/plan.md`.
+M3 conversational French, M4 scripture French, M5 translate. See `docs/plan.md`.
+
+## Reminders
+`vercel.json` runs `/api/cron/reminders` daily at 07:00 UTC (08:00-09:00 Paris). Set `CRON_SECRET` in Vercel. Reminders go out 5, 1, and 0 days before a to-do's due date to people who haven't finished it; `reminder_log` prevents repeats. Run `0002_todos.sql` after `0001_core.sql`. Test locally: `curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/reminders`.
