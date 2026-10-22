@@ -25,7 +25,7 @@ const TEXT_MARKER = /^(p|m|mi|pm|pmo|pmc|pmr|pi\d?|pc|pr|ph\d?|q\d?|qr|qc|qm\d?|
 const VERSE = /\\v\s+(\d+)(?:\s*[-–]\s*(\d+))?\S*\s*/;
 
 const clean = (s) =>
-  s.replace(/\\w ([^|\\]*)(\|[^\\]*)?\\w\*/g, "$1")
+  s.replace(/\\\+?w ([^|\\]*)(\|[^\\]*)?\\\+?w\*/g, "$1")
     .replace(/\\\+?[a-z]+\d*\*?/g, "").replace(/ /g, " ").replace(/\s+/g, " ").trim();
 
 export function parseUsfm(input) {
