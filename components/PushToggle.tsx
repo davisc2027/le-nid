@@ -28,8 +28,9 @@ export async function unsubscribePush() {
   } catch {}
 }
 
-export default function PushToggle() {
-  const [status, setStatus] = useState<"unsupported" | "off" | "on" | "denied">("off");
+/** `prompt` (used on Home) shows only the turn-on button; turning off and status messages live on the profile page. */
+export default function PushToggle({ prompt = false }: { prompt?: boolean }) {
+  const [status, setStatus] = useState<"checking" | "unsupported" | "off" | "on" | "denied">("checking");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -65,6 +66,7 @@ export default function PushToggle() {
     setStatus("off"); setError(""); setBusy(false);
   }
 
+  if (status === "checking" || (prompt && status !== "off")) return null;
   if (status === "unsupported")
     return <p className="card text-sm">To get notifications on iPhone: tap Share, then &ldquo;Add to Home Screen&rdquo;, and open Le Nid from there.</p>;
   if (status === "denied") return <p className="text-sm text-muted">Notifications are blocked in your phone settings.</p>;
