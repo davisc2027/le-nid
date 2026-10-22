@@ -34,3 +34,6 @@ Content is plain data in `content/french/units.json` (phrases only; exercises ar
 
 ## Scripture track
 Run `0004_scripture.sql`. Verse text is static JSON generated once from eBible.org: `node scripts/build-bible.mjs` writes `public/bible/fr` (Sainte Bible libre pour le monde, public domain, still a draft: proofread the verses you use) and `public/bible/en` (World English Bible). Commit the output. Run it on any machine that can reach ebible.org. Leaders publish verse sets from the Admin page; members add any verse by reference (e.g. "Jean 3:16-17"). Review scheduling uses FSRS (`ts-fsrs`). Scripture and French share one XP total and streak.
+
+## Translate
+A floating Translate button opens `/translate`: type or speak (browser speech recognition, English or French), get DeepL's translation, hear it, or show it full screen to the other person. Needs `DEEPL_API_KEY` (free plan) and internet. Limits: 500 characters per request and 120 requests per person per hour (in-memory, per server instance). If it fails, the page links to Google Translate. Speech input depends on the browser: Safari on iPhone supports it, but it may not work from an installed Home Screen app, so typing is the fallback.
