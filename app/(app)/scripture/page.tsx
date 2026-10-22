@@ -37,7 +37,7 @@ export default async function Scripture() {
         <h2 className="label">My verses</h2>
         {mine.length === 0 && <p className="text-sm text-muted">Add a verse below, or take a set from the leaders.</p>}
         {mine.map((c) => (
-          <Link key={c.ref} href={`/scripture/learn?ref=${encodeURIComponent(c.ref)}`} className="card flex-row items-center justify-between">
+          <Link key={c.ref} href={`/scripture/learn?ref=${encodeURIComponent(c.ref)}`} className="card flex flex-row items-center justify-between">
             <span className="verse-text">{refLabel(c.ref)}</span>
             <span className="tag">{!c.learned_at ? "Learn" : new Date(c.due!) <= new Date() ? "Due" : "Learned"}</span>
           </Link>

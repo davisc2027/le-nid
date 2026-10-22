@@ -69,6 +69,82 @@
             "note": "Country names take an article: les États-Unis, so it becomes des États-Unis."
           }
         ]
+      },
+      {
+        "id": "u1-l3",
+        "title": "Small talk",
+        "phrases": [
+          {
+            "fr": "Ça va ?",
+            "en": "How's it going? (casual)",
+            "note": "Ça va is relaxed but fine with almost anyone; the usual answer is Ça va bien."
+          },
+          {
+            "fr": "Ça va bien, et vous ?",
+            "en": "I'm doing well, and you?"
+          },
+          {
+            "fr": "Pas mal",
+            "en": "Not bad"
+          },
+          {
+            "fr": "Vous êtes d'ici ?",
+            "en": "Are you from around here?"
+          },
+          {
+            "fr": "C'est ma première fois en France",
+            "en": "It's my first time in France"
+          },
+          {
+            "fr": "Vous habitez ici depuis longtemps ?",
+            "en": "Have you lived here long?"
+          },
+          {
+            "fr": "On se tutoie ?",
+            "en": "Shall we say tu to each other?",
+            "note": "Tu is the informal 'you'; people your age often switch to it quickly, but let the French person lead."
+          }
+        ]
+      },
+      {
+        "id": "u1-l4",
+        "title": "Thanks and goodbyes",
+        "phrases": [
+          {
+            "fr": "Bonne soirée",
+            "en": "Have a good evening"
+          },
+          {
+            "fr": "Bon week-end !",
+            "en": "Have a good weekend!"
+          },
+          {
+            "fr": "À demain",
+            "en": "See you tomorrow"
+          },
+          {
+            "fr": "À plus tard",
+            "en": "See you later",
+            "note": "Friends shorten it to À plus, and text it as A+."
+          },
+          {
+            "fr": "Merci pour tout",
+            "en": "Thanks for everything"
+          },
+          {
+            "fr": "C'était un plaisir",
+            "en": "It was a pleasure"
+          },
+          {
+            "fr": "Prenez soin de vous",
+            "en": "Take care",
+            "note": "With a friend you would say Prends soin de toi (tu form)."
+          },
+          {
+            "fr": "Bonne continuation",
+            "en": "All the best from here on"
+          }
+        ]
       }
     ]
   },
@@ -156,6 +232,87 @@
             "en": "I am looking for my group"
           }
         ]
+      },
+      {
+        "id": "u2-l3",
+        "title": "Tickets and trains",
+        "phrases": [
+          {
+            "fr": "Où est-ce que je peux acheter un billet ?",
+            "en": "Where can I buy a ticket?",
+            "note": "Train tickets are billets; for the tram, locals say ticket or titre de transport."
+          },
+          {
+            "fr": "Un aller simple pour Colmar, s'il vous plaît",
+            "en": "A one-way ticket to Colmar, please"
+          },
+          {
+            "fr": "Un aller-retour pour Paris, s'il vous plaît",
+            "en": "A round-trip ticket to Paris, please"
+          },
+          {
+            "fr": "De quel quai part le train ?",
+            "en": "Which platform does the train leave from?",
+            "note": "Departure boards show the platform as voie; it appears about 20 minutes before departure."
+          },
+          {
+            "fr": "Le train a du retard",
+            "en": "The train is delayed"
+          },
+          {
+            "fr": "Est-ce que cette place est libre ?",
+            "en": "Is this seat free?"
+          },
+          {
+            "fr": "Est-ce que ce tram va à Kehl ?",
+            "en": "Does this tram go to Kehl?",
+            "note": "Tram D crosses the Rhine to Kehl in Germany, so carry your passport."
+          },
+          {
+            "fr": "Où faut-il descendre ?",
+            "en": "Where do I get off?"
+          }
+        ]
+      },
+      {
+        "id": "u2-l4",
+        "title": "Finding your way",
+        "phrases": [
+          {
+            "fr": "Je ne sais pas où je suis",
+            "en": "I don't know where I am"
+          },
+          {
+            "fr": "Comment aller à la place Kléber ?",
+            "en": "How do I get to Place Kléber?",
+            "note": "Place Kléber is the main square, a short walk from the Homme de Fer tram hub."
+          },
+          {
+            "fr": "C'est à cinq minutes à pied",
+            "en": "It's a five-minute walk"
+          },
+          {
+            "fr": "Tournez à gauche au feu",
+            "en": "Turn left at the traffic light"
+          },
+          {
+            "fr": "Prenez la deuxième rue à droite",
+            "en": "Take the second street on the right"
+          },
+          {
+            "fr": "Traversez le pont",
+            "en": "Cross the bridge"
+          },
+          {
+            "fr": "Pouvez-vous me montrer sur le plan ?",
+            "en": "Can you show me on the map?",
+            "note": "A city map is un plan; une carte is a country map or a restaurant menu."
+          },
+          {
+            "fr": "C'est en face de la cathédrale",
+            "en": "It's across from the cathedral"
+          }
+        ]
       }
     ]
   },
@@ -238,6 +395,87 @@
             "note": "Say Bonjour first, then ask. Starting in French shows respect, and people usually help more."
           }
         ]
+      },
+      {
+        "id": "u3-l3",
+        "title": "A full meal",
+        "phrases": [
+          {
+            "fr": "Une table pour quatre, s'il vous plaît",
+            "en": "A table for four, please"
+          },
+          {
+            "fr": "La carte, s'il vous plaît",
+            "en": "The menu, please",
+            "note": "La carte is the full menu; un menu is a fixed-price set meal."
+          },
+          {
+            "fr": "Qu'est-ce que vous recommandez ?",
+            "en": "What do you recommend?"
+          },
+          {
+            "fr": "Je vais prendre le plat du jour",
+            "en": "I'll have the dish of the day"
+          },
+          {
+            "fr": "On peut commander ?",
+            "en": "Can we order?"
+          },
+          {
+            "fr": "Comme dessert, une tarte aux pommes",
+            "en": "For dessert, an apple tart"
+          },
+          {
+            "fr": "Est-ce qu'on peut payer séparément ?",
+            "en": "Can we pay separately?",
+            "note": "With a big group, ask before ordering: many restaurants prefer one bill per table."
+          },
+          {
+            "fr": "C'était très bon, merci",
+            "en": "It was very good, thanks"
+          }
+        ]
+      },
+      {
+        "id": "u3-l4",
+        "title": "Dietary needs",
+        "phrases": [
+          {
+            "fr": "Je ne mange pas de viande",
+            "en": "I don't eat meat",
+            "note": "Je suis végétarien changes with gender (végétarienne), so this phrase works for everyone."
+          },
+          {
+            "fr": "Est-ce qu'il y a du porc ?",
+            "en": "Is there pork in it?",
+            "note": "Alsatian dishes often hide pork, like the lardons on a tarte flambée."
+          },
+          {
+            "fr": "Est-ce que c'est sans gluten ?",
+            "en": "Is it gluten-free?"
+          },
+          {
+            "fr": "Je suis allergique aux cacahuètes",
+            "en": "I am allergic to peanuts",
+            "note": "Ingredient labels usually say arachide instead of cacahuète."
+          },
+          {
+            "fr": "Quels sont les ingrédients ?",
+            "en": "What are the ingredients?"
+          },
+          {
+            "fr": "Sans oignons, s'il vous plaît",
+            "en": "No onions, please"
+          },
+          {
+            "fr": "Je ne bois pas d'alcool",
+            "en": "I don't drink alcohol"
+          },
+          {
+            "fr": "C'est épicé ?",
+            "en": "Is it spicy?"
+          }
+        ]
       }
     ]
   },
@@ -306,6 +544,842 @@
           {
             "fr": "Merci de votre temps",
             "en": "Thank you for your time"
+          }
+        ]
+      },
+      {
+        "id": "u4-l3",
+        "title": "Talking about faith",
+        "phrases": [
+          {
+            "fr": "Est-ce que je peux vous poser une question ?",
+            "en": "May I ask you a question?"
+          },
+          {
+            "fr": "Nous sommes ici avec notre église",
+            "en": "We are here with our church"
+          },
+          {
+            "fr": "La foi est importante pour moi",
+            "en": "Faith is important to me"
+          },
+          {
+            "fr": "Qu'est-ce qui vous donne de l'espoir ?",
+            "en": "What gives you hope?"
+          },
+          {
+            "fr": "Est-ce que la foi compte pour vous ?",
+            "en": "Does faith matter to you?",
+            "note": "France is very secular (laïque) and many people keep faith private, so welcome any answer warmly."
+          },
+          {
+            "fr": "Je peux vous raconter mon histoire ?",
+            "en": "Can I tell you my story?",
+            "note": "Ask before sharing; a short personal story lands better than an argument."
+          },
+          {
+            "fr": "Je respecte votre point de vue",
+            "en": "I respect your point of view"
+          },
+          {
+            "fr": "Pas de problème, merci quand même",
+            "en": "No problem, thanks anyway",
+            "note": "If someone says no, end on a smile; a kind exit is a good witness too."
+          }
+        ]
+      },
+      {
+        "id": "u4-l4",
+        "title": "Prayer and encouragement",
+        "phrases": [
+          {
+            "fr": "Comment puis-je prier pour vous ?",
+            "en": "How can I pray for you?"
+          },
+          {
+            "fr": "Je vais prier pour vous",
+            "en": "I will pray for you"
+          },
+          {
+            "fr": "Courage !",
+            "en": "Hang in there!",
+            "note": "Courage is everyday encouragement in France and carries no religious meaning."
+          },
+          {
+            "fr": "Je pense à vous",
+            "en": "I'm thinking of you"
+          },
+          {
+            "fr": "Ne perdez pas espoir",
+            "en": "Don't lose hope"
+          },
+          {
+            "fr": "Dieu est fidèle",
+            "en": "God is faithful"
+          },
+          {
+            "fr": "Que la paix soit avec vous",
+            "en": "Peace be with you",
+            "note": "Familiar from church services, so it can feel formal in a casual chat."
+          },
+          {
+            "fr": "Seigneur, merci pour cette journée",
+            "en": "Lord, thank you for this day"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u5",
+    "title": "Les nombres",
+    "blurb": "Numbers, time and days",
+    "lessons": [
+      {
+        "id": "u5-l1",
+        "title": "One to eight",
+        "phrases": [
+          {
+            "fr": "Un",
+            "en": "One (1)",
+            "note": "Un becomes une before a feminine noun: une baguette."
+          },
+          {
+            "fr": "Deux",
+            "en": "Two (2)"
+          },
+          {
+            "fr": "Trois",
+            "en": "Three (3)"
+          },
+          {
+            "fr": "Quatre",
+            "en": "Four (4)"
+          },
+          {
+            "fr": "Cinq",
+            "en": "Five (5)",
+            "note": "The q is pronounced when cinq stands alone."
+          },
+          {
+            "fr": "Six",
+            "en": "Six (6)"
+          },
+          {
+            "fr": "Sept",
+            "en": "Seven (7)",
+            "note": "The p is silent: say 'set'."
+          },
+          {
+            "fr": "Huit",
+            "en": "Eight (8)"
+          }
+        ]
+      },
+      {
+        "id": "u5-l2",
+        "title": "Bigger numbers",
+        "phrases": [
+          {
+            "fr": "Neuf",
+            "en": "Nine (9)"
+          },
+          {
+            "fr": "Dix",
+            "en": "Ten (10)",
+            "note": "Alone, dix sounds like 'deess'; the x is said as an s."
+          },
+          {
+            "fr": "Douze",
+            "en": "Twelve (12)"
+          },
+          {
+            "fr": "Quinze",
+            "en": "Fifteen (15)"
+          },
+          {
+            "fr": "Vingt",
+            "en": "Twenty (20)",
+            "note": "The g and t are silent: vingt sounds like 'vin'."
+          },
+          {
+            "fr": "Cinquante",
+            "en": "Fifty (50)"
+          },
+          {
+            "fr": "Soixante-dix",
+            "en": "Seventy (70)",
+            "note": "French counts seventy as sixty-ten; you can type it without the hyphen."
+          },
+          {
+            "fr": "Cent",
+            "en": "One hundred (100)"
+          }
+        ]
+      },
+      {
+        "id": "u5-l3",
+        "title": "Telling time",
+        "phrases": [
+          {
+            "fr": "Quelle heure est-il ?",
+            "en": "What time is it?"
+          },
+          {
+            "fr": "Il est midi",
+            "en": "It's noon"
+          },
+          {
+            "fr": "Il est deux heures et demie",
+            "en": "It's half past two"
+          },
+          {
+            "fr": "Il est huit heures du soir",
+            "en": "It's eight in the evening",
+            "note": "Schedules use the 24-hour clock, so eight in the evening is written 20 h."
+          },
+          {
+            "fr": "À quelle heure on se retrouve ?",
+            "en": "What time are we meeting up?"
+          },
+          {
+            "fr": "Rendez-vous à dix-huit heures",
+            "en": "Let's meet at six p.m. (18:00)"
+          },
+          {
+            "fr": "Je suis en retard",
+            "en": "I'm running late"
+          },
+          {
+            "fr": "Dans un quart d'heure",
+            "en": "In a quarter of an hour"
+          }
+        ]
+      },
+      {
+        "id": "u5-l4",
+        "title": "Days of the week",
+        "phrases": [
+          {
+            "fr": "On est quel jour ?",
+            "en": "What day is it?"
+          },
+          {
+            "fr": "On est jeudi",
+            "en": "It's Thursday",
+            "note": "Days of the week are not capitalized in French: lundi, mardi, jeudi."
+          },
+          {
+            "fr": "Demain matin",
+            "en": "Tomorrow morning"
+          },
+          {
+            "fr": "Hier soir",
+            "en": "Yesterday evening"
+          },
+          {
+            "fr": "Ce week-end",
+            "en": "This weekend"
+          },
+          {
+            "fr": "Le musée est fermé le lundi",
+            "en": "The museum is closed on Mondays"
+          },
+          {
+            "fr": "Les magasins ferment le dimanche",
+            "en": "Shops close on Sundays",
+            "note": "Most shops in Alsace close on Sunday, so stock up on Saturday."
+          },
+          {
+            "fr": "Je rentre aux États-Unis samedi",
+            "en": "I go back to the US on Saturday"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u6",
+    "title": "Au marché",
+    "blurb": "Prices, paying and shopping",
+    "lessons": [
+      {
+        "id": "u6-l1",
+        "title": "Prices and paying",
+        "phrases": [
+          {
+            "fr": "Combien coûte ce bretzel ?",
+            "en": "How much is this pretzel?",
+            "note": "The bretzel is an Alsatian classic, sold in most bakeries."
+          },
+          {
+            "fr": "Ça fait cinq euros",
+            "en": "That comes to five euros"
+          },
+          {
+            "fr": "Trois euros cinquante",
+            "en": "Three euros fifty (3.50)"
+          },
+          {
+            "fr": "Je peux payer par carte ?",
+            "en": "Can I pay by card?"
+          },
+          {
+            "fr": "En espèces",
+            "en": "In cash"
+          },
+          {
+            "fr": "Vous avez de la monnaie ?",
+            "en": "Do you have change?",
+            "note": "Monnaie means change or coins, not money in general (that is argent)."
+          },
+          {
+            "fr": "Je peux avoir un reçu ?",
+            "en": "Can I have a receipt?"
+          },
+          {
+            "fr": "C'est trop cher pour moi",
+            "en": "It's too expensive for me"
+          }
+        ]
+      },
+      {
+        "id": "u6-l2",
+        "title": "Shopping",
+        "phrases": [
+          {
+            "fr": "Je regarde seulement, merci",
+            "en": "I'm just looking, thanks",
+            "note": "Always say Bonjour when you walk in; shopkeepers notice when you don't."
+          },
+          {
+            "fr": "Vous l'avez en plus grand ?",
+            "en": "Do you have it in a bigger size?"
+          },
+          {
+            "fr": "Je peux l'essayer ?",
+            "en": "Can I try it on?"
+          },
+          {
+            "fr": "Je le prends",
+            "en": "I'll take it"
+          },
+          {
+            "fr": "Une baguette, s'il vous plaît",
+            "en": "A baguette, please"
+          },
+          {
+            "fr": "Où est la boulangerie la plus proche ?",
+            "en": "Where is the nearest bakery?"
+          },
+          {
+            "fr": "Un sac, s'il vous plaît",
+            "en": "A bag, please",
+            "note": "Shops often charge for bags, so carry a tote."
+          },
+          {
+            "fr": "C'est pour offrir",
+            "en": "It's a gift",
+            "note": "Many shops gift-wrap for free when you say this."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u7",
+    "title": "À l'hôtel",
+    "blurb": "Hotel, hostel and everyday needs",
+    "lessons": [
+      {
+        "id": "u7-l1",
+        "title": "Checking in",
+        "phrases": [
+          {
+            "fr": "J'ai une réservation au nom de Smith",
+            "en": "I have a reservation under the name Smith"
+          },
+          {
+            "fr": "La clé de la chambre, s'il vous plaît",
+            "en": "The room key, please"
+          },
+          {
+            "fr": "À quelle heure est le petit-déjeuner ?",
+            "en": "What time is breakfast?"
+          },
+          {
+            "fr": "Quel est le code du wifi ?",
+            "en": "What is the wifi password?",
+            "note": "Wifi is pronounced 'wee-fee' in French."
+          },
+          {
+            "fr": "Est-ce que je peux laisser mon sac ici ?",
+            "en": "Can I leave my bag here?"
+          },
+          {
+            "fr": "Il n'y a pas d'eau chaude",
+            "en": "There is no hot water"
+          },
+          {
+            "fr": "Le chauffage ne marche pas",
+            "en": "The heating doesn't work"
+          },
+          {
+            "fr": "Je voudrais une serviette, s'il vous plaît",
+            "en": "I would like a towel, please",
+            "note": "Serviette means both towel and napkin; context makes it clear."
+          }
+        ]
+      },
+      {
+        "id": "u7-l2",
+        "title": "Everyday needs",
+        "phrases": [
+          {
+            "fr": "Où est-ce que je peux recharger mon téléphone ?",
+            "en": "Where can I charge my phone?"
+          },
+          {
+            "fr": "Vous avez un adaptateur ?",
+            "en": "Do you have a plug adapter?",
+            "note": "France uses round two-pin plugs, so bring an adapter from home."
+          },
+          {
+            "fr": "On peut boire l'eau du robinet ?",
+            "en": "Is the tap water safe to drink?"
+          },
+          {
+            "fr": "Il y a un supermarché près d'ici ?",
+            "en": "Is there a supermarket nearby?"
+          },
+          {
+            "fr": "Jusqu'à quelle heure c'est ouvert ?",
+            "en": "Until what time is it open?"
+          },
+          {
+            "fr": "Où est la laverie ?",
+            "en": "Where is the laundromat?"
+          },
+          {
+            "fr": "Je peux utiliser les toilettes ?",
+            "en": "May I use the restroom?",
+            "note": "Public restrooms are rare; cafés usually expect you to buy something first."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u8",
+    "title": "Au secours !",
+    "blurb": "Help, health and emergencies",
+    "lessons": [
+      {
+        "id": "u8-l1",
+        "title": "Asking for help",
+        "phrases": [
+          {
+            "fr": "J'ai perdu mon passeport",
+            "en": "I lost my passport",
+            "note": "Report it to the police, then contact the US Consulate in Strasbourg and your trip leader."
+          },
+          {
+            "fr": "J'ai perdu mon téléphone",
+            "en": "I lost my phone"
+          },
+          {
+            "fr": "Où est le commissariat ?",
+            "en": "Where is the police station?"
+          },
+          {
+            "fr": "On m'a volé mon sac",
+            "en": "Someone stole my bag"
+          },
+          {
+            "fr": "Pouvez-vous appeler ce numéro ?",
+            "en": "Can you call this number?"
+          },
+          {
+            "fr": "Mon téléphone n'a plus de batterie",
+            "en": "My phone battery is dead"
+          },
+          {
+            "fr": "C'est urgent",
+            "en": "It's urgent"
+          },
+          {
+            "fr": "Laissez-moi tranquille !",
+            "en": "Leave me alone!",
+            "note": "Say it firmly if someone bothers you, then walk toward a busy place or your group."
+          }
+        ]
+      },
+      {
+        "id": "u8-l2",
+        "title": "Feeling unwell",
+        "phrases": [
+          {
+            "fr": "Je ne me sens pas bien",
+            "en": "I don't feel well"
+          },
+          {
+            "fr": "J'ai mal à la tête",
+            "en": "I have a headache"
+          },
+          {
+            "fr": "J'ai mal au ventre",
+            "en": "I have a stomachache"
+          },
+          {
+            "fr": "J'ai de la fièvre",
+            "en": "I have a fever"
+          },
+          {
+            "fr": "Où est la pharmacie la plus proche ?",
+            "en": "Where is the nearest pharmacy?",
+            "note": "Look for the green cross; at night, the door lists the pharmacie de garde that is open."
+          },
+          {
+            "fr": "Avez-vous quelque chose contre la toux ?",
+            "en": "Do you have something for a cough?"
+          },
+          {
+            "fr": "Je suis allergique à la pénicilline",
+            "en": "I am allergic to penicillin"
+          },
+          {
+            "fr": "J'ai besoin d'un médecin",
+            "en": "I need a doctor",
+            "note": "French pharmacists give good advice for minor problems before you see a doctor."
+          }
+        ]
+      },
+      {
+        "id": "u8-l3",
+        "title": "Emergencies",
+        "phrases": [
+          {
+            "fr": "Au secours !",
+            "en": "Help!"
+          },
+          {
+            "fr": "Appelez le cent douze !",
+            "en": "Call 112!",
+            "note": "112 is free from any phone in Europe, and operators can switch to English."
+          },
+          {
+            "fr": "Appelez une ambulance !",
+            "en": "Call an ambulance!"
+          },
+          {
+            "fr": "Il y a eu un accident",
+            "en": "There has been an accident"
+          },
+          {
+            "fr": "Quelqu'un est blessé",
+            "en": "Someone is hurt"
+          },
+          {
+            "fr": "Au feu !",
+            "en": "Fire!"
+          },
+          {
+            "fr": "Où sont les urgences ?",
+            "en": "Where is the emergency room?",
+            "note": "Les urgences is the hospital ER; for minor problems, a pharmacy is much faster."
+          },
+          {
+            "fr": "Restez avec moi",
+            "en": "Stay with me"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u9",
+    "title": "Moi et vous",
+    "blurb": "Where you're from, family, hobbies and weather",
+    "lessons": [
+      {
+        "id": "u9-l1",
+        "title": "About me",
+        "phrases": [
+          {
+            "fr": "D'où venez-vous ?",
+            "en": "Where are you from?"
+          },
+          {
+            "fr": "J'habite au Texas",
+            "en": "I live in Texas",
+            "note": "Most US states take au or en: au Texas, en Californie, en Floride."
+          },
+          {
+            "fr": "J'ai vingt ans",
+            "en": "I am twenty (20) years old",
+            "note": "French uses avoir for age: literally 'I have twenty years'."
+          },
+          {
+            "fr": "Quel âge avez-vous ?",
+            "en": "How old are you?"
+          },
+          {
+            "fr": "Je suis à l'université",
+            "en": "I go to college",
+            "note": "Collège in France means middle school, so say université."
+          },
+          {
+            "fr": "J'étudie la psychologie",
+            "en": "I study psychology"
+          },
+          {
+            "fr": "Je travaille dans un café",
+            "en": "I work at a coffee shop"
+          },
+          {
+            "fr": "Que faites-vous dans la vie ?",
+            "en": "What do you do for a living?"
+          }
+        ]
+      },
+      {
+        "id": "u9-l2",
+        "title": "Family",
+        "phrases": [
+          {
+            "fr": "Voici ma famille",
+            "en": "This is my family",
+            "note": "Showing family photos on your phone is an easy, friendly way to keep a chat going."
+          },
+          {
+            "fr": "J'ai deux frères",
+            "en": "I have two brothers"
+          },
+          {
+            "fr": "Mes parents habitent en Californie",
+            "en": "My parents live in California"
+          },
+          {
+            "fr": "Ma mère est infirmière",
+            "en": "My mom is a nurse"
+          },
+          {
+            "fr": "Mon père est pasteur",
+            "en": "My dad is a pastor",
+            "note": "Pasteur is a Protestant minister; a Catholic priest is un prêtre."
+          },
+          {
+            "fr": "Avez-vous des enfants ?",
+            "en": "Do you have children?"
+          },
+          {
+            "fr": "J'ai un chien",
+            "en": "I have a dog"
+          }
+        ]
+      },
+      {
+        "id": "u9-l3",
+        "title": "Hobbies",
+        "phrases": [
+          {
+            "fr": "Qu'est-ce que vous aimez faire ?",
+            "en": "What do you like to do?"
+          },
+          {
+            "fr": "J'aime jouer au foot",
+            "en": "I like playing soccer",
+            "note": "Le foot is soccer; American football is le football américain."
+          },
+          {
+            "fr": "Je joue de la guitare",
+            "en": "I play the guitar",
+            "note": "Use jouer au for sports and jouer de for instruments."
+          },
+          {
+            "fr": "J'adore la musique",
+            "en": "I love music"
+          },
+          {
+            "fr": "Je chante dans une chorale",
+            "en": "I sing in a choir"
+          },
+          {
+            "fr": "J'aime lire",
+            "en": "I like to read"
+          },
+          {
+            "fr": "Vous faites du sport ?",
+            "en": "Do you play sports?"
+          },
+          {
+            "fr": "Moi aussi !",
+            "en": "Me too!"
+          }
+        ]
+      },
+      {
+        "id": "u9-l4",
+        "title": "The weather",
+        "phrases": [
+          {
+            "fr": "Quel temps fait-il ?",
+            "en": "What's the weather like?"
+          },
+          {
+            "fr": "Il fait beau",
+            "en": "It's nice out"
+          },
+          {
+            "fr": "Il fait froid",
+            "en": "It's cold",
+            "note": "Strasbourg winters are damp and cold, so pack layers."
+          },
+          {
+            "fr": "Il fait chaud",
+            "en": "It's hot"
+          },
+          {
+            "fr": "Il pleut",
+            "en": "It's raining"
+          },
+          {
+            "fr": "Il y a du vent",
+            "en": "It's windy"
+          },
+          {
+            "fr": "Il neige !",
+            "en": "It's snowing!"
+          },
+          {
+            "fr": "Prenez un parapluie",
+            "en": "Take an umbrella"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u10",
+    "title": "Strasbourg",
+    "blurb": "The cathedral, Petite France and Alsace",
+    "lessons": [
+      {
+        "id": "u10-l1",
+        "title": "Sightseeing",
+        "phrases": [
+          {
+            "fr": "Où est la cathédrale ?",
+            "en": "Where is the cathedral?"
+          },
+          {
+            "fr": "À quelle heure ouvre la cathédrale ?",
+            "en": "What time does the cathedral open?"
+          },
+          {
+            "fr": "On peut monter en haut de la tour ?",
+            "en": "Can we climb up the tower?",
+            "note": "The viewing platform is 332 steps up, with a ticket sold at the entrance."
+          },
+          {
+            "fr": "Voici l'horloge astronomique",
+            "en": "Here is the astronomical clock",
+            "note": "Its figures parade at 12:30 each day; arrive early, it gets crowded."
+          },
+          {
+            "fr": "La Petite France est magnifique",
+            "en": "Petite France is gorgeous"
+          },
+          {
+            "fr": "Pouvez-vous nous prendre en photo ?",
+            "en": "Could you take our picture?"
+          },
+          {
+            "fr": "C'est quoi, ce bâtiment ?",
+            "en": "What is this building?"
+          },
+          {
+            "fr": "On fait une promenade en bateau ?",
+            "en": "Shall we take a boat tour?"
+          }
+        ]
+      },
+      {
+        "id": "u10-l2",
+        "title": "Alsatian food and the Christmas market",
+        "phrases": [
+          {
+            "fr": "Où est le marché de Noël ?",
+            "en": "Where is the Christmas market?",
+            "note": "Strasbourg's Christkindelsmärik dates back to 1570 and spreads across many squares."
+          },
+          {
+            "fr": "Une tarte flambée, s'il vous plaît",
+            "en": "A tarte flambée, please",
+            "note": "Its Alsatian name is flammekueche: a thin crust with cream, onions and bacon."
+          },
+          {
+            "fr": "Je voudrais goûter la choucroute",
+            "en": "I would like to try the choucroute"
+          },
+          {
+            "fr": "On mange dans une winstub ?",
+            "en": "Shall we eat at a winstub?",
+            "note": "A winstub is a cozy traditional Alsatian restaurant."
+          },
+          {
+            "fr": "Un jus de pomme chaud, s'il vous plaît",
+            "en": "A hot apple juice, please"
+          },
+          {
+            "fr": "Je rends la tasse pour récupérer la consigne",
+            "en": "I'm returning the mug to get my deposit back",
+            "note": "Market drinks come in a reusable mug with a deposit; keep it as a souvenir or return it."
+          },
+          {
+            "fr": "Des bredele, s'il vous plaît",
+            "en": "Some bredele cookies, please"
+          },
+          {
+            "fr": "C'est une spécialité alsacienne ?",
+            "en": "Is it an Alsatian specialty?"
+          }
+        ]
+      },
+      {
+        "id": "u10-l3",
+        "title": "Alsace and its people",
+        "phrases": [
+          {
+            "fr": "Les gens sont très accueillants ici",
+            "en": "People are very welcoming here"
+          },
+          {
+            "fr": "Vous parlez alsacien ?",
+            "en": "Do you speak Alsatian?",
+            "note": "Alsatian is a Germanic dialect; older people may speak it, and many enjoy being asked."
+          },
+          {
+            "fr": "Comment dit-on merci en alsacien ?",
+            "en": "How do you say thank you in Alsatian?",
+            "note": "The answer is usually merci vielmols."
+          },
+          {
+            "fr": "Les panneaux sont en deux langues",
+            "en": "The signs are in two languages"
+          },
+          {
+            "fr": "Je prends le tram A jusqu'à l'Homme de Fer",
+            "en": "I take tram A to Homme de Fer",
+            "note": "Homme de Fer is the central stop where most lines meet; say the letter A as 'ah'."
+          },
+          {
+            "fr": "Strasbourg est une ville européenne",
+            "en": "Strasbourg is a European city"
+          },
+          {
+            "fr": "J'adore cette région",
+            "en": "I love this region"
           }
         ]
       }

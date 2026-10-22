@@ -23,11 +23,11 @@ export default async function Learn() {
         <h1 className="text-2xl font-extrabold">Learn</h1>
         <p className="font-bold text-primary">🔥 <StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
       </div>
-      <Link href="/french" className="card min-h-28 flex-row items-center gap-4">
+      <Link href="/french" className="card flex min-h-28 flex-row items-center gap-4">
         <LandmarkArt unit="u4" progress={(lessons?.length ?? 0) / ALL_LESSONS.length} size={72} />
         <div><h2 className="text-lg font-extrabold">French</h2><p className="text-sm text-muted">Everyday phrases · {lessons?.length ?? 0} of {ALL_LESSONS.length} lessons</p></div>
       </Link>
-      <Link href="/scripture" className="card min-h-28 flex-row items-center gap-4">
+      <Link href="/scripture" className="card flex min-h-28 flex-row items-center gap-4">
         <Rosace filled={learned} total={Math.max(learned, 6)} size={72} />
         <div><h2 className="text-lg font-extrabold">Verses</h2><p className="text-sm text-muted">{learned} learned{due > 0 ? ` · ${due} due for review` : ""}</p></div>
       </Link>

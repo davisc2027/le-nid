@@ -20,7 +20,7 @@ export default async function Together() {
   const board = (rows: Row[] | null) => (
     <ol className="flex flex-col gap-1.5">
       {(rows ?? []).map((r, i) => (
-        <li key={i} className={`card flex-row justify-between !py-2 ${r.is_me ? "!border-primary" : ""}`}>
+        <li key={i} className={`card flex flex-row justify-between !py-2 ${r.is_me ? "!border-primary" : ""}`}>
           <span><b className="text-muted">{i + 1}</b> {r.name}{r.is_me && " (you)"}</span>
           <span className="font-bold tabular-nums">{Number(r.xp)} XP</span>
         </li>

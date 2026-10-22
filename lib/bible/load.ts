@@ -43,3 +43,6 @@ export async function loadVerse(key: string): Promise<{ fr: string; en: string |
   const frText = pick(fr, r);
   return frText ? { fr: frText, en: pick(en, r) } : null;
 }
+
+/** French verses of one book (index 0 = chapter 1, index 0 = verse 1), or null when not installed. Used for suggestions. */
+export const loadBookText = (code: string) => book("fr", code);
