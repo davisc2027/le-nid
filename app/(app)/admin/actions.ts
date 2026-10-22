@@ -97,3 +97,20 @@ export async function addVerseSet(f: FormData) {
   if (e2) throw new Error(e2.message);
   revalidatePath("/scripture");
 }
+
+export async function setTeam(f: FormData) {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("profiles").update({ team: text(f, "team") || null }).eq("id", text(f, "id"));
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+  revalidatePath("/together");
+}
+
+export async function updateGoal(f: FormData) {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("trip_goal")
+    .update({ title: text(f, "title"), target_xp: Number(text(f, "target_xp")) }).eq("id", 1);
+  if (error) throw new Error(error.message);
+  revalidatePath("/together");
+  revalidatePath("/");
+}

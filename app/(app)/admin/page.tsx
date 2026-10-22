@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
-import { postAnnouncement, addItineraryItem, addMeeting, addTodo, assignMissing, addVerseSet } from "./actions";
+import { postAnnouncement, addItineraryItem, addMeeting, addTodo, assignMissing, addVerseSet, setTeam, updateGoal } from "./actions";
 
 export default async function Admin() {
   const profile = await getProfile();
@@ -11,8 +11,9 @@ export default async function Admin() {
   const [{ data: todos }, { data: assignments }, { data: people }] = await Promise.all([
     supabase.from("todos").select("id, title, due_date, requires_upload").order("due_date"),
     supabase.from("todo_assignments").select("todo_id, user_id, completed_at"),
-    supabase.from("profiles").select("id, name, email"),
+    supabase.from("profiles").select("id, name, email, team, role").order("name"),
   ]);
+  const { data: goal } = await supabase.from("trip_goal").select("title, target_xp").single();
   const who = new Map(people?.map((p) => [p.id, p.name || p.email]));
   return (
     <div className="flex flex-col gap-4">
@@ -64,6 +65,26 @@ export default async function Admin() {
         <textarea className="input" name="refs" placeholder={"One reference per line:\nJean 3:16\nRomains 8:38-39"} rows={4} required />
         <button className="btn">Publish set</button>
       </form>
+
+      <form action={updateGoal} className="card flex flex-col gap-2">
+        <h2 className="font-bold">Group goal</h2>
+        <input className="input" name="title" defaultValue={goal?.title} required />
+        <label className="text-sm text-muted">Total XP to raise the full spire
+          <input className="input" name="target_xp" type="number" min="100" defaultValue={goal?.target_xp} required /></label>
+        <button className="btn">Save goal</button>
+      </form>
+
+      <section className="card gap-2">
+        <h2 className="font-bold">People and teams ({people?.length ?? 0})</h2>
+        {people?.map((p) => (
+          <form key={p.id} action={setTeam} className="flex items-center gap-2 text-sm">
+            <input type="hidden" name="id" value={p.id} />
+            <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && " ★"}</span>
+            <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
+            <button className="btn !px-3 !py-1">Set</button>
+          </form>
+        ))}
+      </section>
 
       <FileUpload meetings={meetings ?? []} />
 

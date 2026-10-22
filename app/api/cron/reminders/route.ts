@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
+import { sendEmail } from "@/lib/email";
 
 const OFFSETS = [5, 1, 0]; // days before the due date
 
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
   const today = parisToday();
   const { data: rows } = await db
     .from("todo_assignments")
-    .select("todo_id, user_id, todos(title, due_date)")
+    .select("todo_id, user_id, todos(title, due_date), profiles(email)")
     .is("completed_at", null);
 
   const sent = await db.from("reminder_log").select("todo_id, user_id, days_before");
@@ -32,6 +33,8 @@ export async function GET(request: Request) {
     if (!OFFSETS.includes(left) || done.has(`${r.todo_id}:${r.user_id}:${left}`)) continue;
     const when = left === 0 ? "due today" : left === 1 ? "due tomorrow" : `due in ${left} days`;
     await sendPushToAll({ title: `Reminder: ${todo.title}`, body: `This is ${when}.`, url: "/todos" }, [r.user_id]);
+    const email = (r.profiles as unknown as { email: string | null } | null)?.email;
+    if (email) await sendEmail(email, `Reminder: ${todo.title}`, `${todo.title} is ${when}. Open Le Nid to finish it.`);
     await db.from("reminder_log").insert({ todo_id: r.todo_id, user_id: r.user_id, days_before: left });
     count++;
   }

@@ -16,7 +16,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   ];
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-20">
-      <header className="px-4 pt-3"><Logo size={36} /></header>
+      <header className="flex items-center justify-between px-4 pt-3">
+        <Logo size={36} />
+        <div className="flex gap-2 text-sm font-bold text-primary">
+          <Link href="/together" aria-label="Together: leaderboard and group goal">🏆</Link>
+          <Link href="/me">Me</Link>
+        </div>
+      </header>
       <main className="flex-1 px-4 py-4">{children}</main>
       <TranslateFab />
       <nav className="fixed inset-x-0 bottom-0 border-t border-border bg-surface">

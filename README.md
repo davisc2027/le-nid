@@ -1,10 +1,10 @@
 # Le Nid
 
-Companion PWA for the Strasbourg mission trip: announcements with push, itinerary, and files released after prep meetings. Product plan: `docs/plan.md`. Design plan: `docs/design.md`.
+Companion PWA for the Strasbourg mission trip: announcements with push, itinerary, files released after prep meetings, to-dos with reminders, French lessons, scripture memory, live translation, and a group goal. Setup steps: `SETUP.md`. Product plan: `docs/plan.md`. Design plan: `docs/design.md`.
 
 Stack: Next.js (App Router) + Tailwind, Supabase (Postgres, Auth, Storage), `web-push`, hosted on Vercel. Everything is free-tier. No machine-specific setup; all state lives in Supabase and git.
 
-## Setup (any computer)
+## Quick start (see SETUP.md for the full checklist)
 1. `npm install`
 2. Create a free Supabase project. Run `supabase/migrations/*.sql` in order in the SQL editor (or `npx supabase link` then `npx supabase db push`).
 3. Supabase dashboard -> Authentication -> URL Configuration: set Site URL to your deployed URL and add `<url>/auth/callback` (and `http://localhost:3000/auth/callback`) to Redirect URLs.

@@ -21,12 +21,15 @@ export default function TranslatePanel() {
   const [history, setHistory] = useState<Entry[]>([]);
   const [listening, setListening] = useState(false);
   const [canListen, setCanListen] = useState(false);
+  const [dictate, setDictate] = useState(false);
   const rec = useRef<Recognizer | null>(null);
 
   useEffect(() => {
     try { setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]")); } catch {}
     const w = window as unknown as { SpeechRecognition?: new () => Recognizer; webkitSpeechRecognition?: new () => Recognizer };
-    setCanListen(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
+    const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
+    setCanListen(!!(w.SpeechRecognition || w.webkitSpeechRecognition) && !standalone);
+    setDictate(standalone || !(w.SpeechRecognition || w.webkitSpeechRecognition));
   }, []);
 
   function listen() {
@@ -85,6 +88,7 @@ export default function TranslatePanel() {
       <label htmlFor="src" className="sr-only">Text to translate</label>
       <textarea id="src" className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)}
         lang={dir === "en-fr" ? "en" : "fr"} placeholder={dir === "en-fr" ? "Type or speak in English" : "Parlez ou écrivez en français"} />
+      {dictate && <p className="text-xs text-muted">To speak, tap the 🎤 on your iPhone keyboard and dictate into the box.</p>}
       <div className="flex gap-2">
         {canListen && <button className={`btn ${listening ? "" : "ghost"}`} onClick={listen}>{listening ? "■ Stop" : "🎤 Speak"}</button>}
         <button className="btn flex-1" disabled={busy || !text.trim()} onClick={translate}>{busy ? "Translating…" : "Translate"}</button>
