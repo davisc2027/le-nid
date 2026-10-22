@@ -124,11 +124,11 @@ body {
    `transition: transform ...` here silently deleted every `transition-colors`
    it was paired with (hover colour started snapping). List every property a
    button might need so this class is self-sufficient. */
-.btn-press, .btn {
+.btn-press, .btn, button.card {
   transition: transform .15s ease-in, box-shadow .15s ease-in,
     background-color .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease;
 }
-.btn-press:active, .btn:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+.btn-press:active, .btn:active:not(:disabled), button.card:active:not(:disabled) { transform: translateY(1px) scale(.98); }
 
 
 /* Bar grow-in. Works from a SERVER component with zero JS. Set the target
@@ -150,5 +150,5 @@ body {
     animation-duration: .01ms !important;
     animation-delay: 0s !important;
   }
-  .btn-press, .btn { transition-duration: .01ms !important; }
+  .btn-press, .btn, button.card { transition-duration: .01ms !important; }
 }

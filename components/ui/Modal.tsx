@@ -10,15 +10,6 @@ import { createPortal } from "react-dom";
 // Needs the motion.css utilities: .animate-modal-backdrop-in/out and
 // .animate-modal-panel-in/out.
 //
-// LINT NOTE: eslint-plugin-react-hooks v6+ (eslint-config-next 16) flags the
-// first effect with `react-hooks/set-state-in-effect`. It is a legitimate
-// prop-to-state sync with an exit delay and this exact component is
-// production-proven, so it is left as is. If the target app gates CI on that
-// rule, add `// eslint-disable-next-line react-hooks/set-state-in-effect` above
-// `setMounted(true)` ONLY when the app's plugin version actually defines the
-// rule (ESLint reports "Definition for rule ... not found" for a disable
-// comment that names a rule which isn't loaded).
-
 // Must be >= the longest exit animation (.animate-modal-*-out is 150ms).
 const EXIT_MS = 200;
 
@@ -43,21 +34,27 @@ export default function Modal({
   // unmounting the instant `open` flips false would cut it off.
   const [mounted, setMounted] = useState(open);
   const [closing, setClosing] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  // Sync to the `open` prop during render (no effect needed for the state flip).
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setMounted(true);
       setClosing(false);
     } else if (mounted) {
       setClosing(true);
-      const t = setTimeout(() => {
-        setMounted(false);
-        setClosing(false);
-      }, EXIT_MS);
-      return () => clearTimeout(t);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }
+
+  useEffect(() => {
+    if (!closing) return;
+    const t = setTimeout(() => {
+      setMounted(false);
+      setClosing(false);
+    }, EXIT_MS);
+    return () => clearTimeout(t);
+  }, [closing]);
 
   useEffect(() => {
     if (!mounted) return;
