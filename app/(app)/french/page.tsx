@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Check, Flame, Lock, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { UNITS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
@@ -7,12 +8,18 @@ import GentleToggle from "@/components/french/GentleToggle";
 
 export default async function French() {
   const supabase = await createClient();
-  const [{ data: done }, { data: streak }, { data: xp }] = await Promise.all([
+  const [{ data: done }, { data: streak }, { data: xp }, dueQ, learnedQ] = await Promise.all([
     supabase.from("lesson_progress").select("lesson_id"),
     supabase.from("streaks").select("current, last_day").maybeSingle(),
     supabase.from("xp_events").select("amount"),
+    supabase.from("vocab_cards").select("key", { count: "exact", head: true }).lte("due", new Date().toISOString()),
+    supabase.from("vocab_cards").select("key", { count: "exact", head: true }),
   ]);
   const finished = new Set(done?.map((d) => d.lesson_id));
+  // Practice needs migration 0009; if vocab_cards can't be read, the button is hidden.
+  const practiceOk = !dueQ.error && !learnedQ.error && learnedQ.count !== null;
+  const dueCount = dueQ.count ?? 0;
+  const learned = learnedQ.count ?? 0;
   const total = xp?.reduce((n, e) => n + e.amount, 0) ?? 0;
 
   let unlocked = true; // a lesson opens once the one before it is finished
@@ -20,9 +27,14 @@ export default async function French() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold">French</h1>
-        <p className="text-sm font-bold text-primary">🔥 <StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {total} XP</p>
+        <p className="text-sm font-bold text-primary"><Flame size={18} className="mr-1 inline -mt-0.5 text-accent" aria-hidden="true" /><StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {total} XP</p>
       </div>
       <OdileSays topic={streak?.last_day ? "missed" : "welcome"} mood="happy" lastDay={streak?.last_day ?? null} />
+      {practiceOk && (learned > 0 ? (
+        <Link href="/french/practice" className="btn w-full">{dueCount > 0 ? `Practice · ${dueCount} due` : "Practice"}</Link>
+      ) : (
+        <p className="card text-sm text-muted">Practice unlocks after your first lesson. Phrases you learn come back here for review.</p>
+      ))}
       {UNITS.map((u) => (
         <section key={u.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
@@ -39,7 +51,7 @@ export default async function French() {
             const body = (
               <>
                 <span className={`grid size-10 shrink-0 place-items-center rounded-full border-2 font-extrabold ${isDone ? "border-good bg-good text-surface" : open ? "border-accent text-accent" : "border-border text-muted"}`}>
-                  {isDone ? "✓" : open ? "▶" : "🔒"}
+                  {isDone ? <Check size={20} strokeWidth={3} aria-hidden="true" /> : open ? <Play size={18} fill="currentColor" aria-hidden="true" /> : <Lock size={18} aria-hidden="true" />}
                 </span>
                 <span className="font-bold">{l.title}</span>
               </>
