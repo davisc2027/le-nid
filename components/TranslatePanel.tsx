@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ChevronRight, MessagesSquare, Mic, Square, Turtle, Volume2 } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, MessagesSquare, Mic, Square, Turtle, Volume2, X } from "lucide-react";
 import { speak } from "@/lib/french/speech";
 import Stork from "@/components/art/Stork";
 
@@ -100,12 +100,24 @@ export default function TranslatePanel() {
 
   const flip = () => { armed.current = false; setCoach(false); setDir(dir === "en-fr" ? "fr-en" : "en-fr"); setText(""); setShown(null); };
 
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [full]);
+
   if (full && shown)
     return (
-      <button onClick={() => setFull(false)} className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background p-6 text-center" aria-label="Close full screen">
+      <div role="dialog" aria-modal="true" aria-label="Translation" onClick={() => setFull(false)}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background p-6 text-center">
+        <button onClick={(e) => { e.stopPropagation(); setFull(false); }} aria-label="Close"
+          className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] grid size-12 place-items-center rounded-full border-2 border-primary bg-surface text-primary">
+          <X size={24} aria-hidden="true" />
+        </button>
         <p className="verse-text !text-4xl !leading-tight">{shown.to}</p>
-        <p className="text-sm text-muted">Tap anywhere to close</p>
-      </button>
+        <button onClick={(e) => { e.stopPropagation(); setFull(false); }} className="btn ghost">Close</button>
+      </div>
     );
 
   return (
@@ -126,7 +138,9 @@ export default function TranslatePanel() {
       <textarea id="src" ref={box} className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { armed.current = false; setCoach(false); }}
         lang={dir === "en-fr" ? "en" : "fr"} placeholder={dir === "en-fr" ? "Type or speak in English" : "Parlez ou écrivez en français"} />
       {coach && (
-        <div className="card !border-primary gap-1 text-sm" role="note">
+        <div className="card relative !border-primary gap-1 pr-12 text-sm" role="note">
+          <button onClick={() => { armed.current = false; setCoach(false); }} aria-label="Dismiss tip"
+            className="absolute right-1 top-1 grid size-11 place-items-center rounded-xl text-muted"><X size={20} aria-hidden="true" /></button>
           <p className="font-extrabold">Tap the microphone on your keyboard</p>
           <p>It's the microphone key at the bottom right of your iPhone keyboard (next to the space bar). Tap it, say your sentence, and tap it again. Le Nid translates a moment after you stop.</p>
           <p className="text-xs text-muted">No microphone key? Turn on Dictation in Settings → General → Keyboard.</p>
@@ -137,13 +151,17 @@ export default function TranslatePanel() {
         <button className="btn flex-1" disabled={busy || !text.trim()} onClick={() => { armed.current = false; void translate(); }}>{busy ? "Translating…" : "Translate"}</button>
       </div>
       {error && (
-        <div className="card text-sm" role="alert">
+        <div className="card relative pr-12 text-sm" role="alert">
+          <button onClick={() => setError("")} aria-label="Dismiss message"
+            className="absolute right-1 top-1 grid size-11 place-items-center rounded-xl text-muted"><X size={20} aria-hidden="true" /></button>
           <p>{error}</p>
           {text.trim() && <a className="underline" href={gt(dir, text)} target="_blank" rel="noreferrer">Open in Google Translate</a>}
         </div>
       )}
       {shown && (
-        <div className="card gap-3 !border-primary">
+        <div className="card relative gap-3 !border-primary pr-12">
+          <button onClick={() => setShown(null)} aria-label="Clear translation"
+            className="absolute right-1 top-1 grid size-11 place-items-center rounded-xl text-muted"><X size={20} aria-hidden="true" /></button>
           <p className="verse-text !text-2xl">{shown.to}</p>
           <div className="flex flex-wrap gap-2">
             {shown.dir === "en-fr" && <button className="btn" onClick={() => speak(shown.to)}><Volume2 size={18} aria-hidden="true" /> Say it</button>}
