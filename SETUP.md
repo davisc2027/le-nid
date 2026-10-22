@@ -23,7 +23,7 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 | `CRON_SECRET` | Any long random string. The reminder endpoint rejects requests without it. |
 | `DEEPL_API_KEY` | Free key from deepl.com/pro-api (translate). |
 | `GROQ_API_KEY` | Free key from console.groq.com (speech to text for Conversation mode). Server only. See "Conversation mode" below. |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Optional, for emailed reminders. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Optional, for the weekly to-do summary email (Mondays). |
 
 **Never commit `vercel-env.txt`, `.env.local` or any file holding these values.** If one was ever committed or shared, rotate the keys (especially the service-role key).
 
