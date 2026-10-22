@@ -36,6 +36,10 @@ export async function getProfile() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data } = await supabase.from("profiles").select("id, name, role").eq("id", user.id).single();
-  return data;
+  const { data } = await supabase.from("profiles").select("id, name, role").eq("id", user.id).maybeSingle();
+  if (data) return data;
+  // Safety net: the sign-up trigger should have created this row.
+  await supabase.from("profiles").insert({ id: user.id, email: user.email });
+  const { data: created } = await supabase.from("profiles").select("id, name, role").eq("id", user.id).maybeSingle();
+  return created;
 }

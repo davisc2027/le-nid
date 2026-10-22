@@ -5,7 +5,7 @@ Everything here is free-tier. Do it once; any computer can repeat it from this f
 ## 1. Supabase
 1. Create a project at supabase.com (free).
 2. SQL editor: run `supabase/migrations/0001` through `0005` in order.
-3. Authentication -> Email Templates -> **Magic Link**: put `{{ .Token }}` in the body (for example "Your Le Nid code is {{ .Token }}"). The app asks for this 6-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
+3. Authentication -> Email Templates -> **both Confirm signup and Magic Link** (new users get Confirm signup, returning users get Magic Link): put `{{ .Token }}` in the body (for example "Your Le Nid code is {{ .Token }}"). The app asks for this 6-digit code because on iPhone a link opened from Mail lands in Safari, not in the installed app.
 4. Authentication -> SMTP Settings: **set a custom SMTP provider**. Supabase's built-in mail is limited to a few emails per hour, which 35 people signing in will exceed. Options: Resend or Brevo (free, needs a domain), or a Gmail account with an app password (`smtp.gmail.com`, port 465).
 5. Authentication -> URL Configuration: set Site URL to your Vercel URL.
 6. Project Settings -> API: copy the URL, anon key, and service_role key.
