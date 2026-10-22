@@ -8,5 +8,6 @@ import Backdrop from "@/components/art/Backdrop";
 export default function RouteBackdrop() {
   const path = usePathname();
   const skip = path === "/" || path.startsWith("/together") || path.startsWith("/scripture") || /^\/french\/./.test(path);
-  return skip ? null : <Backdrop />;
+  // Fainter behind the translate screens so the scene never competes with the buttons.
+  return skip ? null : <Backdrop faded={path.startsWith("/translate")} />;
 }
