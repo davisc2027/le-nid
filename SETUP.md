@@ -23,7 +23,7 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 | `CRON_SECRET` | Any long random string. The reminder endpoint rejects requests without it. |
 | `DEEPL_API_KEY` | Optional. DeepL key (translate, tried first). Without it, translation uses Groq. See "DeepL setup" below. |
 | `GROQ_API_KEY` | Free key from console.groq.com. Used for speech to text in Conversation mode and as the fallback translator. Server only. See "Conversation mode" below. |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Optional, for the weekly to-do summary email (Mondays). |
+| `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` (and optional `SMTP_HOST`, `SMTP_PORT`) | Optional, for the weekly to-do summary email (Mondays). Use the same mailbox you gave Supabase for sign-in codes (Gmail: user = the address, pass = the same 16-character app password; host and port default to smtp.gmail.com and 465). Supabase cannot send custom emails through its own SMTP setting, so the app connects to that mailbox directly. `RESEND_API_KEY` is an alternative if SMTP is not set. |
 
 **Never commit `vercel-env.txt`, `.env.local` or any file holding these values.** If one was ever committed or shared, rotate the keys (especially the service-role key).
 

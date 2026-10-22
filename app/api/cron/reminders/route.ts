@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
-import { sendEmail } from "@/lib/email";
+import { emailConfigured, sendEmail } from "@/lib/email";
 
 export const maxDuration = 60;
 
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
   // Weekly summary email: Mondays (Paris time), one per person, only when they have something open that is
   // overdue or due within 7 days. usage_daily (migration 0010) records the send so a retry never duplicates it.
   let digests = 0;
-  if (weekdayParis() === "Mon" && process.env.RESEND_API_KEY && process.env.EMAIL_FROM) {
+  if (weekdayParis() === "Mon" && emailConfigured()) {
     const byUser = new Map<string, { email: string; items: { title: string; due: string; left: number }[] }>();
     for (const r of rows ?? []) {
       const todo = r.todos as unknown as { title: string; due_date: string } | null;
