@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createEndpointer, levelFromRms } from "@/lib/speech/endpoint";
 import type { StopReason } from "@/lib/speech/checks";
-import { encodeWav } from "@/lib/speech/wav";
+import { boostForPlayback, encodeWav } from "@/lib/speech/wav";
 
 export type RecState = "idle" | "starting" | "recording" | "done" | "denied" | "unsupported" | "error";
 export type Recording = {
@@ -60,7 +60,7 @@ export function useRecorder(opts: { capSec: number; onLevel?: (level: number) =>
     const settings = r.settings;
     release();
     revoke();
-    const wavUrl = URL.createObjectURL(encodeWav(samples, sampleRate));
+    const wavUrl = URL.createObjectURL(encodeWav(boostForPlayback(samples), sampleRate));
     urlRef.current = wavUrl;
     setRecording({ samples, sampleRate, wavUrl, seconds: samples.length / sampleRate, stoppedBy: reason, settings });
     setState("done");
