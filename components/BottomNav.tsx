@@ -34,11 +34,13 @@ export default function BottomNav({ openTodos }: { openTodos: number }) {
           return (
             <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}
               className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold ${on ? "text-primary" : "text-muted"}`}>
-              {on && <span className="absolute top-0 h-1 w-10 rounded-b-full bg-primary" />}
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth={on ? 2.4 : 1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[t.icon]} /></svg>
+              {/* the selected tab gets a solid pill behind its icon so it is obvious at a glance */}
+              <span className={`grid h-8 w-14 place-items-center rounded-full ${on ? "bg-primary text-primary-fg" : ""}`}>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={on ? 2.4 : 1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[t.icon]} /></svg>
+              </span>
               {t.label}
               {t.href === "/todos" && openTodos > 0 && (
-                <span className="absolute right-[calc(50%-24px)] top-1.5 min-w-5 rounded-full bg-accent px-1.5 text-center text-[11px] font-extrabold leading-5 text-[#2b2118]">{openTodos}</span>
+                <span className="absolute right-[calc(50%-30px)] top-1 min-w-5 rounded-full bg-accent px-1.5 text-center text-[11px] font-extrabold leading-5 text-[#2b2118]">{openTodos}</span>
               )}
             </Link>
           );
