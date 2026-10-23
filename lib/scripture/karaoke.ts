@@ -5,8 +5,9 @@
 import { speak } from "@/lib/french/speech";
 import type { Tok } from "./tokens";
 
-/** Milliseconds per letter at the app's normal (0.9) and slow (0.6) speech rates; tuned by ear on iOS French voices. */
-const MS_PER_CHAR = { normal: 72, slow: 112 };
+/** Milliseconds per letter at the app's normal (0.9) and slow (0.5) speech rates; tuned by ear on iOS French voices.
+ *  The slow figure was 112 at rate 0.6, scaled by 0.6/0.5 when slow speech was slowed to 0.5. */
+const MS_PER_CHAR = { normal: 72, slow: 134 };
 const PAUSE = { comma: 260, stop: 480 };
 
 /** When each token starts (ms from the beginning) and the total length, for the timer-based highlight. */
