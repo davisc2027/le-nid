@@ -139,7 +139,7 @@ function checkSequence(exs, where) {
       const c = e.choices;
       if (new Set(c).size !== c.length) fail(`${where}: duplicate options ${JSON.stringify(c)}`);
       if (new Set(c.map(E.normalize)).size !== c.length) fail(`${where}: options equal after normalizing ${JSON.stringify(c)}`);
-      if (!c.includes(e.answer)) fail(`${where}: answer missing from options`);
+      if (!c.includes(e.answer)) fail(`${where}: answer missing from choices`);
       if (E.ambiguousOption) {
         for (const o of c) if (o !== e.answer && E.ambiguousOption(e, o)) fail(`${where}: "${o}" could also be right for ${JSON.stringify(e.fr ?? e.en)}`);
       }
@@ -212,6 +212,24 @@ section("Review and practice");
     }
   }
   mcStats(reviewMC, "review + practice");
+}
+
+// Regression: props passed from server to client components arrive as copies (new objects). The engine must treat a
+// copied lesson or phrase exactly like the original (it once crashed with "e is not iterable" on every lesson).
+{
+  const copy = (x) => JSON.parse(JSON.stringify(x));
+  for (const l of ALL_LESSONS) {
+    try {
+      const exs = E.buildLesson(copy(l));
+      if (!exs.length) fail(`copied lesson ${l.id} built no exercises`);
+      const rv = E.buildReview(copy(ALL_PHRASES.slice(0, 4)));
+      const pr = E.buildPractice(copy(ALL_PHRASES.slice(5, 15)));
+      if (rv.length !== 4 || pr.length !== 10) fail("copied review/practice phrases built the wrong number of exercises");
+      for (const e of [...exs, ...rv, ...pr]) if (e.kind === "choose" && e.choices.includes(e.answer) === false) fail(`copied lesson ${l.id}: answer missing from choices`);
+    } catch (err) {
+      fail(`copied lesson ${l.id} threw: ${err.message}`);
+    }
+  }
 }
 
 for (const { n, example } of failKinds.values()) console.log(`  FAIL x${n}: ${example}`);

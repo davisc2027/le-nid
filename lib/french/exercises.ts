@@ -151,6 +151,9 @@ export function blocked(a: Phrase, b: Phrase): boolean {
 const HOME = new Map<Phrase, number>();
 ALL_LESSONS.forEach((l, i) => l.phrases.forEach((p) => HOME.set(p, i)));
 const BY_FR = new Map(ALL_PHRASES.map((p) => [p.fr, p]));
+/** Props passed from server to client components arrive as copies, but the caches above are keyed by the course's own
+ *  phrase objects. Every builder maps its input back through this, so a copied phrase behaves like the original. */
+const canon = (p: Phrase): Phrase => BY_FR.get(p.fr) ?? p;
 const BY_EN = new Map(ALL_PHRASES.map((p) => [p.en, p]));
 const unitOf = (i: number) => ALL_LESSONS[i].id.split("-")[0];
 
@@ -472,7 +475,8 @@ const lessonSize = (n: number) => Math.max(12, Math.min(15, n + 6));
  * 3. production on the phrases first seen by recognition: word bank, gap-fill, typing, listening, tu/vous.
  * Kinds are weighted by course stage and never repeat back to back.
  */
-export function buildLesson(lesson: Lesson): Exercise[] {
+export function buildLesson(input: Lesson): Exercise[] {
+  const lesson = { ...input, phrases: input.phrases.map(canon) };
   const li = Math.max(0, ALL_LESSONS.findIndex((l) => l.id === lesson.id));
   const c: Ctx = { stage: stageOf(li), anchor: li };
   const out: Exercise[] = [mkMatch(lesson.phrases)];
@@ -536,12 +540,12 @@ function sequence(phrases: Phrase[], c: Ctx, prev?: Kind): Exercise[] {
 
 /** Review exercises for phrases from earlier lessons, flagged `review`. `prev` is the kind just before them. */
 export function buildReview(phrases: Phrase[], prev?: Kind): Exercise[] {
-  return sequence(shuffle(phrases), { stage: 1, review: true }, prev);
+  return sequence(shuffle(phrases.map(canon)), { stage: 1, review: true }, prev);
 }
 
 /** A practice session: one exercise per phrase, in the order given, mixed kinds. */
 export function buildPractice(phrases: Phrase[]): Exercise[] {
-  return sequence(phrases, { stage: 1 });
+  return sequence(phrases.map(canon), { stage: 1 });
 }
 
 /** Version of an exercise that needs no audio, for "Can't listen now" (null when it already needs none). */
