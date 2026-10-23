@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Nid Promo</title>
+<!--
+  Le Nid promo, a 44 s scene deck driven by one master clock.
+  Every motion is a paused Web Animation; seek(t) sets them all to time t, so a frame grabber gets exact frames.
+  ?t=12.5 freezes at 12.5 s. ?capture=1 hides the controls (render.mjs). Space plays/pauses, arrows scrub.
+  Odile's drawing and keyframes are ported 1:1 from components/art/Stork.tsx, lib/odile-motion.ts and app/globals.css.
+-->
+<style>
+@font-face { font-family: "Nunito"; src: url("fonts/nunito-latin-wght-normal.woff2") format("woff2"); font-weight: 200 1000; }
+@font-face { font-family: "EB Garamond"; src: url("fonts/eb-garamond-latin-400-italic.woff2") format("woff2"); font-style: italic; }
+:root {
+  --background: #fbf6ee; --surface: #ffffff; --foreground: #2b2118; --muted: #6e6257; --border: #e6dccd;
+  --primary: #a8412e; --primary-fg: #ffffff; --accent: #e8892b; --accent-ink: #a65a0f; --tint: #f4e3dc; --good: #3f7d4e;
+  --art-stone: #c98a74; --art-roof: #a8412e; --art-roof-2: #7e6a8f; --art-wall: #f1e2c8;
+  --art-beam: #7a4f38; --art-window: #8fb0d6; --art-water: #9fbdd6; --art-glow: #f6c58a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #1b1612; overflow: hidden; }
+body { font-family: "Nunito", system-ui, sans-serif; color: var(--foreground); }
+#viewport { position: absolute; inset: 0; display: grid; place-items: center; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--background); transform-origin: 0 0; flex: none; }
+.abs { position: absolute; left: 0; top: 0; }
+.layer { position: absolute; inset: 0; }
+
+/* sky */
+.sky { position: absolute; inset: 0; }
+#skyDawn { background: linear-gradient(#fbf1e6 0%, #f8dcc6 55%, #f4b893 100%); }
+#skyDay { background: linear-gradient(#fbf6ee 0%, #f8ecd2 55%, #f6d9a0 100%); opacity: 0; }
+#skyDusk { background: linear-gradient(#f9e2c8 0%, #f5b98d 52%, #ee8a66 100%); opacity: 0; }
+#sun { width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(#ffe2a8 0 18%, rgba(255,214,150,.55) 30%, rgba(255,214,150,0) 70%); }
+
+/* camera */
+.cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+#warm { background: #f08a5a; mix-blend-mode: multiply; opacity: 0; }
+
+/* Odile (classes and origins as in app/globals.css "Odile motion") */
+.odile { position: absolute; left: 0; top: 0; width: 400px; height: 400px; transform-origin: 160px 384px; pointer-events: none; }
+.odile-body { position: absolute; inset: 0; transform-origin: 43% 95%; }
+.odile-body > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.stork-head { transform-box: view-box; transform-origin: 82px 70px; }
+.stork-eye { transform-box: fill-box; transform-origin: center; }
+.stork-wing { transform-box: view-box; transform-origin: 62px 72px; }
+.stork-bob, .stork-legs-a, .stork-legs-b, .stork-zzz { transform-box: view-box; transform-origin: 64px 140px; }
+.odile-fx-bit { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.mini { position: absolute; left: 0; top: 0; width: 70px; height: 70px; }
+.mini svg { width: 100%; height: 100%; overflow: visible; }
+
+/* text */
+#readiness { left: 120px; top: 92px; width: 620px; opacity: 0; }
+#readiness .row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 900; font-size: 22px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+#readiness .row b { color: var(--primary); font-size: 30px; letter-spacing: 0; }
+#readiness .track { position: relative; margin-top: 10px; height: 26px; border-radius: 999px; background: #efe4d3; border: 3px solid #fff; box-shadow: 0 2px 0 rgba(58,42,32,.08) inset; }
+#readiness .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: linear-gradient(90deg, #f0a04b, #e8892b); }
+#readiness .fill::after { content: ""; position: absolute; left: 10px; right: 10px; top: 4px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.45); }
+#readiness .nest { position: absolute; right: -84px; top: -26px; width: 70px; }
+.headline { position: absolute; left: 120px; top: 200px; width: 1060px; }
+.headline h1 { font-weight: 900; font-size: 92px; line-height: 1.02; letter-spacing: -.02em; color: var(--foreground); }
+.headline h1 em { font-style: normal; color: var(--primary); }
+.headline p { margin-top: 26px; font-weight: 800; font-size: 36px; color: var(--muted); }
+.headline p .dot { color: var(--accent); padding: 0 .25em; }
+.w { display: inline-block; white-space: pre; opacity: 0; }
+.notif { left: 1250px; top: 150px; width: 560px; padding: 22px 26px; border-radius: 30px; background: rgba(255,255,255,.96); box-shadow: 0 20px 50px rgba(58,42,32,.22); display: flex; gap: 18px; align-items: center; opacity: 0; }
+.notif .ic { width: 74px; height: 74px; flex: none; border-radius: 18px; background: var(--background); display: grid; place-items: center; }
+.notif .k { font-size: 18px; font-weight: 900; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.notif .t { font-size: 30px; font-weight: 900; line-height: 1.15; }
+.notif .s { font-size: 22px; font-weight: 700; color: var(--muted); }
+
+/* phone */
+#phone { left: 1250px; top: 70px; width: 460px; height: 940px; border-radius: 66px; background: #2b2118; padding: 14px; box-shadow: 0 40px 80px rgba(58,42,32,.35), inset 0 0 0 3px #4a3a2e; }
+#screen { position: relative; width: 432px; height: 912px; border-radius: 52px; overflow: hidden; background: var(--background); }
+#app { position: absolute; left: 0; top: 0; width: 390px; height: 823.4px; transform: scale(1.10769); transform-origin: 0 0; }
+.status { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0; font-weight: 800; font-size: 15px; }
+.island { position: absolute; left: 50%; top: 10px; width: 110px; height: 30px; margin-left: -55px; border-radius: 20px; background: #2b2118; }
+.apphead { height: 52px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; }
+.logo { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 21.6px; color: var(--primary); letter-spacing: -.01em; }
+.lb { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 999px; background: var(--accent); font-weight: 800; font-size: 14px; color: #2b2118; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.av { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 800; font-size: 14px; display: grid; place-items: center; margin-left: 8px; }
+.panels { position: absolute; left: 0; top: 96px; width: 390px; height: 643px; overflow: hidden; }
+.panel { position: absolute; inset: 0; padding: 16px; opacity: 0; }
+.panel h2 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+.label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.card { position: relative; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); padding: 14px 16px; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.todo { display: flex; gap: 12px; align-items: center; }
+.todo .box { position: relative; width: 30px; height: 30px; flex: none; border-radius: 50%; border: 2.5px solid #cdbfab; }
+.todo .boxfill { position: absolute; inset: -2.5px; border-radius: 50%; background: var(--good); opacity: 0; }
+.todo .box svg { position: absolute; inset: -2.5px; width: 30px; height: 30px; }
+.todo .tt { position: relative; font-weight: 800; font-size: 16px; display: inline-block; }
+.todo .strike { position: absolute; left: 0; top: 52%; height: 2px; width: 100%; background: var(--muted); transform-origin: 0 50%; transform: scaleX(0); }
+.todo .meta { font-size: 13px; color: var(--muted); font-weight: 600; }
+.xp { position: absolute; right: 14px; top: 50%; margin-top: -14px; font-weight: 900; font-size: 15px; color: var(--accent-ink); opacity: 0; }
+.day { font-weight: 800; color: var(--primary); font-size: 16px; margin: 6px 0 2px; }
+.time { font-size: 12px; color: var(--muted); font-weight: 700; }
+.ititle { font-weight: 800; font-size: 16px; }
+.loc { font-size: 14px; text-decoration: underline; text-underline-offset: 2px; }
+.frow { display: flex; gap: 12px; align-items: center; height: 64px; padding: 0 14px; }
+.ficon { width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: var(--primary); display: grid; place-items: center; flex: none; }
+.fname { font-weight: 800; font-size: 15px; }
+.fmeta { font-size: 12px; color: var(--muted); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; background: var(--tint); padding: 4px 10px; font-size: 12px; font-weight: 800; color: var(--primary); }
+.choice { border: 2px solid var(--border); border-radius: 12px; height: 46px; display: flex; align-items: center; padding: 0 14px; font-weight: 800; font-size: 16px; background: #fff; position: relative; }
+.choice .ok { position: absolute; inset: -2px; border-radius: 12px; border: 2px solid var(--good); background: #e4f1e6; opacity: 0; display: flex; align-items: center; padding: 0 14px; color: var(--good); }
+.verse { font-family: "EB Garamond", Georgia, serif; font-style: italic; font-size: 21px; line-height: 1.4; }
+.blank { display: inline-block; position: relative; min-width: 70px; border-bottom: 2px solid var(--accent); text-align: center; }
+.blank i { font-style: inherit; opacity: 0; }
+.goalbar { height: 16px; border-radius: 99px; background: #efe4d3; overflow: hidden; margin-top: 8px; }
+.goalbar div { height: 100%; width: 0; background: linear-gradient(90deg, #dca08a, #a8412e); border-radius: 99px; }
+.nav { position: absolute; left: 0; top: 739px; width: 390px; height: 64px; border-top: 1px solid var(--border); background: var(--surface); display: grid; grid-template-columns: repeat(6, 1fr); }
+.navbelow { position: absolute; left: 0; top: 803px; width: 390px; height: 21px; background: var(--surface); }
+.navbelow::after { content: ""; position: absolute; left: 50%; top: 8px; width: 130px; height: 5px; margin-left: -65px; border-radius: 9px; background: #2b2118; }
+.tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 800; color: var(--muted); }
+.tab .ico { position: relative; width: 56px; height: 32px; display: grid; place-items: center; }
+.tab .ico svg { position: relative; }
+.tab .badge { position: absolute; right: 2px; top: 3px; min-width: 20px; height: 20px; border-radius: 99px; background: var(--accent); color: #2b2118; font-size: 11px; font-weight: 900; line-height: 20px; text-align: center; padding: 0 6px; }
+#pill { position: absolute; top: 9px; left: 0; width: 56px; height: 32px; border-radius: 99px; background: var(--primary); }
+.paper { width: 120px; height: 150px; border-radius: 12px; background: #fff; border: 3px solid #3a2a20; box-shadow: 0 16px 30px rgba(58,42,32,.25); opacity: 0; overflow: hidden; }
+.paper .hd { height: 34px; background: var(--primary); color: #fff; font-weight: 900; font-size: 16px; display: flex; align-items: center; padding: 0 12px; letter-spacing: .06em; }
+.paper .ln { height: 8px; border-radius: 4px; background: #e6dccd; margin: 12px 12px 0; }
+#endcard { left: 0; top: 0; width: 1920px; height: 1080px; opacity: 0; }
+#endglow { position: absolute; left: 560px; top: 470px; width: 1400px; height: 900px; margin: -450px 0 0 -700px; border-radius: 50%; background: radial-gradient(rgba(251,246,238,.97) 0 45%, rgba(251,246,238,0) 70%); }
+#wordmark { position: absolute; left: 120px; top: 250px; font-weight: 900; font-size: 230px; letter-spacing: -.03em; color: var(--primary); line-height: 1; }
+#tagline { position: absolute; left: 132px; top: 510px; font-weight: 900; font-size: 64px; }
+#tagline2 { position: absolute; left: 134px; top: 600px; font-weight: 800; font-size: 34px; color: var(--muted); }
+#ui { position: fixed; left: 12px; bottom: 12px; color: #f4ebdd; font: 700 13px/1.4 system-ui; background: rgba(0,0,0,.55); padding: 8px 12px; border-radius: 10px; }
+#ui button { font: inherit; padding: 2px 10px; margin-right: 8px; }
+.capture #ui { display: none; }
+</style>
+<script src="timeline.js"></script>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+  <div class="sky" id="skyDawn"></div><div class="sky" id="skyDay"></div><div class="sky" id="skyDusk"></div>
+  <div class="abs" id="sun"></div>
+  <div class="cam" id="cam"></div>
+  <div class="layer" id="warm"></div>
+  <div class="layer" id="flock"></div>
+  <div class="abs" id="readiness">
+    <div class="row"><span>Trip readiness</span><b id="readyPct">0%</b></div>
+    <div class="track"><div class="fill" id="readyFill"></div><div class="nest" id="readyNest"></div></div>
+  </div>
+  <div id="headlines"></div>
+  <div class="abs notif" id="notif">
+    <div class="ic" id="notifIcon"></div>
+    <div><div class="k">Le Nid · now</div><div class="t">Strasbourg is booked!</div><div class="s">March 2027 · 35 travelers</div></div>
+  </div>
+  <div class="abs" id="phone"><div id="screen"><div id="app"></div><div class="island"></div></div></div>
+  <div id="papers"></div>
+  <div class="abs" id="endcard"><div id="endglow"></div><div id="wordmark">Le Nid</div>
+    <div id="tagline">Ready together.</div>
+    <div id="tagline2">Strasbourg <span style="color:var(--accent)">·</span> March 2027 <span style="color:var(--accent)">·</span> 35 of us</div></div>
+  <div id="odileLayer"></div>
+  <div class="cam" id="camFront"></div>
+</div></div>
+<div id="ui"><button id="play">Play</button><span id="clock">0.00 s</span> · Space play/pause · arrows scrub</div>
+
+<script>
+"use strict";
+const TL = window.TL, S = TL.scene, V = TL.vo, DUR = TL.duration, FPS = 30;
+const $ = (id) => document.getElementById(id);
+const html = (s) => { const t = document.createElement("template"); t.innerHTML = s.trim(); return t.content.firstElementChild; };
+const updaters = [];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, u) => a + (b - a) * u;
+const easeIO = (u) => u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+const easeOut = (u) => 1 - Math.pow(1 - u, 3);
+const easeIn = (u) => u * u * u;
+const ODILE_EASE = "cubic-bezier(.3,.7,.4,1)", ODILE_IO = "cubic-bezier(.45,0,.55,1)";
+
+/* ---------- animation core: everything is a paused WAAPI animation seeked by one clock ---------- */
+function anim(el, frames, start, dur, o = {}) {
+  if (!el) return;
+  const els = el instanceof Element ? [el] : [...el];
+  for (const e of els) {
+    const a = e.animate(frames, { duration: Math.max(1, dur * 1000), delay: start * 1000, fill: o.fill ?? "forwards", easing: o.easing ?? "linear", iterations: o.iter ?? 1, direction: o.dir ?? "normal" });
+    a.pause();
+  }
+}
+const set = (el, props, t) => anim(el, [props, props], t, 0.001);          // a hold from t on
+const tween = (el, from, to, t, d, easing = "ease-in-out") => anim(el, [from, to], t, d, { easing });
+/** Parse CSS @keyframes body text (copied from app/globals.css) into WAAPI frames. */
+function kf(css, easing) {
+  const out = [];
+  const re = /([\d.%,\s]+|from|to)\s*\{([^}]*)\}/g; let m;
+  while ((m = re.exec(css))) {
+    const props = {};
+    m[2].split(";").forEach((d) => { const i = d.indexOf(":"); if (i > 0) props[d.slice(0, i).trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = d.slice(i + 1).trim(); });
+    m[1].split(",").map((s) => s.trim()).filter(Boolean).forEach((sel) => {
+      const off = sel === "from" ? 0 : sel === "to" ? 1 : parseFloat(sel) / 100;
+      out.push({ offset: off, ...props, ...(easing ? { easing } : {}) });
+    });
+  }
+  out.sort((a, b) => a.offset - b.offset);
+  if (out[0].offset !== 0) out.unshift({ offset: 0, transform: "none" });
+  if (out[out.length - 1].offset !== 1) out.push({ offset: 1, transform: "none" });
+  return out;
+}
+
+/* keyframes from app/globals.css ("Odile motion"), verbatim */
+const K = {
+  bob: "0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); }",
+  blink: "0%, 40%, 100% { transform: scaleY(1); } 20%, 60% { transform: scaleY(.1); } 80% { transform: scaleY(1); }",
+  tilt: "0%, 100% { transform: rotate(0); } 20%, 75% { transform: rotate(-12deg); }",
+  peck: "0%, 100% { transform: rotate(0); } 25%, 55% { transform: rotate(16deg); } 40% { transform: rotate(5deg); } 75% { transform: rotate(-2deg); }",
+  wingRuffle: "0%, 100% { transform: rotate(0); } 25%, 55% { transform: rotate(-10deg); }",
+  hop: "0%, 100% { transform: none; } 18% { transform: translateY(2px) scale(1.04, .95); } 45% { transform: translateY(-11px); } 72% { transform: translateY(1px) scale(1.03, .97); }",
+  look: "0%, 100% { transform: scaleX(1); } 14%, 70% { transform: scaleX(-1); } 84% { transform: scaleX(1); }",
+  zzz: "0% { opacity: 0; transform: translate(0, 8px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -6px); }",
+  jump: "0% { transform: none; } 14% { transform: scale(1.08, .9); } 40% { transform: translateY(-30%) scale(.96, 1.05); } 60% { transform: translateY(-30%); } 82% { transform: scale(1.07, .92); } 100% { transform: none; }",
+  twirl: "0% { transform: none; } 15% { transform: translateY(-10%); } 50% { transform: translateY(-14%) rotateY(180deg); } 85% { transform: translateY(-4%) rotateY(360deg); } 100% { transform: rotateY(360deg); }",
+  bounce: "0%, 100% { transform: none; } 12% { transform: scale(1.06, .92); } 26% { transform: translateY(-20%); } 42% { transform: translateY(0) scale(1.04, .95); } 56% { transform: translateY(-11%); } 70% { transform: none; } 82% { transform: translateY(-4%); } 92% { transform: none; }",
+  leanBack: "0%, 100% { transform: none; } 20%, 75% { transform: rotate(-5deg) scale(1.03); }",
+  salute: "0%, 100% { transform: rotate(0); } 22%, 72% { transform: rotate(-64deg); } 47% { transform: rotate(-56deg); }",
+  dance: "0%, 100% { transform: none; } 12.5% { transform: translateX(-6%) rotate(-7deg); } 25%, 75% { transform: translateY(-7%); } 37.5% { transform: translateX(6%) rotate(7deg); } 50% { transform: none; } 62.5% { transform: translateX(-6%) rotate(-7deg); } 87.5% { transform: translateX(6%) rotate(7deg); }",
+  swoon: "0%, 100% { transform: none; } 25%, 70% { transform: scale(1.06) rotate(-3deg); } 48% { transform: scale(1.04) rotate(-1deg); }",
+  flap: "from { transform: rotate(8deg); } to { transform: rotate(-36deg); }",
+  shrug: "0%, 100% { transform: none; } 20% { transform: translateY(-5%); } 36% { transform: translateY(1%); } 52% { transform: translateY(-4%); } 68% { transform: none; }",
+  droop: "0%, 100% { transform: rotate(0); } 25%, 80% { transform: rotate(12deg); }",
+  victory: "0%, 54%, 100% { transform: none; } 8%, 62% { transform: scale(1.08, .9); } 22%, 34% { transform: translateY(-34%); } 46%, 90% { transform: scale(1.05, .94); } 76% { transform: translateY(-26%) rotate(-6deg); }",
+  loop: "0% { transform: none; } 15% { transform: translateY(-12%); } 70% { transform: translateY(-12%) rotate(-360deg); } 86% { transform: translateY(-3%) rotate(-360deg); } 100% { transform: rotate(-360deg); }",
+  wave: "0%, 100% { transform: rotate(0); } 20%, 60% { transform: rotate(-52deg); } 40%, 80% { transform: rotate(-30deg); }",
+  legsOut: "0%, 12%, 88%, 100% { opacity: 1; } 16%, 84% { opacity: 0; }",
+  legsIn: "0%, 12%, 88%, 100% { opacity: 0; } 16%, 84% { opacity: 1; }",
+  twinkle: "0% { opacity: 0; transform: scale(.3); } 30% { opacity: 1; transform: scale(1.15); } 100% { opacity: 0; transform: scale(.6) rotate(45deg); }",
+  rise: "0% { opacity: 0; transform: translateY(6px) scale(.6); } 25% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: translateY(-24px); }",
+  drip: "0% { opacity: 0; transform: translateY(-4px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(16px); }",
+  burst: "0% { opacity: 0; transform: translateY(40px) scale(.5); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px) rotate(170deg); }",
+};
+/* durations from lib/odile-motion.ts REACTIONS */
+const REACTIONS = {
+  jump: { ms: 900, mood: "cheer" }, twirl: { ms: 850, mood: "happy", fx: "sparkle" }, bounce: { ms: 950, mood: "cheer", fx: "sparkle" },
+  salute: { ms: 1000, mood: "happy" }, dance: { ms: 1100, mood: "cheer" }, hearts: { ms: 1100, mood: "happy", fx: "hearts" },
+  shrug: { ms: 1000, mood: "oops", fx: "sweat" }, victory: { ms: 1800, mood: "cheer", fx: "confetti" },
+  loop: { ms: 1700, mood: "fly", fx: "sparkle" }, wave: { ms: 700, mood: "happy" },
+};
+
+/* ---------- Odile's drawing, ported from components/art/Stork.tsx ---------- */
+const LINE = "#3a2a20", WHITE = "#ffffff", BLACK = "#2b2118", BEAK = "#e8532b", LEG = "#e0553a", GOLD = "#f0a04b", BLUE = "#6ab0e8", PINK = "#e8607a";
+const HEAD_TILT = { happy: 0, cheer: -4, sulk: 20, sleepy: 26, think: -10, oops: 8, dizzy: 12, fly: 34 };
+const WING_LIFT = { happy: 0, cheer: -38, sulk: 6, sleepy: 4, think: 0, oops: -14, dizzy: 4, fly: -46 };
+const STAR = "M0 -8 L2.2 -2.2 L8 0 L2.2 2.2 L0 8 L-2.2 2.2 L-8 0 L-2.2 -2.2 Z";
+const HEART = "M0 4 C-7 -2 -4 -9 0 -4.5 C4 -9 7 -2 0 4 Z";
+const LEGP = `stroke="${LEG}" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
+function eye(mood) {
+  const arc = `fill="none" stroke="${BLACK}" stroke-width="2.6" stroke-linecap="round"`;
+  if (mood === "happy" || mood === "cheer") return `<path d="M91 26 Q96 19 101 26" ${arc}/>`;
+  if (mood === "sleepy") return `<path d="M91 24 Q96 29 101 24" ${arc}/>`;
+  if (mood === "fly") return `<path d="M91 25 Q96 21 101 25" ${arc}/>`;
+  if (mood === "oops") return `<g><g class="stork-eye"><circle cx="96" cy="25" r="4.6" fill="${WHITE}" stroke="${BLACK}" stroke-width="1.6"/><circle cx="96.6" cy="25.4" r="2.2" fill="${BLACK}"/></g><path d="M90 17 Q95 13 101 16" ${arc} stroke-width="2"/></g>`;
+  const look = mood === "think" ? { x: 1.5, y: -1.5 } : { x: 0, y: 0 };
+  return `<g><g class="stork-eye"><circle cx="${96 + look.x}" cy="${25 + look.y}" r="3.4" fill="${BLACK}"/><circle cx="${97 + look.x}" cy="${24 + look.y}" r="1.1" fill="${WHITE}"/></g></g>`;
+}
+function storkSVG(mood, live = true) {
+  const cheeky = mood === "happy" || mood === "cheer", flying = mood === "fly";
+  const legs = flying ? `<path d="M58 96 L24 104 M68 98 L30 110" ${LEGP}/>`
+    : `<g class="stork-legs-a"><path d="M62 98 L60 140 M60 140 L51 144 M60 140 L69 144" ${LEGP}/><path d="M72 98 L80 114 L66 114" ${LEGP}/></g>`
+      + (live ? `<g class="stork-legs-b" opacity="0"><path d="M70 98 L72 140 M72 140 L63 144 M72 140 L81 144" ${LEGP}/><path d="M60 98 L66 114 L52 113" ${LEGP}/></g>` : "");
+  return `<svg viewBox="0 0 150 150" data-mood="${mood}" class="stork stork-${mood}" overflow="visible"><g class="stork-bob">${legs}
+    <path d="M36 78 L12 72 L14 92 L38 94 Z" fill="${BLACK}" stroke="${LINE}" stroke-width="1.5" stroke-linejoin="round"/>
+    <ellipse cx="64" cy="80" rx="33" ry="22" fill="${WHITE}" stroke="${LINE}" stroke-width="2"/>
+    <g transform="rotate(${WING_LIFT[mood]} 62 72)"><g class="stork-wing">
+      <path d="M34 78 Q62 60 92 78 Q72 106 30 94 Z" fill="${WHITE}" stroke="${LINE}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M30 94 Q72 106 92 78 Q72 92 46 92 Z" fill="${BLACK}"/></g></g>
+    <g transform="rotate(${HEAD_TILT[mood]} 82 70)"><g class="stork-head">
+      <path d="M82 70 C94 56 84 44 93 32" stroke="${LINE}" stroke-width="14" stroke-linecap="round" fill="none"/>
+      <path d="M82 70 C94 56 84 44 93 32" stroke="${WHITE}" stroke-width="10" stroke-linecap="round" fill="none"/>
+      <circle cx="94" cy="27" r="11.5" fill="${WHITE}" stroke="${LINE}" stroke-width="2"/>
+      <path d="M104 22 L146 32 L104 36 Z" fill="${BEAK}" stroke="${LINE}" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M104 30 L142 33" stroke="#a63a1c" stroke-width="1.2" stroke-linecap="round"/>
+      ${cheeky || mood === "oops" ? `<circle cx="92" cy="33" r="3.4" fill="#f4a89a" opacity="0.8"/>` : ""}
+      ${eye(mood)}</g></g>
+    ${mood === "sleepy" ? `<path class="stork-zzz" d="M112 8 h8 l-8 9 h8 M126 -2 h6 l-6 7 h6" transform="translate(0 6)" stroke="${LINE}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
+    ${mood === "think" ? `<path d="M118 8 q0-8 8-8 q8 0 8 7 q0 5 -6 7 v3 M126 24 v1" stroke="${LINE}" stroke-width="2.4" fill="none" stroke-linecap="round"/>` : ""}
+    ${mood === "cheer" ? `<path d="M18 40 l4 8 l8 4 l-8 4 l-4 8 l-4 -8 l-8 -4 l8 -4 Z" fill="${GOLD}"/>` : ""}
+  </g></svg>`;
+}
+function fxSVG() {
+  const bit = (i, d, extra = "") => `<path class="odile-fx-bit" data-i="${i}" d="${d}" ${extra}/>`;
+  const colors = [GOLD, "#a8412e", "#2d4f8f", PINK, "#3f7d4e"];
+  return `<svg viewBox="0 0 150 150" overflow="visible">
+    <g class="fx-sparkle" fill="${GOLD}"><g transform="translate(20 40)">${bit(0, STAR)}</g><g transform="translate(132 60) scale(.8)">${bit(1, STAR)}</g><g transform="translate(44 10) scale(.65)">${bit(2, STAR)}</g></g>
+    <g class="fx-hearts" fill="${PINK}"><g transform="translate(116 14) scale(1.5)">${bit(0, HEART)}</g><g transform="translate(76 4) scale(1.1)">${bit(1, HEART)}</g><g transform="translate(132 -6) scale(.9)">${bit(2, HEART)}</g></g>
+    <g class="fx-sweat" fill="${BLUE}" stroke="${LINE}" stroke-width="1"><g transform="translate(84 14)">${bit(0, "M0 -6 Q5 1 0 5 Q-5 1 0 -6 Z")}</g></g>
+    <g class="fx-confetti">${Array.from({ length: 10 }, (_, i) => `<g transform="rotate(${i * 36} 72 64)"><rect class="odile-fx-bit" data-i="${i % 3}" x="70" y="10" width="5" height="8" rx="1.5" fill="${colors[i % 5]}"/></g>`).join("")}</g>
+  </svg>`;
+}
+const NEST_SVG = `<svg viewBox="0 0 60 24" width="100%" style="display:block"><path d="M3 8 Q30 2 57 8 Q55 21 30 22 Q5 21 3 8 Z" fill="#a5774c" stroke="${LINE}" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 10 Q30 15 53 9 M9 14 Q30 19 50 13 M14 6 L22 17 M28 5 L34 18 M44 6 L38 17" stroke="${LINE}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".55"/><path d="M2 8 Q30 13 58 8" stroke="#7a4f38" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+
+/* ---------- Odile actor: mover (path) > body (reactions) > one svg per mood ---------- */
+const MOODS = ["happy", "cheer", "sleepy", "think", "oops", "fly"];
+function makeOdile(parent, mood0) {
+  const mover = html(`<div class="odile"><div class="odile-body"></div></div>`);
+  const body = mover.firstElementChild;
+  const layers = {};
+  for (const m of MOODS) { const el = html(storkSVG(m)); el.style.opacity = m === mood0 ? 1 : 0; body.appendChild(el); layers[m] = el; }
+  const fx = html(fxSVG()); body.appendChild(fx);
+  parent.appendChild(mover);
+  const all = (sel) => body.querySelectorAll(sel);
+  const O = { mover, body, layers, cur: mood0 };
+  O.mood = (m, t) => { for (const k of MOODS) set(layers[k], { opacity: k === m ? 1 : 0 }, t); };
+  O.flap = (t, d, period = 0.17) => anim(all(".stork-wing"), kf(K.flap), t, period, { iter: Math.max(2, Math.round(d / period)), dir: "alternate", easing: "ease-in-out", fill: "none" });
+  O.part = (sel, k, t, d, easing = ODILE_EASE) => anim(all(sel), kf(K[k], easing), t, d, { fill: "none" });
+  O.fx = (name, t, d) => {
+    all(`.fx-${name} .odile-fx-bit`).forEach((b) => {
+      const i = +b.dataset.i, k = { sparkle: "twinkle", hearts: "rise", sweat: "drip", confetti: "burst" }[name];
+      anim(b, kf(K[k], name === "sweat" ? "ease-in" : ODILE_EASE), t + i * (name === "confetti" ? .07 : .12), d, { fill: "none" });
+    });
+  };
+  /** One reaction from the app's vocabulary. Mood shows for its length, then `after`. */
+  O.react = (name, t, after = "happy", ms) => {
+    const spec = REACTIONS[name]; const d = (ms ?? spec.ms) / 1000;
+    O.mood(spec.mood, t); O.mood(after, t + d);
+    const bodyK = { jump: "jump", twirl: "twirl", bounce: "bounce", salute: "leanBack", dance: "dance", hearts: "swoon", shrug: "shrug", victory: "victory", loop: "loop" }[name];
+    if (bodyK) { let fr = kf(K[bodyK], name === "dance" || name === "loop" ? ODILE_IO : ODILE_EASE); if (name === "loop") fr = fr.map((f) => ({ ...f, transformOrigin: "50% 45%" })); anim(body, fr, t, d, { fill: "none" }); }
+    if (["jump", "bounce", "victory", "loop"].includes(name)) O.flap(t, d);
+    if (name === "salute") { O.part(".stork-wing", "salute", t, d); O.part(".stork-head", "tilt", t, d); }
+    if (name === "hearts") O.part(".stork-head", "tilt", t, d, ODILE_IO);
+    if (name === "shrug") { O.part(".stork-wing", "wingRuffle", t, d); O.part(".stork-head", "droop", t, d); }
+    if (name === "wave") O.part(".stork-wing", "wave", t, d, ODILE_IO);
+    if (name === "dance") { anim(all(".stork-legs-a"), kf(K.legsOut), t, d / 2, { iter: 2, fill: "none" }); anim(all(".stork-legs-b"), kf(K.legsIn), t, d / 2, { iter: 2, fill: "none" }); }
+    if (spec.fx) O.fx(spec.fx, t, d);
+  };
+  O.idle = (name, t, d) => {
+    if (name === "blink") O.part(".stork-eye", "blink", t, d ?? .45, "linear");
+    if (name === "tilt") O.part(".stork-head", "tilt", t, d ?? 1.5, ODILE_IO);
+    if (name === "peck") O.part(".stork-head", "peck", t, d ?? .9, ODILE_IO);
+    if (name === "hop") O.part(".stork-bob", "hop", t, d ?? .6);
+    if (name === "look") O.part(".stork-bob", "look", t, d ?? 1.7, ODILE_IO);
+    if (name === "ruffle") O.part(".stork-wing", "wingRuffle", t, d ?? .7, ODILE_IO);
+  };
+  /** Place her feet at (x, y). s = size / 400px, f = facing (1 right, -1 left), r = tilt in degrees. */
+  const tf = (p) => `translate(${p.x - 160}px, ${p.y - 384}px) scale(${p.s * (p.f ?? 1)}, ${p.s}) rotate(${p.r ?? 0}deg)`;
+  O.place = (p) => { mover.style.transform = tf(p); O.at = p; };
+  O.path = (fn, t, d) => {
+    const n = Math.max(2, Math.round(d * FPS)), frames = [];
+    for (let i = 0; i <= n; i++) frames.push({ transform: tf(fn(i / n)) });
+    anim(mover, frames, t, d); O.at = fn(1);
+  };
+  /** A hop from where she is to (x, y): arc of height h, facing the way she goes, squash on landing. */
+  O.hop = (x, y, t, d, h, s) => {
+    const a = { ...O.at }, s1 = s ?? a.s, f = x < a.x ? -1 : 1;
+    O.path((u) => ({ x: lerp(a.x, x, easeIO(u)), y: lerp(a.y, y, u) - h * 4 * u * (1 - u), s: lerp(a.s, s1, u), f, r: f * lerp(-8, 10, u) * Math.sin(Math.PI * u) }), t, d);
+    O.flap(t, d, .13); O.land(t + d);
+  };
+  O.land = (t) => anim(body, [{ transform: "scale(1.12, .84)", easing: ODILE_EASE }, { transform: "none" }], t, .35, { fill: "none" });
+  O.breathe = () => anim(all(".stork-bob"), kf(K.bob, "ease-in-out"), 0, 3.2, { iter: Infinity, fill: "none" });
+  return O;
+}
+
+/* ---------- world: the app's Strasbourg backdrop (components/art/Backdrop.tsx), widened to 16:9 ---------- */
+const G = 360, U = 3; // ground line in world units (1 unit = 3 px)
+function house(x, w, h, roof = "var(--art-roof)") {
+  const y = G - h; let s = `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--art-wall)"/>`;
+  s += `<path d="M${x - 4} ${y} L${x + w / 2} ${y - w * .55} L${x + w + 4} ${y} Z" fill="${roof}"/>`;
+  s += `<rect x="${x + w * .72}" y="${y - w * .5}" width="6" height="14" fill="var(--art-beam)"/>`;
+  s += `<path d="M${x} ${y + h * .4}H${x + w}M${x} ${y + h * .75}H${x + w}M${x + w / 2} ${y}V${G}M${x} ${y + h * .4}L${x + w / 2} ${y + h * .75}L${x + w} ${y + h * .4}" stroke="var(--art-beam)" stroke-width="2" fill="none"/>`;
+  for (const f of [.2, .64]) s += `<rect x="${x + w * f}" y="${y + h * .12}" width="${w * .16}" height="${h * .16}" fill="var(--art-window)"/><rect x="${x + w * f - 1}" y="${y + h * .28}" width="${w * .16 + 2}" height="4" fill="var(--art-beam)"/><circle cx="${x + w * f + 2}" cy="${y + h * .27}" r="2" fill="#d94a4a"/><circle cx="${x + w * f + w * .08}" cy="${y + h * .26}" r="2" fill="#f08a9a"/><circle cx="${x + w * f + w * .14}" cy="${y + h * .27}" r="2" fill="#d94a4a"/>`;
+  return s + "</g>";
+}
+// the nest house: like house() but with a wider chimney for Odile's nest
+const NH = { x: 170, w: 60, h: 150 };
+const chimX = NH.x + NH.w * .75, roofAtChim = (G - NH.h - NH.w * .55) + (chimX - NH.x - NH.w / 2) / (NH.w / 2 + 4) * NH.w * .55, chimTop = roofAtChim - 18;
+function world() {
+  const cath = `<g transform="translate(359 90) scale(.9)"><g fill="var(--art-stone)">
+    <path d="M244 300V200H334V300Z"/><path d="M250 200V158H266V200ZM245.5 200V163h4V200ZM266.5 200V163h4V200ZM245 163l2.5 -10l2.5 10ZM266 163l2.5 -10l2.5 10Z"/>
+    ${[158, 142, 126, 110, 94].map((y) => { const w = (yy) => 1.5 + (8.5 * (yy - 62)) / 96, t = y - 16; return `<path d="M${258 - w(y)} ${y}L${258 - w(t)} ${t}l-1.4 -5l2.4 3H${258 + w(t) - 1}l2.4 -3l-1.4 5L${258 + w(y)} ${y}Z"/>`; }).join("")}
+    <path d="M254.5 78V68h7V78ZM255 68L258 54L261 68Z"/><path d="M306 200V190l2.5 -9l2.5 9V200ZM329 200V190l2.5 -9l2.5 9V200ZM314 200V193l6 -6l6 6V200Z"/><path d="M240 300V214h5V300ZM333 300V214h5V300Z"/></g>
+    <path d="M258 54V42M255 46h6" stroke="var(--art-stone)" stroke-width="1.6"/>
+    <g stroke="var(--art-wall)" stroke-width="1.3" fill="none" opacity="0.7"><path d="M244 268H334M244 230H334M244 203H334M272 300V203M306 300V203"/><path d="M282 300v-14a7 7 0 0 1 14 0v14M253 300v-9a5 5 0 0 1 10 0v9M315 300v-9a5 5 0 0 1 10 0v9"/><path d="M279 274l10 -12l10 12M251 280l7 -9l7 9M313 280l7 -9l7 9"/><path d="M252 262v-22a6 6 0 0 1 12 0v22M314 262v-22a6 6 0 0 1 12 0v22M255 160v24M261 160v24"/></g>
+    <circle cx="289" cy="248" r="11" fill="var(--art-window)" stroke="var(--art-wall)" stroke-width="1.6" opacity="0.9"/><path d="M289 237v22M278 248h22M281 240l16 16M297 240l-16 16" stroke="var(--art-wall)" stroke-width="1" opacity="0.8"/><circle cx="289" cy="248" r="3.4" fill="var(--art-wall)" opacity="0.85"/></g>`;
+  const ny = G - NH.h;
+  const nestHouse = house(NH.x, NH.w, NH.h).replace(/<rect x="[\d.]+" y="[\d.]+" width="6" height="14" fill="var\(--art-beam\)"\/>/, `<rect x="${chimX - 5}" y="${chimTop}" width="10" height="19" fill="var(--art-beam)"/><rect x="${chimX - 6.5}" y="${chimTop - 2}" width="13" height="4" fill="#5e3c2a"/>`);
+  return `<svg viewBox="0 0 640 360" width="1920" height="1080" style="display:block">
+    <g id="clouds"><g id="cloudA" fill="#fff" opacity=".6"><ellipse cx="80" cy="70" rx="30" ry="9"/><ellipse cx="102" cy="64" rx="20" ry="9"/></g>
+      <g id="cloudB" fill="#fff" opacity=".45"><ellipse cx="380" cy="120" rx="36" ry="10"/><ellipse cx="402" cy="113" rx="22" ry="9"/></g>
+      <g id="cloudC" fill="#fff" opacity=".5"><ellipse cx="560" cy="44" rx="26" ry="7"/><ellipse cx="576" cy="39" rx="16" ry="7"/></g></g>
+    ${cath}
+    ${house(0, 46, 110, "var(--art-roof-2)")}${house(50, 44, 128)}${house(100, 62, 120, "var(--art-roof-2)")}${nestHouse}${house(236, 48, 118, "var(--art-roof-2)")}${house(288, 60, 136)}
+    ${house(352, 46, 112, "var(--art-roof-2)")}${house(402, 56, 140)}${house(462, 50, 124, "var(--art-roof-2)")}${house(516, 52, 130)}${house(622, 40, 116)}
+    ${[[232, 318], [396, 316], [96, 322], [560, 318]].map(([x, y]) => `<path d="M${x} ${y}V${y + 42}" stroke="var(--art-beam)" stroke-width="2"/><circle cx="${x}" cy="${y - 2}" r="3.4" fill="#ffd27a"/>`).join("")}
+    <path d="M0 326 Q60 314 120 326 T240 326 T360 326 T480 326 T600 326 T720 326 V360 H0 Z" fill="var(--art-water)"/>
+    <path d="M300 326 q30 -26 60 0" stroke="var(--art-stone)" stroke-width="5" fill="none"/><path d="M300 326h60" stroke="var(--art-stone)" stroke-width="6"/>
+    <g id="boat"><path d="M30 334 h34 l-5 9 h-24 z" fill="var(--art-roof)"/><rect x="40" y="324" width="14" height="10" fill="var(--art-wall)"/></g>
+    <path id="ripple" d="M-100 346 Q-50 336 0 346 T100 346 T200 346 T300 346 T400 346 T500 346 T600 346 T700 346" stroke="var(--art-glow)" stroke-width="2" fill="none" opacity="0.6"/>
+  </svg>`;
+}
+
+/* ---------- phone UI (matches app/(app) screens, BottomNav, Logo) ---------- */
+const ICONS = { home: "M3 11l9-7 9 7M5 10v10h14V10", trip: "M4 6h16v14H4zM4 10h16M9 3v4M15 3v4", todos: "M5 12l4 4 10-10", learn: "M12 5C9 3 5 3 3 4v14c2-1 6-1 9 1 3-2 7-2 9-1V4c-2-1-6-1-9 1zM12 5v14", translate: "M4 5h16v11H10l-4 4v-4H4zM8 9h8M8 12h5", files: "M6 3h8l4 4v14H6zM14 3v4h4" };
+const TABS = [["Home", "home"], ["Itinerary", "trip"], ["To-dos", "todos"], ["Learn", "learn"], ["Translate", "translate"], ["Files", "files"]];
+const icon = (k, w = 24, sw = 1.9) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[k]}"/></svg>`;
+const TROPHY = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>`;
+const FLAME = `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#e8892b"/></svg>`;
+const todos = [["Passport valid until Sept 2027", "Due 1 Dec · Everyone"], ["Packing list", "Due 20 Feb · Checklist in Files"], ["Sign the trip consent form", "Due 10 Jan · Everyone"]];
+const itin = [
+  ["Saturday 6 March"], ["08:15", "Arrive at Strasbourg station", "Gare de Strasbourg"], ["10:30", "Tram A to Petite France", "Homme de Fer stop"], ["14:00", "Cathedral Notre-Dame", "Place de la Cathédrale"],
+  ["Sunday 7 March"], ["10:00", "Worship with our partner church", "Église Saint-Paul"], ["15:00", "Serve at the community café", "Neudorf"],
+  ["Monday 8 March"], ["09:00", "Meet the team for outreach", "Place Kléber"],
+];
+const files = [["Packing list.pdf", "PDF · 88 KB · Leaders"], ["Flight tickets.pdf", "PDF · 240 KB · Everyone"], ["Trip consent form.pdf", "PDF · 120 KB · Everyone"], ["Travel insurance.pdf", "PDF · 310 KB · Everyone"]];
+function phoneApp() {
+  return `
+  <div class="status"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="18" height="12" viewBox="0 0 18 12"><path d="M1 11h2V8H1zM6 11h2V6H6zM11 11h2V3h-2zM16 11h2V1h-2z" fill="#2b2118"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#2b2118"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#2b2118"/><path d="M24 4v4" stroke="#2b2118" stroke-width="2"/></svg></span></div>
+  <div class="apphead"><div class="logo"><span style="width:36px;height:36px;display:block">${storkSVG("happy", false)}</span>Le Nid</div>
+    <div style="display:flex;align-items:center"><span class="lb">${TROPHY}Leaderboard</span><span class="av">M</span></div></div>
+  <div class="panels">
+    <div class="panel" id="pTodos"><h2>To-dos</h2><div class="label">Trip prep · <span id="openCount">3</span> open</div><div class="stack">
+      ${todos.map(([t, m], i) => `<div class="card todo" id="todo${i}"><span class="box"><span class="boxfill"></span><svg viewBox="0 0 30 30"><path d="M8 15.5l4.5 4.5L22 10.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="24" stroke-dashoffset="24"/></svg></span><span><span class="tt">${t}<span class="strike"></span></span><br><span class="meta">${m}</span></span><span class="xp">+5 XP</span></div>`).join("")}
+      <div class="card" style="opacity:.55"><div class="label" style="margin:0">Done this week</div><div class="meta" style="font-weight:700">Read the trip handbook · Join the prayer chain</div></div>
+    </div></div>
+    <div class="panel" id="pItin"><h2>Itinerary</h2><div class="label">Strasbourg · 6–13 March 2027</div><div class="stack" id="itinList">
+      ${itin.map((r) => r.length === 1 ? `<div class="day">${r[0]}</div>` : `<div class="card"><div class="time">${r[0]}</div><div class="ititle">${r[1]}</div><div class="loc">${r[2]}</div></div>`).join("")}
+    </div></div>
+    <div class="panel" id="pFiles"><h2>Files</h2><div class="label">Trip documents</div><div class="stack">
+      ${files.map(([n, m], i) => `<div class="card frow" id="file${i}"><span class="ficon">${icon("files", 22, 2.2)}</span><span><div class="fname">${n}</div><div class="fmeta">${m}</div></span></div>`).join("")}
+    </div></div>
+    <div class="panel" id="pLearn"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="tag">French · Unit 1 · Greetings</span>
+      <span style="display:flex;gap:10px;font-weight:900;font-size:15px"><span style="display:flex;gap:3px;align-items:center;color:var(--accent-ink)">${FLAME}<span id="streak">11</span></span><span style="color:var(--primary)"><span id="xp">240</span> XP</span></span></div>
+      <div class="stack" id="learnList">
+        <div class="card"><div class="label" style="margin-bottom:6px">Pick the right word</div><div style="font-weight:900;font-size:20px;margin-bottom:12px">How do you say “hello”?</div>
+          <div class="stack" style="gap:8px"><div class="choice">Merci</div><div class="choice" id="cBonjour">Bonjour<span class="ok" id="cOk">Bonjour <span style="margin-left:auto">✓</span></span></div><div class="choice">Au revoir</div></div>
+          <div id="parfait" style="margin-top:12px;font-weight:900;color:var(--good);font-size:17px;opacity:0">Parfait ! +10 XP</div></div>
+        <div class="card"><div class="label" style="margin-bottom:6px">Scripture memory · Psalm 46:1</div>
+          <div class="verse">God is our <span class="blank"><i id="b1">refuge</i></span> and <span class="blank"><i id="b2">strength</i></span>, an ever-present help in trouble.</div></div>
+        <div class="card" style="display:flex;gap:12px;align-items:center"><svg viewBox="0 0 80 76" width="64" height="61" style="flex:none"><g stroke="#2b2118" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="18" y="26" width="44" height="36" fill="var(--art-wall)"/><path d="M14 26L40 4l26 22Z" fill="var(--art-roof)"/><path d="M18 38h44M18 50h44M30 26v36M50 26v36M18 26l12 12M62 26L50 38" fill="none" stroke="var(--art-beam)"/><rect x="35" y="42" width="10" height="8" fill="var(--art-window)"/><path d="M0 62h80v14H0Z" fill="var(--art-water)"/></g></svg>
+          <div><div class="label" style="margin-bottom:2px">Culture · Petite France</div><div style="font-weight:800;font-size:15px;line-height:1.3">Say “Bonjour” before anything else. Every shop, every time.</div></div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;font-weight:900"><span>Raise the spire</span><span style="color:var(--primary)"><span id="goalPct">82</span>%</span></div>
+          <div class="goalbar"><div id="goalFill"></div></div><div class="meta" style="margin-top:6px;font-size:13px;color:var(--muted);font-weight:700" id="goalTxt">Group XP · 35 of us building it together</div></div>
+      </div></div>
+  </div>
+  <div class="nav"><div id="pill"></div>${TABS.map(([l, k], i) => `<div class="tab" id="tab${i}"><span class="ico">${icon(k)}</span>${l}${k === "todos" ? `<span class="badge" id="badge">3</span>` : ""}</div>`).join("")}</div>
+  <div class="navbelow"></div>`;
+}
+
+/* ---------- build ---------- */
+const stage = $("stage");
+$("cam").innerHTML = world();
+$("app").innerHTML = phoneApp();
+$("readyNest").innerHTML = NEST_SVG;
+$("notifIcon").innerHTML = `<span style="width:62px;height:62px;display:block">${storkSVG("happy", false)}</span>`;
+
+// Camera: opens close on Odile's nest (on the chimney), then pulls back to the whole city.
+const Z = 2.6, NEST_W = U * chimX, NEST_TOP = U * chimTop - 10;           // nest top-centre in world px
+const F = { x: 1250, y: 760 };                                            // where that point sits on screen while zoomed
+const CAM0 = `translate(${F.x - Z * NEST_W}px, ${F.y - Z * NEST_TOP}px) scale(${Z})`;
+const nestFront = html(`<div class="abs" style="left:${NEST_W - 55}px;top:${NEST_TOP}px;width:110px">${NEST_SVG}</div>`);
+$("camFront").appendChild(nestFront);
+for (const c of [$("cam"), $("camFront")]) { c.style.transform = CAM0; tween(c, { transform: CAM0 }, { transform: "translate(0px, 0px) scale(1)" }, S.leap + .1, 1.9, "cubic-bezier(.55,0,.25,1)"); }
+
+// Sky: dawn -> day -> golden evening. The sun climbs, then sinks behind the cathedral.
+const sun = $("sun");
+const sunAt = (x, y) => ({ transform: `translate(${x - 180}px, ${y - 180}px)` });
+sun.style.transform = sunAt(380, 520).transform;
+tween(sun, sunAt(380, 520), sunAt(520, 180), 1, 14, "ease-in-out");
+tween(sun, sunAt(520, 180), sunAt(1330, 560), 30, 12, "ease-in-out");
+tween($("skyDay"), { opacity: 0 }, { opacity: 1 }, 7.5, 3.5);
+tween($("skyDusk"), { opacity: 0 }, { opacity: 1 }, 33.5, 4);
+tween($("warm"), { opacity: 0 }, { opacity: .12 }, 34, 4);
+anim($("cloudA"), [{ transform: "translateX(-20px)" }, { transform: "translateX(70px)" }], 0, DUR);
+anim($("cloudB"), [{ transform: "translateX(30px)" }, { transform: "translateX(-50px)" }], 0, DUR);
+anim($("cloudC"), [{ transform: "translateX(0px)" }, { transform: "translateX(60px)" }], 0, DUR);
+anim($("boat"), [{ transform: "translateX(0px)" }, { transform: "translateX(120px)" }], 0, DUR, { easing: "ease-in-out" });
+anim($("ripple"), [{ transform: "translateX(0px)" }, { transform: "translateX(100px)" }], 0, 9, { iter: Infinity, fill: "none" });
+
+// Headlines: one story. Words rise in, the previous line lifts away as the next arrives.
+const HEADS = [
+  [0.5, S.leap - .1, "Odile has a <em>big trip</em> coming.", "Strasbourg<span class='dot'>·</span>March 2027<span class='dot'>·</span>35 of us"],
+  [V.v2a - .15, S.hopItin + .05, "So she starts with <em>the nest.</em>", "To-dos<span class='dot'>·</span>one hop at a time"],
+  [S.hopItin + .4, S.hopFiles + .05, "Then she maps out <em>every day.</em>", "Itinerary<span class='dot'>·</span>every tram, every meeting spot"],
+  [S.hopFiles + .45, S.hopLearn + .05, "Every paper, <em>tucked in.</em>", "Files<span class='dot'>·</span>tickets, forms, insurance"],
+  [S.hopLearn + .4, S.takeoff, "A little practice, <em>every day.</em>", "French<span class='dot'>·</span>Scripture<span class='dot'>·</span>Culture<span class='dot'>·</span>Translate"],
+  [S.flock - .2, S.landEnd - .2, "Until the whole flock <em>is ready.</em>", "35 of us<span class='dot'>·</span>one nest<span class='dot'>·</span>one mission"],
+];
+const wordsOf = (s) => s.replace(/(<em>|<\/em>)/g, "\u0001$1\u0001").split("\u0001").map((p) => p === "<em>" || p === "</em>" ? p : p.split(/(\s+)/).filter(Boolean).map((w) => /^\s+$/.test(w) ? w : `<span class="w">${w}</span>`).join("")).join("");
+HEADS.forEach(([t0, t1, h, k]) => {
+  const el = html(`<div class="headline"><h1>${wordsOf(h)}</h1><p>${k}</p></div>`);
+  $("headlines").appendChild(el);
+  const ws = el.querySelectorAll("h1 .w");
+  ws.forEach((w, i) => anim(w, [{ opacity: 0, transform: "translateY(60px) rotate(4deg)" }, { opacity: 1, transform: "none" }], t0 + i * .06, .55, { easing: "cubic-bezier(.2,.9,.3,1.25)", fill: "both" }));
+  const p = el.querySelector("p");
+  anim(p, [{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "none" }], t0 + .25 + ws.length * .06, .5, { easing: "ease-out", fill: "both" });
+  anim(el, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-70px)" }], t1, .5, { easing: "ease-in" });
+});
+
+// Trip readiness bar (lesson-track style), fills across the whole story.
+const R_STOPS = [[0, 0], [S.check1, 0], [S.check1 + .5, 8], [S.check2, 8], [S.check2 + .5, 16], [S.check3, 16], [S.check3 + .5, 25], [V.v3 + 4, 25], [V.v3 + 4.7, 50], [S.doc3 + .4, 50], [S.doc3 + 1.1, 75], [S.spire + .6, 75], [S.spire + 1.6, 100]];
+const piece = (stops, t) => { for (let i = 1; i < stops.length; i++) { const [a, va] = stops[i - 1], [b, vb] = stops[i]; if (t <= b) return lerp(va, vb, easeIO(clamp((t - a) / Math.max(1e-6, b - a)))); } return stops[stops.length - 1][1]; };
+updaters.push((t) => { const v = piece(R_STOPS, t); $("readyFill").style.width = `${v}%`; $("readyPct").textContent = `${Math.round(v)}%`; });
+tween($("readiness"), { opacity: 0, transform: "translateY(-20px)" }, { opacity: 1, transform: "none" }, 1.0, .6);
+tween($("readiness"), { opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-20px)" }, S.landEnd - .2, .5);
+
+// Notification that wakes Odile up.
+const notif = $("notif");
+anim(notif, [{ opacity: 0, transform: "translateY(-40px) scale(.9)" }, { opacity: 1, transform: "translateY(6px) scale(1.02)", offset: .7 }, { opacity: 1, transform: "none" }], S.wake - .1, .5, { easing: "ease-out" });
+tween(notif, { opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-30px) scale(.95)" }, S.leap - .2, .4, "ease-in");
+
+// Phone rises in as the camera pulls back; sinks away when Odile takes off.
+const phone = $("phone");
+phone.style.transform = "translateY(1150px) rotate(6deg)";
+tween(phone, { transform: "translateY(1150px) rotate(6deg)" }, { transform: "none" }, S.leap + .35, 1.3, "cubic-bezier(.2,.9,.3,1.08)");
+tween(phone, { transform: "none" }, { transform: "translateY(1200px) rotate(-8deg)" }, S.takeoff + .15, 1.1, "cubic-bezier(.5,0,.8,.4)");
+
+// Nav: pill and screen follow Odile from tab to tab.
+const SCREEN = { x: 1264, y: 84, k: 432 / 390 };
+const tabX = (i) => SCREEN.x + SCREEN.k * (32.5 + 65 * i);
+const NAV_Y = SCREEN.y + SCREEN.k * 739 + 1;
+const pill = $("pill");
+const pillAt = (i) => ({ transform: `translateX(${4.5 + 65 * i}px)` });
+pill.style.transform = pillAt(2).transform;
+const tabColor = (i, on, t) => { set($("tab" + i), { color: on ? "var(--primary)" : "var(--muted)" }, t); set($("tab" + i).querySelector(".ico"), { color: on ? "#fff" : "var(--muted)" }, t); };
+TABS.forEach((_, i) => { $("tab" + i).style.color = i === 2 ? "var(--primary)" : "var(--muted)"; $("tab" + i).querySelector(".ico").style.color = i === 2 ? "#fff" : "var(--muted)"; });
+function goTab(from, to, t, d, pFrom, pTo) {
+  tween(pill, pillAt(from), pillAt(to), t, d, "cubic-bezier(.3,.7,.4,1)");
+  tabColor(from, false, t + d * .4); tabColor(to, true, t + d * .4);
+  const dir = to > from ? 1 : -1;
+  tween($(pFrom), { opacity: 1, transform: "none" }, { opacity: 0, transform: `translateX(${-dir * 390}px)` }, t, d + .1, "cubic-bezier(.5,0,.3,1)");
+  tween($(pTo), { opacity: 1, transform: `translateX(${dir * 390}px)` }, { opacity: 1, transform: "none" }, t, d + .1, "cubic-bezier(.5,0,.3,1)");
+}
+$("pTodos").style.opacity = 1;
+
+/* ---------- Odile's performance ---------- */
+const O = makeOdile($("odileLayer"), "sleepy");
+O.breathe();
+// Scene 1: asleep in her nest on the chimney (feet hidden by the nest, as in the app).
+const S1 = 1.2, nestPose = { x: F.x - 206.4 * S1 / 1.2 + 160 * S1, y: F.y - 297.6 + 384 * S1, s: S1 };
+O.place(nestPose);
+const legs = O.body.querySelectorAll(".stork-legs-a");
+legs.forEach((l) => (l.style.opacity = 0)); set(legs, { opacity: 1 }, S.leap + .2);
+anim(O.body.querySelectorAll(".stork-zzz"), kf(K.zzz, "ease-in-out"), 0, 1.2, { iter: 2, fill: "none" });
+// the notification wakes her: startle, then she reads it
+O.mood("oops", S.wake); O.idle("hop", S.wake, .6); O.fx("sparkle", S.wake, .85);
+O.mood("think", S.wake + .9); O.idle("tilt", S.wake + 1.0, 1.6); O.idle("blink", S.wake + 2.7);
+// "...she's a little nervous"
+O.react("shrug", S.nervous, "oops", 1100); O.idle("blink", S.nervous + 1.25); O.mood("happy", S.nervous + 1.45); O.idle("ruffle", S.nervous + 1.5);
+// Leap out of the nest, glide down to the phone and land on the To-dos tab
+const P0 = { ...nestPose }, P3 = { x: tabX(2), y: NAV_Y, s: .6 };
+O.react("jump", S.leap - .45, "cheer", 520);
+O.mood("fly", S.leap + .1); O.mood("happy", S.land - .05);
+const bez = (a, b, c, d, u) => (1 - u) ** 3 * a + 3 * (1 - u) ** 2 * u * b + 3 * (1 - u) * u * u * c + u ** 3 * d;
+O.path((u) => { const e = easeIO(u); return { x: bez(P0.x, 1060, 1640, P3.x, e), y: bez(P0.y, 300, 360, P3.y, e), s: lerp(P0.s, P3.s, easeIO(u)), f: 1, r: lerp(-14, 6, u) * Math.sin(Math.PI * u) - 6 * Math.sin(Math.PI * u) }; }, S.leap, S.land - S.leap);
+O.flap(S.leap, S.land - S.leap - .1, .19); O.land(S.land);
+O.idle("blink", S.land + .5);
+
+// Scene 2: to-dos. Each "Check!" ticks an item; Odile celebrates each one differently.
+[S.check1, S.check2, S.check3].forEach((t, i) => {
+  const row = $("todo" + i);
+  tween(row.querySelector(".boxfill"), { opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "none" }, t, .25, "cubic-bezier(.3,1.6,.5,1)");
+  tween(row.querySelector("path[stroke-dasharray]"), { strokeDashoffset: 24 }, { strokeDashoffset: 0 }, t + .1, .3, "ease-out");
+  tween(row.querySelector(".strike"), { transform: "scaleX(0)" }, { transform: "scaleX(1)" }, t + .15, .35, "ease-out");
+  tween(row, { opacity: 1, transform: "none" }, { opacity: .62, transform: "scale(.98)" }, t + .4, .4);
+  anim(row.querySelector(".xp"), [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none", offset: .25 }, { opacity: 1, transform: "translateY(-6px)", offset: .75 }, { opacity: 0, transform: "translateY(-14px)" }], t + .05, 1.1, { fill: "none" });
+  O.react(["jump", "twirl", "bounce"][i], t);
+});
+updaters.push((t) => { const n = 3 - [S.check1, S.check2, S.check3].filter((c) => t >= c + .2).length; const b = $("badge"); b.textContent = n; b.style.display = n ? "" : "none"; $("openCount").textContent = n; });
+
+// -> Itinerary: hop left along the nav, the screen slides over
+goTab(2, 1, S.hopItin, .55, "pTodos", "pItin");
+O.hop(tabX(1), NAV_Y, S.hopItin, .5, 70);
+// Scene 3: the days scroll past; she follows along, head tilted
+anim($("itinList"), [{ transform: "translateY(0px)" }, { transform: "translateY(-330px)" }], S.itinScroll, 4.6, { easing: "cubic-bezier(.45,0,.4,1)" });
+O.mood("think", S.itinScroll + .4); O.idle("tilt", S.itinScroll + .5, 1.5); O.idle("blink", S.itinScroll + 2.2);
+O.mood("happy", S.itinScroll + 2.6); O.idle("look", S.itinScroll + 2.8, 1.7); O.idle("peck", S.hopFiles - .9, .8);
+
+// -> Files: one big flapping hop to the far tab
+goTab(1, 5, S.hopFiles, .7, "pItin", "pFiles");
+O.mood("fly", S.hopFiles + .05); O.mood("happy", S.hopFiles + .65);
+O.hop(tabX(5), NAV_Y, S.hopFiles, .7, 210);
+// Scene 4: papers fly in from the left and drop into place
+const fileRows = [1, 2, 3].map((i) => $("file" + i));
+fileRows.forEach((r) => (r.style.opacity = 0));
+[S.doc1, S.doc2, S.doc3].forEach((t, j) => {
+  const i = j + 1, row = fileRows[j];
+  const label = ["TICKET", "FORM", "INSURE"][j];
+  const paper = html(`<div class="abs paper"><div class="hd">${label}</div><div class="ln"></div><div class="ln" style="width:60%"></div><div class="ln"></div><div class="ln" style="width:45%"></div></div>`);
+  $("papers").appendChild(paper);
+  const tx = SCREEN.x + SCREEN.k * 195 - 60, ty = SCREEN.y + SCREEN.k * (96 + 16 + 62 + 74 * i + 32) - 75;
+  const sx = [-200, -220, -180][j], sy = [760, 420, 980][j];
+  const frames = [];
+  for (let n = 0; n <= 21; n++) { const u = n / 21, e = easeOut(u); frames.push({ opacity: u < .85 ? 1 : 1 - (u - .85) / .15, transform: `translate(${lerp(sx, tx, e)}px, ${lerp(sy, ty, e) - 260 * Math.sin(Math.PI * e) * (1 - u * .3)}px) rotate(${lerp(-30 + j * 20, 0, e) + 18 * Math.sin(u * 7)}deg) scale(${lerp(1.25, .5, easeIn(u))})` }); }
+  anim(paper, frames, t, .7, { fill: "none" });
+  tween(row, { opacity: 0, transform: "scale(.6)" }, { opacity: 1, transform: "none" }, t + .55, .35, "cubic-bezier(.3,1.6,.5,1)");
+  O.idle("peck", t + .5, .6);
+});
+O.react("salute", S.salute);
+
+// -> Learn
+goTab(5, 3, S.hopLearn, .6, "pFiles", "pLearn");
+O.hop(tabX(3), NAV_Y, S.hopLearn, .55, 90);
+// Scene 5: the Duolingo part. Tap, right answer, streak, verse, culture, the group goal.
+const cB = $("cBonjour");
+anim(cB, [{ transform: "none" }, { transform: "scale(.95)" }, { transform: "none" }], S.answer - .25, .3, { fill: "none" });
+tween($("cOk"), { opacity: 0 }, { opacity: 1 }, S.answer, .2);
+tween($("parfait"), { opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }, S.answer + .1, .3, "ease-out");
+O.react("jump", S.answer, "cheer"); O.fx("sparkle", S.answer + .2, .9);
+O.mood("happy", S.answer + 1.1);
+updaters.push((t) => {
+  $("xp").textContent = 240 + (t >= S.answer + .1 ? 10 : 0);
+  $("streak").textContent = t >= S.answer + .5 ? 12 : 11;
+  const g = piece([[0, 82], [S.spire + .2, 82], [S.spire + 1.6, 100]], t);
+  $("goalPct").textContent = Math.round(g); $("goalFill").style.width = `${g}%`;
+  $("goalTxt").textContent = g >= 99.5 ? "Spire complete! The whole team did it." : "Group XP · 35 of us building it together";
+});
+anim($("streak").parentElement, [{ transform: "none" }, { transform: "scale(1.5)" }, { transform: "none" }], S.answer + .45, .4, { fill: "none" });
+const LL = $("learnList");
+anim(LL, [{ transform: "translateY(0px)" }, { transform: "translateY(-150px)" }], S.verse - .2, .6, { easing: "cubic-bezier(.45,0,.3,1)" });
+tween($("b1"), { opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "none" }, S.verse + .4, .3, "ease-out");
+tween($("b2"), { opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "none" }, S.verse + .75, .3, "ease-out");
+O.react("hearts", S.verse + .4);
+anim(LL, [{ transform: "translateY(-150px)" }, { transform: "translateY(-260px)" }], S.culture - .1, .6, { easing: "cubic-bezier(.45,0,.3,1)" });
+O.react("dance", S.culture + .15);
+anim(LL, [{ transform: "translateY(-260px)" }, { transform: "translateY(-330px)" }], S.spire - .2, .5, { easing: "cubic-bezier(.45,0,.3,1)" });
+O.idle("blink", S.spire + .5);
+O.react("victory", S.victory, "cheer", 1350);
+
+// Scene 6: takeoff. The phone sinks, she climbs out of frame, then leads the flock across the evening sky.
+O.mood("fly", S.takeoff);
+const T0 = { ...O.at };
+O.path((u) => { const e = easeIn(u); return { x: lerp(T0.x, 2150, e), y: lerp(T0.y, -260, easeOut(u) * .4 + e * .6), s: lerp(.6, .66, u), f: 1, r: -18 * Math.sin(Math.PI * u * .5) }; }, S.takeoff, .9);
+O.flap(S.takeoff, 1.0, .15);
+const FL0 = S.flock + .3, FL1 = 38.4;
+O.path((u) => ({ x: lerp(-260, 1000, u), y: 850 - 70 * Math.sin(Math.PI * u) + 12 * Math.sin(u * 10), s: .72, f: 1, r: -6 + 5 * Math.cos(u * 10) }), FL0, FL1 - FL0);
+O.flap(FL0, FL1 - FL0 + 1.1, .22);
+// a loop-the-loop over the rooftops...
+O.react("loop", FL1, "fly", 1000);
+// ...then home: the camera pushes back in on her chimney (the opening shot) and she drops into her nest
+for (const c of [$("cam"), $("camFront")]) tween(c, { transform: "translate(0px, 0px) scale(1)" }, { transform: CAM0 }, FL1 + .5, S.landEnd - FL1 - .45, "cubic-bezier(.45,0,.3,1)");
+O.path((u) => { const e = easeIO(u); return { x: bez(1000, 1150, 1330, nestPose.x, e), y: bez(850, 420, 470, nestPose.y, e), s: lerp(.72, nestPose.s, e), f: 1, r: -8 * Math.sin(Math.PI * u) }; }, FL1 + 1.0, S.landEnd - FL1 - 1.0);
+O.mood("happy", S.landEnd - .05); O.land(S.landEnd);
+set(legs, { opacity: 0 }, S.landEnd);
+O.idle("blink", S.landEnd + .8);
+O.react("wave", S.wave, "happy", 900); O.react("wave", S.wave + .9, "happy", 900);
+O.react("hearts", 42.5); O.idle("blink", 43.6);
+
+// The flock: 34 storks in a V behind Odile (the rest of the 35).
+const flock = $("flock");
+const birds = [];
+for (let i = 0; i < 34; i++) {
+  const arm = i % 2 ? 1 : -1, rank = Math.floor(i / 2) + 1;
+  const b = html(`<div class="mini">${storkSVG("fly", false)}</div>`); flock.appendChild(b);
+  birds.push({ b, dx: -rank * 58 - 90, dy: arm * rank * (arm < 0 ? 9 : 15) + 20, sc: .8 + ((i * 37) % 10) / 40 });
+}
+const FS = S.flock + .1, FE = 42.6;
+birds.forEach(({ b, dx, dy, sc }, i) => {
+  const frames = [];
+  const n = Math.round((FE - FS) * FPS);
+  for (let k = 0; k <= n; k++) { const u = k / n, t = FS + u * (FE - FS); const lx = lerp(-200, 3500, u), ly = 780 - 330 * u - 60 * Math.sin(Math.PI * u);
+    frames.push({ transform: `translate(${lx + dx}px, ${ly + dy + 6 * Math.sin(t * 5 + i)}px) scale(${sc})` }); }
+  b.style.transform = "translate(-400px, -400px)";
+  anim(b, frames, FS, FE - FS);
+  anim(b.querySelectorAll(".stork-wing"), kf(K.flap), FS + (i % 5) * .04, .2, { iter: Math.round((FE - FS) / .2), dir: "alternate", fill: "none", easing: "ease-in-out" });
+});
+
+// Scene 7: end card. Odile + "Le Nid", like the app's Logo component.
+const EC = $("endcard");
+tween(EC, { opacity: 0 }, { opacity: 1 }, S.landEnd - .4, .7, "ease-out");
+const wm = $("wordmark");
+anim(wm, [{ opacity: 0, transform: "translateY(40px) scale(.8)" }, { opacity: 1, transform: "translateY(-6px) scale(1.03)", offset: .7 }, { opacity: 1, transform: "none" }], S.logo, .6, { easing: "ease-out", fill: "both" });
+anim($("tagline"), [{ opacity: 0, transform: "translateY(30px)" }, { opacity: 1, transform: "none" }], S.logo + .5, .5, { easing: "ease-out", fill: "both" });
+anim($("tagline2"), [{ opacity: 0, transform: "translateY(30px)" }, { opacity: 1, transform: "none" }], S.logo + .8, .5, { easing: "ease-out", fill: "both" });
+tween($("headlines"), { opacity: 1 }, { opacity: 0 }, S.landEnd, .3);
+
+/* ---------- clock ---------- */
+function seek(t) {
+  const ms = t * 1000;
+  for (const a of document.getAnimations()) a.currentTime = ms;
+  for (const u of updaters) u(t);
+}
+window.seek = seek;
+window.DURATION = DUR;
+
+const params = new URLSearchParams(location.search);
+if (params.has("capture")) document.documentElement.classList.add("capture");
+function fit() {
+  const s = params.has("capture") ? 1 : Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `scale(${s})`; stage.parentElement.style.width = 1920 * s + "px"; stage.parentElement.style.height = 1080 * s + "px";
+  stage.parentElement.style.position = "relative"; stage.parentElement.style.margin = `${(innerHeight - 1080 * s) / 2}px auto 0`;
+}
+addEventListener("resize", fit); fit();
+
+let now = +(params.get("t") || 0), playing = false, last = 0;
+const audio = new Audio("audio/le-nid-mix.m4a");
+const clockEl = $("clock"), playBtn = $("play");
+function show() { seek(now); clockEl.textContent = now.toFixed(2) + " s"; }
+function frame(ts) { if (!playing) return; now = audio.duration && !audio.paused ? audio.currentTime : now + (ts - last) / 1000; last = ts; if (now >= DUR) { now = DUR; playing = false; audio.pause(); playBtn.textContent = "Play"; } show(); requestAnimationFrame(frame); }
+function toggle() {
+  playing = !playing; playBtn.textContent = playing ? "Pause" : "Play";
+  if (playing) { if (now >= DUR) now = 0; audio.currentTime = now; audio.play().catch(() => {}); last = performance.now(); requestAnimationFrame(frame); } else audio.pause();
+}
+playBtn.onclick = toggle;
+addEventListener("keydown", (e) => {
+  if (e.code === "Space") { e.preventDefault(); toggle(); }
+  if (e.code === "ArrowRight" || e.code === "ArrowLeft") { now = clamp(now + (e.code === "ArrowRight" ? 1 : -1) * (e.shiftKey ? .1 : 1), 0, DUR); audio.currentTime = now; show(); }
+});
+show();
+window.READY = document.fonts.ready.then(() => true);
+</script>
+</body>
+</html>
