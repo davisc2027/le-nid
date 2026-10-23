@@ -10,7 +10,7 @@ import {
   addItineraryItem, updateItineraryItem, deleteItineraryItem,
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
-  addVerseSet, updateVerseSet, deleteVerseSet, setTeam, updateGoal,
+  addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
   addAllowedEmails, removeAllowedEmail, setAccess,
 } from "./actions";
 
@@ -252,10 +252,18 @@ export default async function Admin() {
 
       <Section title={`People and teams (${approved.size})`}>
         {people.filter((p) => approved.has(p.id)).map((p) => (
-          <ActionForm key={p.id} action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
-            <Id id={p.id} />
-            <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
-            <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
+          <div key={p.id} className="flex flex-col gap-1 border-b border-border pb-2">
+            <ActionForm action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
+              <Id id={p.id} />
+              <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
+              <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
+            </ActionForm>
+            <ActionForm action={deletePerson} label="Delete person" buttonClass={del} confirm={`Permanently delete ${p.name || p.email} and all their progress? This can't be undone.`}><Id id={p.id} /></ActionForm>
+          </div>
+        ))}
+        {[...waiting, ...denied].map((p) => (
+          <ActionForm key={p.id} action={deletePerson} label="Delete" buttonClass={del} className="flex items-center gap-2 text-sm" confirm={`Permanently delete ${p.name || p.email}?`}>
+            <Id id={p.id} /><span className="min-w-0 flex-1 truncate text-muted">{p.name || p.email} ({p.status === "pending" ? "waiting" : "denied"})</span>
           </ActionForm>
         ))}
       </Section>

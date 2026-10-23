@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient, getProfile } from "@/lib/supabase/server";
+import { createClient, createServiceClient, getProfile } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
 import { parseRef, refKey } from "@/lib/bible/reference";
 import type { State } from "@/components/admin/ActionForm";
@@ -295,5 +295,18 @@ export async function setAccess(_: State, f: FormData) {
     const status = text(f, "status");
     fail((await supabase.rpc("admin_set_status", { p_id: text(f, "id"), p_status: status })).error);
     return status === "approved" ? "Approved. They can now sign in and use the app." : "Denied";
+  });
+}
+
+/** Permanently deletes a person's account and everything tied to it. Service role is used only after the admin check. */
+export async function deletePerson(_: State, f: FormData) {
+  return run(async () => {
+    const id = text(f, "id");
+    const me = await getProfile();
+    if (!id) throw new Error("Missing person");
+    if (me?.id === id) throw new Error("You can't delete your own account");
+    const { error } = await createServiceClient().auth.admin.deleteUser(id);
+    if (error) throw new Error(error.message);
+    return "Deleted";
   });
 }
