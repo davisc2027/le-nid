@@ -6,6 +6,8 @@ import Logo from "@/components/art/Logo";
 import BottomNav from "@/components/BottomNav";
 import RouteBackdrop from "@/components/RouteBackdrop";
 import TourHost from "@/components/TourHost";
+import { after } from "next/server";
+import { notifyAdminsOfRequest } from "@/lib/notify";
 import PendingScreen from "@/components/PendingScreen";
 
 const iconLink = "flex min-h-11 min-w-12 flex-col items-center justify-center rounded-xl text-lg leading-none hover:bg-tint";
@@ -13,6 +15,7 @@ const iconLabel = "mt-0.5 text-[11px] font-bold text-muted";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const profile = await getProfile();
+  if (profile?.status === "pending") after(() => notifyAdminsOfRequest({ id: profile.id, name: profile.name }));
   if (profile && profile.status !== "approved") return <PendingScreen id={profile.id} name={profile.name} rejected={profile.status === "rejected"} />;
   const supabase = await createClient();
   const isAdmin = profile?.role === "admin";

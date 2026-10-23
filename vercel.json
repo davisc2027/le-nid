@@ -1,1 +1,4 @@
-{ "crons": [{ "path": "/api/cron/reminders", "schedule": "0 7 * * *" }] }
+{ "crons": [
+  { "path": "/api/cron/reminders", "schedule": "0 7 * * *" },
+  { "path": "/api/cron/streaks", "schedule": "0 17 * * *" }
+] }

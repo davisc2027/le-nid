@@ -310,3 +310,11 @@ export async function deletePerson(_: State, f: FormData) {
     return "Deleted";
   });
 }
+
+/** Pushes "new resource" to everyone after a file goes up with no future release time. */
+export async function announceFile(title: string) {
+  try {
+    await requireAdmin();
+    await sendPushToAll({ title: "New resource", body: title.slice(0, 100), url: "/files" });
+  } catch { /* the file is already saved; a failed push is not worth an error */ }
+}

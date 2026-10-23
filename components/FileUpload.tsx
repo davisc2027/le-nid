@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { announceFile } from "@/app/(app)/admin/actions";
 import { createClient } from "@/lib/supabase/client";
 
 type Meeting = { id: string; title: string };
@@ -38,6 +39,7 @@ export default function FileUpload({ meetings }: { meetings: Meeting[] }) {
         await supabase.storage.from("files").remove([path]);
         return setMsg(error.message);
       }
+      if (!release || new Date(release).getTime() <= Date.now()) void announceFile(String(f.get("title")));
       setMsg("Uploaded.");
       form.reset();
       router.refresh();

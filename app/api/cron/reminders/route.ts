@@ -51,6 +51,12 @@ export async function GET(request: Request) {
     count++;
   }));
 
+  // Files scheduled for a later release go out as "New resource" on the day they open (files posted for now are announced at upload).
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  const { data: released } = await db.from("files").select("title, created_at, release_at").gt("release_at", since).lte("release_at", new Date().toISOString());
+  for (const f of (released ?? []).filter((x) => Date.parse(x.release_at) - Date.parse(x.created_at) > 3_600_000))
+    await sendPushToAll({ title: "New resource", body: String(f.title).slice(0, 100), url: "/files" });
+
   // Weekly summary email: Mondays (Paris time), one per person, only when they have something open that is
   // overdue or due within 7 days. usage_daily (migration 0010) records the send so a retry never duplicates it.
   let digests = 0;
