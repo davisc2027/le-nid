@@ -7,6 +7,7 @@ import OdileActor from "@/components/art/OdileActor";
 import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import { GENTLE_KEY } from "@/lib/odile";
 import { playDone, playError, playSuccess } from "@/lib/sounds";
+import { createClient } from "@/lib/supabase/client";
 import { QUIZ_KEY, addTo, readSet } from "./storage";
 
 export type QuizQuestion = { id: string; card: string; cardTitle: string; scenario: string; options: string[]; answer: number; explain: string; fact?: string };
@@ -29,7 +30,7 @@ const END_LINES = {
   low: { gentle: "Every slip here is one you won't make in Strasbourg.", sass: "Oh là là. Good thing this is practice and not the bakery." },
 };
 
-/** A short etiquette practice: 5 scenario questions with explanations. No XP; progress lives on this device. */
+/** A short etiquette practice: 5 scenario questions with explanations. Small XP per round (2 per right answer); progress lives on this device. */
 export default function QuizRunner({ questions }: { questions: QuizQuestion[] }) {
   const [items, setItems] = useState<Item[] | null>(null);
   const [k, setK] = useState(0);
@@ -38,6 +39,7 @@ export default function QuizRunner({ questions }: { questions: QuizQuestion[] })
   const [score, setScore] = useState(0);
   const [play, setPlay] = useState<Cue | null>(null);
   const [gentle, setGentle] = useState(false);
+  const [xp, setXp] = useState<number | null>(null);
 
   useEffect(() => {
     let g = false;
@@ -51,7 +53,7 @@ export default function QuizRunner({ questions }: { questions: QuizQuestion[] })
   const done = k >= items.length;
 
   function restart() {
-    setItems(pickRound(questions)); setK(0); setSel(null); setChecked(false); setScore(0); setPlay(null);
+    setItems(pickRound(questions)); setK(0); setSel(null); setChecked(false); setScore(0); setPlay(null); setXp(null);
   }
 
   if (done) {
@@ -59,6 +61,7 @@ export default function QuizRunner({ questions }: { questions: QuizQuestion[] })
     return (
       <div className="flex flex-col items-center gap-4 pt-2 text-center">
         <h1 className="text-2xl font-extrabold">{score} of {items.length} right</h1>
+        {xp ? <p className="-mt-2 font-bold text-primary">+{xp} XP</p> : null}
         <div className="flex w-full items-end gap-2 text-left">
           <OdileActor size={84} play={play} />
           <p className="card relative mb-3 min-h-12 flex-1 text-sm font-semibold" aria-live="polite">{END_LINES[band][gentle ? "gentle" : "sass"]}</p>
@@ -80,7 +83,15 @@ export default function QuizRunner({ questions }: { questions: QuizQuestion[] })
   function next() {
     const last = k + 1 >= items!.length;
     setK(k + 1); setSel(null); setChecked(false);
-    if (last) { playDone(); setPlay(cue(pickReaction("finish"))); }
+    if (last) {
+      playDone(); setPlay(cue(pickReaction("finish")));
+      const amount = score * 2;
+      if (amount > 0) {
+        // Best effort: a failed save never blocks the quiz. The server's daily cap applies.
+        createClient().rpc("award_xp", { p_source: "review", p_amount: amount, p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone })
+          .then(({ error }) => { if (!error) setXp(amount); }, () => {});
+      }
+    }
   }
 
   return (
