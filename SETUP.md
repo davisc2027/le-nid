@@ -37,7 +37,7 @@ Translate -> Conversation mode (`/translate/talk`) listens continuously, cuts sp
 
 **Keys.** These are three separate free accounts and keys; one does not replace another:
 - `GROQ_API_KEY` turns speech into text (Groq's hosted Whisper, model `whisper-large-v3-turbo`).
-- Translation goes through a chain (`lib/translate/providers.ts`): DeepL when `DEEPL_API_KEY` is set, then Groq `llama-3.3-70b-versatile`, then `llama-3.1-8b-instant`. If one is out of quota or fails, the next answers. With no DeepL key, Groq alone translates.
+- Translation goes through a chain (`lib/translate/providers.ts`): DeepL when `DEEPL_API_KEY` is set, then Groq `openai/gpt-oss-120b`, then `openai/gpt-oss-20b` (the older Llama models were retired for free Groq accounts on 2026-08-16). If one is out of quota or fails, the next answers. With no DeepL key, Groq alone translates.
 - The Bible text needs no key; it comes from ebible.org at build time (section 4).
 
 **Create the Groq key.**

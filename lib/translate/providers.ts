@@ -46,7 +46,8 @@ async function groq(key: string, model: string, text: string, target: Target): P
       body: JSON.stringify({
         model,
         temperature: 0,
-        max_tokens: 400,
+        // gpt-oss models reason before answering; keep that short and leave room for it in the token budget.
+        ...(model.startsWith("openai/gpt-oss") ? { reasoning_effort: "low", max_completion_tokens: 1200 } : { max_tokens: 400 }),
         messages: [
           {
             role: "system",
@@ -74,7 +75,7 @@ async function groq(key: string, model: string, text: string, target: Target): P
 export async function translate(text: string, target: Target): Promise<Translation> {
   const deeplKey = process.env.DEEPL_API_KEY?.trim();
   const groqKey = process.env.GROQ_API_KEY?.trim();
-  const models = (process.env.GROQ_TRANSLATE_MODELS ?? "llama-3.3-70b-versatile,llama-3.1-8b-instant")
+  const models = (process.env.GROQ_TRANSLATE_MODELS ?? "openai/gpt-oss-120b,openai/gpt-oss-20b") // Groq retired the Llama 3.x models for free accounts on 2026-08-16
     .split(",").map((m) => m.trim()).filter(Boolean);
 
   const steps: { engine: string; run: () => Promise<Attempt> }[] = [];
