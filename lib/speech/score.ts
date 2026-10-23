@@ -1,5 +1,5 @@
 /**
- * SPIKE, NOT WIRED INTO THE APP. Compares an attempt with a native reference recording of the same phrase.
+ * Used by lib/speech/checks.ts (features, pitch) and the Speak lab (score, align). Compares an attempt with a native reference recording of the same phrase.
  *
  * What this can tell a learner: whether speech was heard, whether its length and rhythm are in range, and which
  * reference WORD is the least like the reference relative to the learner's own other words. It cannot name the wrong

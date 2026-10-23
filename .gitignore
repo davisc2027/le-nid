@@ -43,3 +43,8 @@ vercel-env.txt
 *.tsbuildinfo
 next-env.d.ts
 supabase/setup-all.sql
+
+# speaking tests
+/test-results
+/playwright-report
+/e2e/fixtures/

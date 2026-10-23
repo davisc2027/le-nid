@@ -2,6 +2,7 @@ import { createClient, getProfile } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
 import ReplayTour from "@/components/ReplayTour";
 import GentleToggle from "@/components/french/GentleToggle";
+import SpeakingToggle from "@/components/speech/SpeakingToggle";
 
 export default async function Me() {
   const supabase = await createClient();
@@ -13,6 +14,7 @@ export default async function Me() {
       <h1 className="text-2xl font-extrabold">Me</h1>
       <p className="text-sm text-muted">{user.email}</p>
       <ProfileForm id={user.id} name={p?.name ?? ""} optIn={!!p?.leaderboard_opt_in} team={p?.team ?? null} />
+      <div className="card flex flex-col gap-2"><h2 className="label">French practice</h2><SpeakingToggle /></div>
       <ReplayTour />
       <GentleToggle />
     </div>

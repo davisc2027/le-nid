@@ -18,6 +18,9 @@ import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@
 import { Bank, Choose, Gap, Hear, Listen, Match, Pick, Register, Type, type Report } from "./ExerciseViews";
 import MeetPhrases from "./MeetPhrases";
 import CultureNote from "@/components/culture/CultureNote";
+import SpeakStep from "@/components/speech/SpeakStep";
+import { withSpeakSteps } from "@/lib/speech/select";
+import { speakingOn } from "@/lib/speech/settings";
 
 const NONE: string[] = []; // stable defaults so the queue effect does not re-run every render
 
@@ -57,6 +60,7 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
       q = buildPractice(practiceKeys.flatMap((k) => PHRASE_BY_KEY.get(k) ?? []));
     } else {
       q = buildLesson(lesson!); // 12-15 exercises
+      if (speakingOn()) q = withSpeakSteps(q, lesson!); // optional "Say it" steps (no key: they never touch XP, cards or missed)
       // earlier-lesson review at the end (up to 3, so a lesson stays at 18 or fewer); skipped when cards are
       // unavailable or nothing else is completed
       if (cards) q = [...q, ...buildReview(pickReviewPhrases(completed, lesson!.id, cards, 3), q[q.length - 1].kind)];
@@ -67,7 +71,15 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   if (!queue) return <p className="text-muted">Loading…</p>;
   const cur = queue[i];
   const ex = noAudio ? noAudioFallback(cur) ?? cur : cur;
-  const skip = () => setNoAudio(true);
+  // "Can't speak now" (and "Can't listen now"): drop the Say-it steps from here on, for this lesson only
+  function dropSpeak() {
+    const kept = queue!.filter((e, k) => k < i || e.kind !== "speak");
+    if (kept.length > i) {
+      const removed = queue!.length - kept.length;
+      setQueue(kept); setTotal((t) => Math.max(1, t - removed)); setResult(null);
+    } else void next();
+  }
+  const skip = () => { setNoAudio(true); dropSpeak(); };
 
   const report: Report = (ok, answer, note, why) => {
     setResult({ ok, answer, note, why });
@@ -157,6 +169,7 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
             {ex.kind === "type" && <Type ex={ex} locked={!!result} report={report} />}
             {ex.kind === "bank" && <Bank ex={ex} locked={!!result} report={report} />}
             {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} skip={skip} />}
+            {ex.kind === "speak" && <SpeakStep fr={ex.fr} en={ex.en} note={ex.note} mode="lesson" onDone={() => void next()} onCantSpeak={dropSpeak} onReact={setOdile} />}
             {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} miss={() => setOdile(cue(pickReaction("miss")))} />}
           </div>
         </>

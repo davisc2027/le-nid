@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronRight, Flame, Landmark, Lock, Play } from "lucide-react";
+import { Check, ChevronRight, Flame, Landmark, Lock, Mic, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { UNITS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
@@ -40,6 +40,7 @@ export default async function French() {
       ) : (
         <p className="card text-sm text-muted">Practice unlocks after your first lesson. Phrases you learn come back here for review.</p>
       ))}
+      <Link href="/french/practice/sounds" className="card flex min-h-12 items-center gap-3 !py-3 font-bold"><Mic size={20} className="shrink-0 text-accent" aria-hidden="true" /><span className="flex-1">Pronunciation practice</span><ChevronRight size={20} className="text-muted" aria-hidden="true" /></Link>
       {UNITS.map((u) => (
         <section key={u.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-3">

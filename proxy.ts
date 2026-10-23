@@ -4,6 +4,8 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/env";
 
 // Refreshes the Supabase session cookie and sends signed-out users to /login.
 export default async function proxy(request: NextRequest) {
+  // dev harness pages (app/dev) skip sign-in, in development only
+  if (process.env.NODE_ENV !== "production" && request.nextUrl.pathname.startsWith("/dev/")) return NextResponse.next();
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     SUPABASE_URL,

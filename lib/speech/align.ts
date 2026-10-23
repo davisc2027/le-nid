@@ -1,5 +1,5 @@
 /**
- * SPIKE, NOT WIRED INTO THE APP. Banded dynamic time warping between a reference and an attempt, with the local cost
+ * Used by lib/speech/checks.ts (features, pitch) and the Speak lab (score, align). Banded dynamic time warping between a reference and an attempt, with the local cost
  * mapped back onto reference frames so it can be averaged per reference word.
  */
 

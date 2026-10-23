@@ -1,5 +1,5 @@
 /**
- * SPIKE, NOT WIRED INTO THE APP (nothing imports lib/speech). See docs/speaking-plan.md.
+ * Used by lib/speech/checks.ts (features, pitch) and the Speak lab (score, align). See docs/speaking-plan.md.
  *
  * Deterministic speech features in plain TypeScript, no dependencies: resampling to 16 kHz, framing, FFT, a mel
  * filterbank with an optional VTLN-style frequency warp (speaker normalization), log-mel, MFCC, per-utterance CMVN,

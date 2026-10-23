@@ -4,10 +4,12 @@ const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
 const PAGES = "pages-v3"; // only the shell URLs below, never RSC or admin pages
-const KEEP = [STATIC, BIBLE, PAGES];
+const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
+const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
 const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn"];
 const MAX_STATIC = 120;
 const MAX_BIBLE = 140;
+const MAX_REFERENCE = 300;
 
 self.addEventListener("push", (event) => {
   const data = event.data ? event.data.json() : {};
@@ -82,6 +84,30 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(req, { cacheName: STATIC }).then((hit) => hit || fetch(req).then((res) => {
         if (good(res)) event.waitUntil(remember(STATIC, req, res.clone(), MAX_STATIC));
+        return res;
+      })),
+    );
+    return;
+  }
+
+  // Reference recordings: the manifest is network-first (new files show up at once), the clips are cache-first on
+  // the full URL, which carries ?v=<hash>, so a re-recorded file is a new entry. Range requests skip the worker.
+  if (p === "/reference/manifest.json") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (good(res)) event.waitUntil(remember(REFERENCE, req, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(req, { cacheName: REFERENCE }).then((hit) => hit || Response.error())),
+    );
+    return;
+  }
+  if (p.startsWith("/reference/")) {
+    if (req.headers.has("range")) return;
+    event.respondWith(
+      caches.match(req, { cacheName: REFERENCE }).then((hit) => hit || fetch(req).then((res) => {
+        if (good(res)) event.waitUntil(remember(REFERENCE, req, res.clone(), MAX_REFERENCE));
         return res;
       })),
     );

@@ -1,5 +1,5 @@
 /**
- * SPIKE, NOT WIRED INTO THE APP. YIN pitch tracking (de Cheveigné & Kawahara 2002) and a final-contour check for
+ * Used by lib/speech/checks.ts (features, pitch) and the Speak lab (score, align). YIN pitch tracking (de Cheveigné & Kawahara 2002) and a final-contour check for
  * questions. Pitch is only used for "did the end of your question go up?", never for comparing voices: it is
  * expressed in semitones relative to the speaker's own median, so a low and a high voice are treated the same.
  */

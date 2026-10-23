@@ -21,7 +21,9 @@ export type Exercise =
   | (Base & { kind: "bank"; en: string; fr: string; tokens: string[] })
   | (Base & { kind: "type"; en: string; fr: string; alt?: string; hint?: string; hintOpen?: boolean })
   | (Base & { kind: "listen"; fr: string })
-  | { kind: "match"; pairs: Phrase[]; key?: undefined; review?: undefined; note?: undefined };
+  | { kind: "match"; pairs: Phrase[]; key?: undefined; review?: undefined; note?: undefined }
+  /** Optional spoken step, inserted by lib/speech/select.ts. No key on purpose: it never reaches missed, cards or XP. */
+  | { kind: "speak"; fr: string; en: string; note?: string; key?: undefined; review?: undefined };
 export type Kind = Exercise["kind"];
 
 /** A saved spaced-repetition card (public.vocab_cards row, minus the user). */
@@ -421,7 +423,7 @@ function mkRegister(p: Phrase, base: Base): Exercise | null {
 // ---------------------------------------------------------------------------------------------------------------
 // Exercise mix
 
-type K = Exclude<Kind, "match">;
+type K = Exclude<Kind, "match" | "speak">;
 type Weights = Partial<Record<K, number>>;
 type Ctx = { stage: 0 | 1 | 2; anchor?: number; review?: boolean };
 
