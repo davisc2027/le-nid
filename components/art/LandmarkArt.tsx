@@ -73,6 +73,58 @@ function Scene({ unit }: { unit: string }) {
         <rect x="35" y="42" width="10" height="8" fill="var(--art-window)" /><rect x="36" y="16" width="8" height="6" fill="var(--art-window)" />
         <path d="M0 62h80v14H0Z" fill="var(--art-water)" /><path d="M10 68h10M44 70h12" fill="none" strokeWidth="1.2" />
       </g>);
+    case "u11": // two speech bubbles: a question and an answer (understanding each other)
+      return (<g {...common}>
+        <path d="M8 10h34a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H22l-8 7v-7h-6a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4Z" fill="#fff6d8" />
+        <path d="M21 17a4 4 0 1 1 5 4v3M26 28v.5" fill="none" strokeWidth="2.2" />
+        <path d="M38 38h34a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-6v7l-8-7H38a4 4 0 0 1-4-4V42a4 4 0 0 1 4-4Z" fill="#9fc6e0" />
+        <path d="M44 46h22M44 52h14" fill="none" strokeWidth="1.6" />
+      </g>);
+    case "u12": // three friends side by side (who we are)
+      return (<g {...common}>
+        <circle cx="20" cy="34" r="7" fill="#f2c9a0" /><path d="M9 70c0-13 5-19 11-19s11 6 11 19Z" fill="#e0a458" />
+        <circle cx="60" cy="34" r="7" fill="#8a5a3a" /><path d="M49 70c0-13 5-19 11-19s11 6 11 19Z" fill="#7aa6c9" />
+        <circle cx="40" cy="28" r="8" fill="#d9a27a" /><path d="M27 70c0-15 6-22 13-22s13 7 13 22Z" fill="#d94a4a" />
+        <path d="M2 70h76" />
+      </g>);
+    case "u13": // open Bible with a ribbon
+      return (<g {...common}>
+        <path d="M40 22c-8-5-20-6-32-4v44c12-2 24-1 32 4Z" fill="#fff6d8" /><path d="M40 22c8-5 20-6 32-4v44c-12-2-24-1-32 4Z" fill="#fff6d8" />
+        <path d="M40 22v44" fill="none" /><path d="M14 30h18M14 38h18M14 46h14M48 30h18M48 38h18M48 46h14" fill="none" strokeWidth="1.2" />
+        <path d="M54 18v-8h6v8l-3-2Z" fill="#d94a4a" strokeWidth="1.4" /><path d="M4 70h72" />
+      </g>);
+    case "u14": // a heart with rays of light (God's love)
+      return (<g {...common}>
+        <path d="M40 62C22 50 14 41 14 31a12 12 0 0 1 26-6 12 12 0 0 1 26 6c0 10-8 19-26 31Z" fill="#e06a5a" />
+        <path d="M40 8v-6M18 14l-4-4M62 14l4-4M8 34H2M72 34h6" fill="none" stroke="#f0a04b" strokeWidth="2.4" />
+        <path d="M26 30a7 7 0 0 1 7-7" fill="none" stroke="#fff6d8" strokeWidth="2" /><path d="M2 72h76" />
+      </g>);
+    case "u15": // a winding path toward a rising sun (my story)
+      return (<g {...common}>
+        <circle cx="56" cy="24" r="10" fill="#f6c58a" /><path d="M2 40h76" fill="none" strokeWidth="1.4" />
+        <path d="M2 40h76v34H2Z" fill="#9fcf8f" />
+        <path d="M30 74c4-10 26-12 22-20s-12-6-6-14" fill="none" stroke="var(--art-wall)" strokeWidth="7" />
+        <path d="M30 74c4-10 26-12 22-20s-12-6-6-14" fill="none" strokeWidth="1" />
+      </g>);
+    case "u16": // two coffee cups on a café table (listening first)
+      return (<g {...common}>
+        <rect x="6" y="46" width="68" height="6" rx="2" fill="var(--art-beam)" /><path d="M40 52v18M28 70h24" />
+        <path d="M14 30h16v10a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6Z" fill="#fff6d8" /><path d="M30 33h3a3 3 0 0 1 0 6h-3" fill="none" />
+        <path d="M48 30h16v10a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6Z" fill="#9fc6e0" /><path d="M48 33h-3a3 3 0 0 0 0 6h3" fill="none" />
+        <path d="M20 24c-2-3 2-5 0-8M56 24c-2-3 2-5 0-8" fill="none" strokeWidth="1.2" />
+      </g>);
+    case "u17": // an empty cross on a hill at sunrise (saved by grace)
+      return (<g {...common}>
+        <circle cx="40" cy="44" r="18" fill="#f6c58a" /><path d="M2 60c16-12 60-12 76 0v14H2Z" fill="#9fcf8f" />
+        <path d="M37 18h6v12h12v6H43v20h-6V36H25v-6h12Z" fill="var(--art-beam)" />
+      </g>);
+    case "u18": // a small church with an open, lit door (invitations and prayer)
+      return (<g {...common}>
+        <rect x="18" y="34" width="44" height="36" fill="var(--art-wall)" /><path d="M14 34L40 14l26 20Z" fill="var(--art-roof)" />
+        <path d="M40 14V2M35 6h10" fill="none" strokeWidth="2" />
+        <path d="M33 70V54a7 7 0 0 1 14 0v16Z" fill="var(--art-glow)" /><circle cx="40" cy="42" r="4" fill="var(--art-window)" />
+        <path d="M2 70h76" />
+      </g>);
     default: // cathedral
       return (<g {...common}>
         <path d="M24 70V36h14V70ZM38 36L31 4L24 36Z" fill="var(--art-stone)" transform="translate(8 0)" />

@@ -28,14 +28,15 @@ const FAMILIES: Family[] = [
   { name: "article", groups: [["le", "la", "les"], ["un", "une", "des"], ["du", "des", "de"]] },
   { name: "possessive", groups: [["mon", "ma", "mes"], ["votre", "vos", "notre", "nos"]] },
   { name: "demonstrative", groups: [["ce", "cette", "ces", "cet"]] },
-  // pour and dans are left out on purpose: "travaille pour un café" is close enough to "dans un café" to be right
-  { name: "preposition", groups: [["à", "au", "aux", "en"], ["avec", "sans"], ["de", "du", "des"]] },
+  // pour and dans are left out on purpose: "travaille pour un café" is close enough to "dans un café" to be right.
+  // en is left out too: "je crois à Dieu" or "croit à lui" for "croit en" is rare but not wrong.
+  { name: "preposition", groups: [["à", "au", "aux"], ["avec", "sans"], ["de", "du", "des"]] },
   { name: "subject", groups: [["je", "nous", "il", "elle", "on", "vous", "ils"]] },
   { name: "question", groups: [["quel", "quelle", "quels", "quelles"], ["où", "comment", "combien", "quand", "pourquoi"]] },
   {
     name: "number",
     groups: [
-      ["deux", "douze", "dix"], ["cinq", "cent", "sept", "seize", "six"], ["quatre", "quinze", "quarante", "trente"],
+      ["deux", "douze", "dix"], ["cinq", "cent", "sept", "seize", "six"], ["quatre", "quinze", "quarante", "trente", "quatorze"],
       ["trois", "huit", "neuf", "onze", "vingt", "soixante"],
     ],
   },
@@ -59,6 +60,7 @@ const FAMILIES: Family[] = [
     ["étudie", "étudiez", "étudions", "étudient"], ["adore", "adorez", "adorons", "adorent"],
     ["respecte", "respectez", "respectons", "respectent"], ["regarde", "regardez", "regardons", "regardent"],
     ["rentre", "rentrez", "rentrons", "rentrent"], ["ferment", "ferme", "fermez", "fermons"],
+    ["crois", "croit", "croyez", "croyons"], ["prie", "priez", "prions", "prient"],
   ].map((g): Family => ({ name: "verb", verb: true, groups: [g] })),
 ];
 
@@ -111,7 +113,7 @@ export const GLOSS: Record<string, string> = {
   serviette: "towel", téléphone: "phone", robinet: "tap", ouvert: "open", laverie: "laundromat",
   perdu: "lost", passeport: "passport", urgent: "urgent", tête: "head", ventre: "stomach", fièvre: "fever",
   pharmacie: "pharmacy", médecin: "doctor", blessé: "hurt", famille: "family", frères: "brothers",
-  sœurs: "sisters", parents: "parents", mère: "mom", père: "dad", enfants: "children", chien: "dog",
+  sœurs: "sisters", parents: "parents", mère: "mom", père: "father", enfants: "children", chien: "dog",
   guitare: "guitar", musique: "music", chorale: "choir", lire: "read", aussi: "too", beau: "nice",
   froid: "cold", chaud: "hot", pleut: "is raining", vent: "wind", parapluie: "umbrella", cathédrale: "cathedral",
   tour: "tower", bâtiment: "building", bateau: "boat", marché: "market", tasse: "mug", gens: "people",
@@ -121,4 +123,13 @@ export const GLOSS: Record<string, string> = {
   trente: "thirty", quarante: "forty", soixante: "sixty", cent: "a hundred", oui: "yes", non: "no",
   moi: "me", nous: "we", notre: "our", votre: "your", mon: "my", ma: "my", mes: "my", bien: "well",
   minutes: "minutes", pied: "foot", deuxième: "second", rendez: "meet", moment: "moment", instant: "moment",
+  quatorze: "fourteen", chapitre: "chapter", verset: "verse", versets: "verses",
+  // faith words (salut is left out: it is both hi and salvation)
+  bible: "Bible", seigneur: "Lord", croix: "cross", péché: "sin", grâce: "grace", pardon: "forgiveness",
+  prière: "prayer", prie: "pray", crois: "believe", croit: "believes", croyez: "believe", sauvé: "saved",
+  sauvés: "saved", monde: "world", vie: "life", amour: "love", espérance: "hope", gloire: "glory", don: "gift",
+  gratuit: "free (no cost)", cadeau: "gift", cœur: "heart", bouche: "mouth", œuvres: "works", chemin: "way",
+  vérité: "truth", porte: "door", voix: "voice", repas: "meal", culte: "worship service", pasteur: "pastor",
+  chrétiens: "Christians", résurrection: "resurrection", repentance: "repentance", pécheurs: "sinners",
+  invité: "invited", malade: "sick", travail: "job", prénom: "first name", ensemble: "together",
 };

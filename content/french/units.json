@@ -261,6 +261,186 @@
     ]
   },
   {
+    "id": "u11",
+    "title": "Pardon ?",
+    "blurb": "Understanding each other and keeping a chat going",
+    "lessons": [
+      {
+        "id": "u11-l1",
+        "title": "Slower, please",
+        "phrases": [
+          {
+            "fr": "Je parle un peu français",
+            "en": "I speak a little French"
+          },
+          {
+            "fr": "Pouvez-vous parler plus lentement ?",
+            "en": "Can you speak more slowly?",
+            "tu": "Tu peux parler plus lentement ?"
+          },
+          {
+            "fr": "Pouvez-vous répéter, s'il vous plaît ?",
+            "en": "Could you repeat that, please?",
+            "tu": "Tu peux répéter, s'il te plaît ?"
+          },
+          {
+            "fr": "Je comprends",
+            "en": "I understand"
+          },
+          {
+            "fr": "Vous comprenez ?",
+            "en": "Do you understand?",
+            "tu": "Tu comprends ?"
+          },
+          {
+            "fr": "Qu'est-ce que ça veut dire ?",
+            "en": "What does that mean?",
+            "note": "Your most useful question: ask it as often as you need, people are glad to explain."
+          },
+          {
+            "fr": "Vous pouvez l'écrire ?",
+            "en": "Can you write it down?",
+            "tu": "Tu peux l'écrire ?"
+          },
+          {
+            "fr": "Comment dit-on ça en français ?",
+            "en": "How do you say that in French?",
+            "note": "Point at the thing, or show the English word on your phone."
+          }
+        ]
+      },
+      {
+        "id": "u11-l2",
+        "title": "Listening well",
+        "phrases": [
+          {
+            "fr": "Ah bon ?",
+            "en": "Oh, really?",
+            "note": "Say it with a rising voice to show surprise and interest."
+          },
+          {
+            "fr": "C'est vrai",
+            "en": "That's true"
+          },
+          {
+            "fr": "Je vois",
+            "en": "I see"
+          },
+          {
+            "fr": "Je suis d'accord",
+            "en": "I agree"
+          },
+          {
+            "fr": "C'est intéressant",
+            "en": "That's interesting",
+            "note": "Mean it: French people notice when interest is polite rather than real."
+          },
+          {
+            "fr": "Je n'y avais pas pensé",
+            "en": "I hadn't thought of that"
+          },
+          {
+            "fr": "Qu'est-ce que vous en pensez ?",
+            "en": "What do you think about it?",
+            "tu": "Qu'est-ce que tu en penses ?"
+          },
+          {
+            "fr": "Je ne sais pas trop",
+            "en": "I'm not too sure",
+            "note": "Trop softens it: an honest, relaxed answer."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u12",
+    "title": "Qui sommes-nous ?",
+    "blurb": "Saying who you are and asking before you share",
+    "lessons": [
+      {
+        "id": "u12-l1",
+        "title": "Who we are",
+        "phrases": [
+          {
+            "fr": "Nous sommes chrétiens",
+            "en": "We are Christians",
+            "note": "Mixed groups use the masculine plural. For yourself: je suis chrétien, or chrétienne for a woman (then the n is pronounced)."
+          },
+          {
+            "fr": "Nous sommes ici avec notre église",
+            "en": "We are here with our church"
+          },
+          {
+            "fr": "Je crois en Dieu",
+            "en": "I believe in God"
+          },
+          {
+            "fr": "Nous sommes un groupe d'étudiants",
+            "en": "We are a group of students"
+          },
+          {
+            "fr": "Nous sommes protestants",
+            "en": "We are Protestants",
+            "note": "In Alsace protestant is a familiar, respected word; évangélique can sound like an unknown American group."
+          },
+          {
+            "fr": "Nous aidons une église de Strasbourg",
+            "en": "We are helping a church in Strasbourg",
+            "note": "Naming a local church reassures people that you are not a sect (une secte), a real worry in France."
+          },
+          {
+            "fr": "Nous ne vendons rien",
+            "en": "We're not selling anything",
+            "note": "People stopped in the street often expect a sales pitch or a petition, so say this early."
+          }
+        ]
+      },
+      {
+        "id": "u12-l2",
+        "title": "Asking first",
+        "phrases": [
+          {
+            "fr": "Je ne veux pas vous déranger",
+            "en": "I don't want to bother you",
+            "tu": "Je ne veux pas te déranger"
+          },
+          {
+            "fr": "Juste deux minutes",
+            "en": "Just two minutes",
+            "note": "Say how long you need, then keep to it."
+          },
+          {
+            "fr": "Vous êtes pressé ?",
+            "en": "Are you in a hurry?",
+            "note": "To a woman it is written pressée; it sounds the same.",
+            "tu": "Tu es pressé ?"
+          },
+          {
+            "fr": "Seulement si vous voulez",
+            "en": "Only if you want to",
+            "tu": "Seulement si tu veux"
+          },
+          {
+            "fr": "Vous pouvez dire non",
+            "en": "You can say no",
+            "note": "Permission first: in France, faith is a private subject until someone invites you in.",
+            "tu": "Tu peux dire non"
+          },
+          {
+            "fr": "Je peux vous parler de ma foi ?",
+            "en": "Can I tell you about my faith?",
+            "tu": "Je peux te parler de ma foi ?"
+          },
+          {
+            "fr": "Merci, c'est gentil",
+            "en": "Thanks, that's kind"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "u5",
     "title": "Les nombres",
     "blurb": "Numbers, time and days",
@@ -466,6 +646,102 @@
             "fr": "J'ai dix-neuf ans",
             "en": "I am nineteen (19) years old",
             "note": "French uses avoir for age. Neuf ans links with a v sound: 'neu-vahn'."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u13",
+    "title": "Les mots de la foi",
+    "blurb": "God, the Bible and church life",
+    "lessons": [
+      {
+        "id": "u13-l1",
+        "title": "God, Jesus and the Bible",
+        "phrases": [
+          {
+            "fr": "Dieu",
+            "en": "God",
+            "note": "The eu is the rounded 'uh' sound: 'dyeu'."
+          },
+          {
+            "fr": "Jésus-Christ",
+            "en": "Jesus Christ",
+            "note": "Say 'zhay-zu kree': the st is silent in Jésus-Christ, but Christ alone is 'kreest'."
+          },
+          {
+            "fr": "Le Saint-Esprit",
+            "en": "The Holy Spirit",
+            "note": "The t links to the next word: 'sun-tes-pree'."
+          },
+          {
+            "fr": "La Bible",
+            "en": "The Bible"
+          },
+          {
+            "fr": "L'Évangile",
+            "en": "The Gospel",
+            "note": "It means the good news, and also each of the four books: l'Évangile de Jean."
+          },
+          {
+            "fr": "Le Fils de Dieu",
+            "en": "The Son of God",
+            "note": "The s of fils is pronounced: 'feess'."
+          },
+          {
+            "fr": "Le Seigneur",
+            "en": "The Lord"
+          },
+          {
+            "fr": "La croix",
+            "en": "The cross",
+            "note": "Croix (cross) sounds exactly like crois (I believe): 'krwa'."
+          }
+        ]
+      },
+      {
+        "id": "u13-l2",
+        "title": "Church life",
+        "phrases": [
+          {
+            "fr": "Une église protestante",
+            "en": "A Protestant church"
+          },
+          {
+            "fr": "Le culte",
+            "en": "The worship service (Protestant)",
+            "note": "Protestants call the Sunday service le culte; Catholics go to la messe."
+          },
+          {
+            "fr": "La messe",
+            "en": "Mass (Catholic service)"
+          },
+          {
+            "fr": "Le pasteur",
+            "en": "The pastor",
+            "note": "Many Alsatian villages have both a pasteur and a Catholic curé."
+          },
+          {
+            "fr": "La prière",
+            "en": "Prayer"
+          },
+          {
+            "fr": "Prier",
+            "en": "To pray"
+          },
+          {
+            "fr": "Une étude biblique",
+            "en": "A Bible study"
+          },
+          {
+            "fr": "Nous chantons ensemble",
+            "en": "We sing together"
+          },
+          {
+            "fr": "Le dimanche matin",
+            "en": "On Sunday mornings",
+            "note": "With le, a day means every week: le dimanche is on Sundays."
           }
         ]
       }
@@ -816,489 +1092,6 @@
     ]
   },
   {
-    "id": "u4",
-    "title": "Dans la rue",
-    "blurb": "Starting conversations with kindness",
-    "lessons": [
-      {
-        "id": "u4-l1",
-        "title": "Starting a conversation",
-        "phrases": [
-          {
-            "fr": "Puis-je vous parler un instant ?",
-            "en": "May I talk with you for a moment?",
-            "tu": "Je peux te parler un instant ?"
-          },
-          {
-            "fr": "Excusez-moi, vous avez un moment ?",
-            "en": "Excuse me, do you have a moment?",
-            "note": "Excusez-moi first, then a short question: people decide in seconds whether to stop.",
-            "tu": "Excuse-moi, tu as un moment ?"
-          },
-          {
-            "fr": "Nous visitons Strasbourg avec notre groupe",
-            "en": "We are visiting Strasbourg with our group"
-          },
-          {
-            "fr": "Je parle un peu français",
-            "en": "I speak a little French"
-          },
-          {
-            "fr": "Pouvez-vous parler plus lentement ?",
-            "en": "Can you speak more slowly?",
-            "tu": "Tu peux parler plus lentement ?"
-          },
-          {
-            "fr": "Pouvez-vous répéter, s'il vous plaît ?",
-            "en": "Could you repeat that, please?",
-            "tu": "Tu peux répéter, s'il te plaît ?"
-          },
-          {
-            "fr": "Quelle belle ville !",
-            "en": "What a beautiful city!"
-          }
-        ]
-      },
-      {
-        "id": "u4-l2",
-        "title": "Offering kindness",
-        "phrases": [
-          {
-            "fr": "Puis-je prier pour vous ?",
-            "en": "May I pray for you?",
-            "note": "France values privacy around faith. Ask gently, and be gracious if the answer is no.",
-            "tu": "Je peux prier pour toi ?"
-          },
-          {
-            "fr": "Dieu vous aime",
-            "en": "God loves you",
-            "note": "Best said softly, once there is some warmth in the conversation.",
-            "tu": "Dieu t'aime"
-          },
-          {
-            "fr": "Avez-vous besoin de quelque chose ?",
-            "en": "Do you need anything?",
-            "tu": "Tu as besoin de quelque chose ?"
-          },
-          {
-            "fr": "Bonne chance !",
-            "en": "Good luck!"
-          },
-          {
-            "fr": "Que Dieu vous bénisse",
-            "en": "May God bless you",
-            "note": "Unusual in everyday French; use it with people who are already open about faith. Otherwise, Je vous souhaite une belle journée.",
-            "tu": "Que Dieu te bénisse"
-          },
-          {
-            "fr": "Venez à notre église dimanche",
-            "en": "Come to our church on Sunday",
-            "note": "A personal invitation means a lot; give the address or a card too.",
-            "tu": "Viens à notre église dimanche"
-          },
-          {
-            "fr": "Merci de votre temps",
-            "en": "Thank you for your time",
-            "tu": "Merci de ton temps"
-          }
-        ]
-      },
-      {
-        "id": "u4-l3",
-        "title": "Talking about faith",
-        "phrases": [
-          {
-            "fr": "Est-ce que je peux vous poser une question ?",
-            "en": "May I ask you a question?",
-            "tu": "Est-ce que je peux te poser une question ?"
-          },
-          {
-            "fr": "Nous sommes ici avec notre église",
-            "en": "We are here with our church"
-          },
-          {
-            "fr": "La foi est importante pour moi",
-            "en": "Faith is important to me"
-          },
-          {
-            "fr": "Qu'est-ce qui vous donne de l'espoir ?",
-            "en": "What gives you hope?",
-            "tu": "Qu'est-ce qui te donne de l'espoir ?"
-          },
-          {
-            "fr": "Est-ce que la foi compte pour vous ?",
-            "en": "Does faith matter to you?",
-            "note": "France is very secular (laïque) and many people keep faith private, so welcome any answer warmly.",
-            "tu": "Est-ce que la foi compte pour toi ?"
-          },
-          {
-            "fr": "Je peux vous raconter mon histoire ?",
-            "en": "Can I tell you my story?",
-            "note": "Ask before sharing; a short personal story lands better than an argument."
-          },
-          {
-            "fr": "Je respecte votre point de vue",
-            "en": "I respect your point of view",
-            "tu": "Je respecte ton point de vue"
-          },
-          {
-            "fr": "Pas de problème, merci quand même",
-            "en": "No problem, thanks anyway",
-            "note": "If someone says no, end on a smile; a kind exit is a good witness too."
-          }
-        ]
-      },
-      {
-        "id": "u4-l4",
-        "title": "Prayer and encouragement",
-        "phrases": [
-          {
-            "fr": "Comment puis-je prier pour vous ?",
-            "en": "How can I pray for you?",
-            "tu": "Comment je peux prier pour toi ?"
-          },
-          {
-            "fr": "Je vais prier pour vous",
-            "en": "I will pray for you",
-            "tu": "Je vais prier pour toi"
-          },
-          {
-            "fr": "Courage !",
-            "en": "Hang in there!",
-            "note": "Courage is everyday encouragement in France and carries no religious meaning."
-          },
-          {
-            "fr": "Je pense à vous",
-            "en": "I'm thinking of you",
-            "tu": "Je pense à toi"
-          },
-          {
-            "fr": "Ne perdez pas espoir",
-            "en": "Don't lose hope",
-            "tu": "Ne perds pas espoir"
-          },
-          {
-            "fr": "Dieu est fidèle",
-            "en": "God is faithful"
-          },
-          {
-            "fr": "Que la paix soit avec vous",
-            "en": "Peace be with you",
-            "note": "Familiar from church services, so it can feel formal in a casual chat.",
-            "tu": "Que la paix soit avec toi"
-          },
-          {
-            "fr": "Seigneur, merci pour cette journée",
-            "en": "Lord, thank you for this day"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "u6",
-    "title": "Au marché",
-    "blurb": "Prices, paying and shopping",
-    "lessons": [
-      {
-        "id": "u6-l1",
-        "title": "Prices and paying",
-        "phrases": [
-          {
-            "fr": "Combien coûte ce bretzel ?",
-            "en": "How much is this pretzel?",
-            "note": "The bretzel is an Alsatian classic, sold in most bakeries."
-          },
-          {
-            "fr": "Ça fait cinq euros",
-            "en": "That comes to five euros"
-          },
-          {
-            "fr": "Trois euros cinquante",
-            "en": "Three euros fifty (3.50)"
-          },
-          {
-            "fr": "Je peux payer par carte ?",
-            "en": "Can I pay by card?"
-          },
-          {
-            "fr": "En espèces",
-            "en": "In cash"
-          },
-          {
-            "fr": "Vous avez de la monnaie ?",
-            "en": "Do you have change?",
-            "note": "Monnaie means change or coins, not money in general (that is argent)."
-          },
-          {
-            "fr": "Je peux avoir un reçu ?",
-            "en": "Can I have a receipt?"
-          },
-          {
-            "fr": "C'est trop cher pour moi",
-            "en": "It's too expensive for me"
-          }
-        ]
-      },
-      {
-        "id": "u6-l2",
-        "title": "Shopping",
-        "phrases": [
-          {
-            "fr": "Je regarde seulement, merci",
-            "en": "I'm just looking, thanks",
-            "note": "Always say Bonjour when you walk in; shopkeepers notice when you don't."
-          },
-          {
-            "fr": "Vous l'avez en plus grand ?",
-            "en": "Do you have it in a bigger size?"
-          },
-          {
-            "fr": "Je peux l'essayer ?",
-            "en": "Can I try it on?"
-          },
-          {
-            "fr": "Je le prends",
-            "en": "I'll take it"
-          },
-          {
-            "fr": "Une baguette, s'il vous plaît",
-            "en": "A baguette, please"
-          },
-          {
-            "fr": "Où est la boulangerie la plus proche ?",
-            "en": "Where is the nearest bakery?"
-          },
-          {
-            "fr": "Un sac, s'il vous plaît",
-            "en": "A bag, please",
-            "note": "Shops often charge for bags, so carry a tote."
-          },
-          {
-            "fr": "C'est pour offrir",
-            "en": "It's a gift",
-            "note": "Many shops gift-wrap for free when you say this."
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "u7",
-    "title": "À l'hôtel",
-    "blurb": "Hotel, hostel and everyday needs",
-    "lessons": [
-      {
-        "id": "u7-l1",
-        "title": "Checking in",
-        "phrases": [
-          {
-            "fr": "J'ai une réservation au nom de Smith",
-            "en": "I have a reservation under the name Smith"
-          },
-          {
-            "fr": "La clé de la chambre, s'il vous plaît",
-            "en": "The room key, please"
-          },
-          {
-            "fr": "À quelle heure est le petit-déjeuner ?",
-            "en": "What time is breakfast?"
-          },
-          {
-            "fr": "Quel est le code du wifi ?",
-            "en": "What is the wifi password?",
-            "note": "Wifi is pronounced 'wee-fee' in French."
-          },
-          {
-            "fr": "Est-ce que je peux laisser mon sac ici ?",
-            "en": "Can I leave my bag here?"
-          },
-          {
-            "fr": "Il n'y a pas d'eau chaude",
-            "en": "There is no hot water"
-          },
-          {
-            "fr": "Le chauffage ne marche pas",
-            "en": "The heating doesn't work"
-          },
-          {
-            "fr": "Je voudrais une serviette, s'il vous plaît",
-            "en": "I would like a towel, please",
-            "note": "Serviette means both towel and napkin; context makes it clear."
-          }
-        ]
-      },
-      {
-        "id": "u7-l2",
-        "title": "Everyday needs",
-        "phrases": [
-          {
-            "fr": "Où est-ce que je peux recharger mon téléphone ?",
-            "en": "Where can I charge my phone?"
-          },
-          {
-            "fr": "Vous avez un adaptateur ?",
-            "en": "Do you have a plug adapter?",
-            "note": "France uses round two-pin plugs, so bring an adapter from home."
-          },
-          {
-            "fr": "On peut boire l'eau du robinet ?",
-            "en": "Is the tap water safe to drink?"
-          },
-          {
-            "fr": "Il y a un supermarché près d'ici ?",
-            "en": "Is there a supermarket nearby?"
-          },
-          {
-            "fr": "Jusqu'à quelle heure c'est ouvert ?",
-            "en": "Until what time is it open?"
-          },
-          {
-            "fr": "Où est la laverie ?",
-            "en": "Where is the laundromat?"
-          },
-          {
-            "fr": "Je peux utiliser les toilettes ?",
-            "en": "May I use the restroom?",
-            "note": "Public restrooms are rare; cafés usually expect you to buy something first."
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "u8",
-    "title": "Au secours !",
-    "blurb": "Help, health and emergencies",
-    "lessons": [
-      {
-        "id": "u8-l1",
-        "title": "Asking for help",
-        "phrases": [
-          {
-            "fr": "J'ai perdu mon passeport",
-            "en": "I lost my passport",
-            "note": "Report it to the police, then contact the US Consulate in Strasbourg and your trip leader."
-          },
-          {
-            "fr": "J'ai perdu mon téléphone",
-            "en": "I lost my phone"
-          },
-          {
-            "fr": "Où est le commissariat ?",
-            "en": "Where is the police station?"
-          },
-          {
-            "fr": "On m'a volé mon sac",
-            "en": "Someone stole my bag"
-          },
-          {
-            "fr": "Pouvez-vous appeler ce numéro ?",
-            "en": "Can you call this number?"
-          },
-          {
-            "fr": "Mon téléphone n'a plus de batterie",
-            "en": "My phone battery is dead"
-          },
-          {
-            "fr": "C'est urgent",
-            "en": "It's urgent"
-          },
-          {
-            "fr": "Laissez-moi tranquille !",
-            "en": "Leave me alone!",
-            "note": "Say it firmly if someone bothers you, then walk toward a busy place or your group."
-          }
-        ]
-      },
-      {
-        "id": "u8-l2",
-        "title": "Feeling unwell",
-        "phrases": [
-          {
-            "fr": "Je ne me sens pas bien",
-            "en": "I don't feel well"
-          },
-          {
-            "fr": "J'ai mal à la tête",
-            "en": "I have a headache"
-          },
-          {
-            "fr": "J'ai mal au ventre",
-            "en": "I have a stomachache"
-          },
-          {
-            "fr": "J'ai de la fièvre",
-            "en": "I have a fever"
-          },
-          {
-            "fr": "Où est la pharmacie la plus proche ?",
-            "en": "Where is the nearest pharmacy?",
-            "note": "Look for the green cross; at night, the door lists the pharmacie de garde that is open."
-          },
-          {
-            "fr": "Avez-vous quelque chose contre la toux ?",
-            "en": "Do you have something for a cough?"
-          },
-          {
-            "fr": "Je suis allergique à la pénicilline",
-            "en": "I am allergic to penicillin"
-          },
-          {
-            "fr": "J'ai besoin d'un médecin",
-            "en": "I need a doctor",
-            "note": "French pharmacists give good advice for minor problems before you see a doctor."
-          }
-        ]
-      },
-      {
-        "id": "u8-l3",
-        "title": "Emergencies",
-        "phrases": [
-          {
-            "fr": "Au secours !",
-            "en": "Help!"
-          },
-          {
-            "fr": "Appelez le cent douze !",
-            "en": "Call 112!",
-            "note": "112 is free from any phone in Europe, and operators can switch to English."
-          },
-          {
-            "fr": "Appelez les secours, s'il vous plaît !",
-            "en": "Please call emergency services!",
-            "note": "112 works everywhere in Europe; 15 = SAMU (medical), 17 = police."
-          },
-          {
-            "fr": "Appelez une ambulance !",
-            "en": "Call an ambulance!"
-          },
-          {
-            "fr": "Il y a eu un accident",
-            "en": "There has been an accident"
-          },
-          {
-            "fr": "Quelqu'un est blessé",
-            "en": "Someone is hurt"
-          },
-          {
-            "fr": "Au feu !",
-            "en": "Fire!"
-          },
-          {
-            "fr": "Où sont les urgences ?",
-            "en": "Where is the emergency room?",
-            "note": "Les urgences is the hospital ER; for minor problems, a pharmacy is much faster."
-          },
-          {
-            "fr": "Restez avec moi",
-            "en": "Stay with me"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "id": "u9",
     "title": "Moi et vous",
     "blurb": "Where you're from, family, hobbies and weather",
@@ -1469,6 +1262,1105 @@
     ]
   },
   {
+    "id": "u4",
+    "title": "Dans la rue",
+    "blurb": "Starting conversations with kindness",
+    "lessons": [
+      {
+        "id": "u4-l1",
+        "title": "Starting a conversation",
+        "phrases": [
+          {
+            "fr": "Puis-je vous parler un instant ?",
+            "en": "May I talk with you for a moment?",
+            "tu": "Je peux te parler un instant ?"
+          },
+          {
+            "fr": "Excusez-moi, vous avez un moment ?",
+            "en": "Excuse me, do you have a moment?",
+            "note": "Excusez-moi first, then a short question: people decide in seconds whether to stop.",
+            "tu": "Excuse-moi, tu as un moment ?"
+          },
+          {
+            "fr": "Nous visitons Strasbourg avec notre groupe",
+            "en": "We are visiting Strasbourg with our group"
+          },
+          {
+            "fr": "Quelle belle ville !",
+            "en": "What a beautiful city!"
+          },
+          {
+            "fr": "Il fait beau aujourd'hui, non ?",
+            "en": "Nice weather today, isn't it?",
+            "note": "The weather is the easiest way into a chat anywhere in France."
+          },
+          {
+            "fr": "Vous connaissez bien Strasbourg ?",
+            "en": "Do you know Strasbourg well?",
+            "tu": "Tu connais bien Strasbourg ?"
+          },
+          {
+            "fr": "Vous travaillez dans le quartier ?",
+            "en": "Do you work around here?",
+            "tu": "Tu travailles dans le quartier ?"
+          },
+          {
+            "fr": "Qu'est-ce que vous me conseillez de visiter ?",
+            "en": "What do you suggest I visit?",
+            "note": "Asking for advice lets the other person be the expert; people love recommending their city.",
+            "tu": "Qu'est-ce que tu me conseilles de visiter ?"
+          }
+        ]
+      },
+      {
+        "id": "u4-l2",
+        "title": "Offering kindness",
+        "phrases": [
+          {
+            "fr": "Puis-je prier pour vous ?",
+            "en": "May I pray for you?",
+            "note": "France values privacy around faith. Ask gently, and be gracious if the answer is no.",
+            "tu": "Je peux prier pour toi ?"
+          },
+          {
+            "fr": "Dieu vous aime",
+            "en": "God loves you",
+            "note": "Best said softly, once there is some warmth in the conversation.",
+            "tu": "Dieu t'aime"
+          },
+          {
+            "fr": "Avez-vous besoin de quelque chose ?",
+            "en": "Do you need anything?",
+            "tu": "Tu as besoin de quelque chose ?"
+          },
+          {
+            "fr": "Bonne chance !",
+            "en": "Good luck!"
+          },
+          {
+            "fr": "Que Dieu vous bénisse",
+            "en": "May God bless you",
+            "note": "Unusual in everyday French; use it with people who are already open about faith. Otherwise, Je vous souhaite une belle journée.",
+            "tu": "Que Dieu te bénisse"
+          },
+          {
+            "fr": "Venez à notre église dimanche",
+            "en": "Come to our church on Sunday",
+            "note": "A personal invitation means a lot; give the address or a card too.",
+            "tu": "Viens à notre église dimanche"
+          },
+          {
+            "fr": "Merci de votre temps",
+            "en": "Thank you for your time",
+            "tu": "Merci de ton temps"
+          }
+        ]
+      },
+      {
+        "id": "u4-l3",
+        "title": "Talking about faith",
+        "phrases": [
+          {
+            "fr": "Est-ce que je peux vous poser une question ?",
+            "en": "May I ask you a question?",
+            "tu": "Est-ce que je peux te poser une question ?"
+          },
+          {
+            "fr": "La foi est importante pour moi",
+            "en": "Faith is important to me"
+          },
+          {
+            "fr": "Qu'est-ce qui vous donne de l'espoir ?",
+            "en": "What gives you hope?",
+            "tu": "Qu'est-ce qui te donne de l'espoir ?"
+          },
+          {
+            "fr": "Est-ce que la foi compte pour vous ?",
+            "en": "Does faith matter to you?",
+            "note": "France is very secular (laïque) and many people keep faith private, so welcome any answer warmly.",
+            "tu": "Est-ce que la foi compte pour toi ?"
+          },
+          {
+            "fr": "Je peux vous raconter mon histoire ?",
+            "en": "Can I tell you my story?",
+            "note": "Ask before sharing; a short personal story lands better than an argument."
+          },
+          {
+            "fr": "Je respecte votre point de vue",
+            "en": "I respect your point of view",
+            "tu": "Je respecte ton point de vue"
+          },
+          {
+            "fr": "Pas de problème, merci quand même",
+            "en": "No problem, thanks anyway",
+            "note": "If someone says no, end on a smile; a kind exit is a good witness too."
+          }
+        ]
+      },
+      {
+        "id": "u4-l4",
+        "title": "Prayer and encouragement",
+        "phrases": [
+          {
+            "fr": "Comment puis-je prier pour vous ?",
+            "en": "How can I pray for you?",
+            "tu": "Comment je peux prier pour toi ?"
+          },
+          {
+            "fr": "Je vais prier pour vous",
+            "en": "I will pray for you",
+            "tu": "Je vais prier pour toi"
+          },
+          {
+            "fr": "Courage !",
+            "en": "Hang in there!",
+            "note": "Courage is everyday encouragement in France and carries no religious meaning."
+          },
+          {
+            "fr": "Je pense à vous",
+            "en": "I'm thinking of you",
+            "tu": "Je pense à toi"
+          },
+          {
+            "fr": "Ne perdez pas espoir",
+            "en": "Don't lose hope",
+            "tu": "Ne perds pas espoir"
+          },
+          {
+            "fr": "Dieu est fidèle",
+            "en": "God is faithful"
+          },
+          {
+            "fr": "Que la paix soit avec vous",
+            "en": "Peace be with you",
+            "note": "Familiar from church services, so it can feel formal in a casual chat.",
+            "tu": "Que la paix soit avec toi"
+          },
+          {
+            "fr": "Seigneur, merci pour cette journée",
+            "en": "Lord, thank you for this day"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u14",
+    "title": "La Bonne Nouvelle",
+    "blurb": "Key verses, part 1: God's love and our need",
+    "lessons": [
+      {
+        "id": "u14-l1",
+        "title": "Jean 3:16",
+        "verse": "JHN 3:16",
+        "phrases": [
+          {
+            "fr": "Car Dieu a tant aimé le monde",
+            "en": "For God so loved the world",
+            "note": "Car means for or because; it opens the verse in most French Bibles."
+          },
+          {
+            "fr": "Le monde",
+            "en": "The world"
+          },
+          {
+            "fr": "Il a donné son Fils unique",
+            "en": "He gave his only Son"
+          },
+          {
+            "fr": "Quiconque croit en lui",
+            "en": "Whoever believes in him"
+          },
+          {
+            "fr": "Ne périsse pas",
+            "en": "Should not perish",
+            "note": "Périsse is a form of périr, to perish, used after afin que."
+          },
+          {
+            "fr": "La vie éternelle",
+            "en": "Eternal life"
+          },
+          {
+            "fr": "Jean, chapitre trois, verset seize",
+            "en": "John 3:16, read aloud",
+            "note": "You can also just say Jean trois seize."
+          }
+        ]
+      },
+      {
+        "id": "u14-l2",
+        "title": "Romains 3:23",
+        "verse": "ROM 3:23",
+        "phrases": [
+          {
+            "fr": "Tous ont péché",
+            "en": "All have sinned",
+            "note": "The s of tous is pronounced here: 'tooss'."
+          },
+          {
+            "fr": "Privés de la gloire de Dieu",
+            "en": "Falling short of the glory of God",
+            "note": "Privés literally means deprived of, cut off from."
+          },
+          {
+            "fr": "Le péché",
+            "en": "Sin",
+            "note": "Péché (sin) has é; pêche, with ê, is fishing or a peach."
+          },
+          {
+            "fr": "Personne n'est parfait",
+            "en": "Nobody is perfect"
+          },
+          {
+            "fr": "Nous avons tous besoin de Dieu",
+            "en": "We all need God"
+          },
+          {
+            "fr": "Romains, chapitre trois, verset vingt-trois",
+            "en": "Romans 3:23, read aloud"
+          }
+        ]
+      },
+      {
+        "id": "u14-l3",
+        "title": "Romains 6:23",
+        "verse": "ROM 6:23",
+        "phrases": [
+          {
+            "fr": "Le salaire du péché, c'est la mort",
+            "en": "The wages of sin is death",
+            "note": "Salaire is an everyday word: the pay you earn for work."
+          },
+          {
+            "fr": "Le don gratuit de Dieu",
+            "en": "The free gift of God"
+          },
+          {
+            "fr": "La vie éternelle en Jésus-Christ",
+            "en": "Eternal life in Jesus Christ"
+          },
+          {
+            "fr": "Jésus-Christ notre Seigneur",
+            "en": "Jesus Christ our Lord"
+          },
+          {
+            "fr": "C'est gratuit",
+            "en": "It's free (no cost)",
+            "note": "Gratuit is free of charge; libre is free as in available, like a seat."
+          },
+          {
+            "fr": "Le salut est un cadeau",
+            "en": "Salvation is a gift",
+            "note": "Le salut is salvation; salut alone is hi."
+          },
+          {
+            "fr": "C'est un cadeau, pas un salaire",
+            "en": "It's a gift, not a wage"
+          },
+          {
+            "fr": "Romains, chapitre six, verset vingt-trois",
+            "en": "Romans 6:23, read aloud"
+          }
+        ]
+      },
+      {
+        "id": "u14-l4",
+        "title": "Romains 5:8",
+        "verse": "ROM 5:8",
+        "phrases": [
+          {
+            "fr": "Dieu manifeste son amour envers nous",
+            "en": "God shows his love for us"
+          },
+          {
+            "fr": "L'amour de Dieu",
+            "en": "The love of God"
+          },
+          {
+            "fr": "Alors que nous étions encore pécheurs",
+            "en": "While we were still sinners"
+          },
+          {
+            "fr": "Un pécheur",
+            "en": "A sinner",
+            "note": "With ê, un pêcheur is a fisherman; the é and ê sound almost alike."
+          },
+          {
+            "fr": "Christ est mort pour nous",
+            "en": "Christ died for us",
+            "note": "Christ alone is said 'kreest'."
+          },
+          {
+            "fr": "Romains, chapitre cinq, verset huit",
+            "en": "Romans 5:8, read aloud"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u6",
+    "title": "Au marché",
+    "blurb": "Prices, paying and shopping",
+    "lessons": [
+      {
+        "id": "u6-l1",
+        "title": "Prices and paying",
+        "phrases": [
+          {
+            "fr": "Combien coûte ce bretzel ?",
+            "en": "How much is this pretzel?",
+            "note": "The bretzel is an Alsatian classic, sold in most bakeries."
+          },
+          {
+            "fr": "Ça fait cinq euros",
+            "en": "That comes to five euros"
+          },
+          {
+            "fr": "Trois euros cinquante",
+            "en": "Three euros fifty (3.50)"
+          },
+          {
+            "fr": "Je peux payer par carte ?",
+            "en": "Can I pay by card?"
+          },
+          {
+            "fr": "En espèces",
+            "en": "In cash"
+          },
+          {
+            "fr": "Vous avez de la monnaie ?",
+            "en": "Do you have change?",
+            "note": "Monnaie means change or coins, not money in general (that is argent)."
+          },
+          {
+            "fr": "Je peux avoir un reçu ?",
+            "en": "Can I have a receipt?"
+          },
+          {
+            "fr": "C'est trop cher pour moi",
+            "en": "It's too expensive for me"
+          }
+        ]
+      },
+      {
+        "id": "u6-l2",
+        "title": "Shopping",
+        "phrases": [
+          {
+            "fr": "Je regarde seulement, merci",
+            "en": "I'm just looking, thanks",
+            "note": "Always say Bonjour when you walk in; shopkeepers notice when you don't."
+          },
+          {
+            "fr": "Vous l'avez en plus grand ?",
+            "en": "Do you have it in a bigger size?"
+          },
+          {
+            "fr": "Je peux l'essayer ?",
+            "en": "Can I try it on?"
+          },
+          {
+            "fr": "Je le prends",
+            "en": "I'll take it"
+          },
+          {
+            "fr": "Une baguette, s'il vous plaît",
+            "en": "A baguette, please"
+          },
+          {
+            "fr": "Où est la boulangerie la plus proche ?",
+            "en": "Where is the nearest bakery?"
+          },
+          {
+            "fr": "Un sac, s'il vous plaît",
+            "en": "A bag, please",
+            "note": "Shops often charge for bags, so carry a tote."
+          },
+          {
+            "fr": "C'est pour offrir",
+            "en": "It's a gift",
+            "note": "Many shops gift-wrap for free when you say this."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u15",
+    "title": "Mon histoire",
+    "blurb": "Their beliefs, your story, and the gospel in short sentences",
+    "lessons": [
+      {
+        "id": "u15-l1",
+        "title": "What do you believe?",
+        "phrases": [
+          {
+            "fr": "Croyez-vous en Dieu ?",
+            "en": "Do you believe in God?",
+            "note": "Ask only once there is some trust, and really listen to the answer.",
+            "tu": "Tu crois en Dieu ?"
+          },
+          {
+            "fr": "Pour vous, qui est Jésus ?",
+            "en": "Who is Jesus to you?",
+            "tu": "Pour toi, qui est Jésus ?"
+          },
+          {
+            "fr": "Avez-vous déjà lu la Bible ?",
+            "en": "Have you ever read the Bible?",
+            "tu": "Tu as déjà lu la Bible ?"
+          },
+          {
+            "fr": "Vous avez grandi dans une famille croyante ?",
+            "en": "Did you grow up in a family of believers?",
+            "tu": "Tu as grandi dans une famille croyante ?"
+          },
+          {
+            "fr": "Vous allez parfois à l'église ?",
+            "en": "Do you sometimes go to church?",
+            "note": "Many French people were baptized but rarely go; that is a normal answer, not a cue to push.",
+            "tu": "Tu vas parfois à l'église ?"
+          },
+          {
+            "fr": "Puis-je vous lire un verset ?",
+            "en": "May I read you a verse?",
+            "tu": "Je peux te lire un verset ?"
+          },
+          {
+            "fr": "C'est une bonne question",
+            "en": "That's a good question"
+          },
+          {
+            "fr": "Je ne sais pas, mais je vais chercher",
+            "en": "I don't know, but I'll look into it",
+            "note": "An honest I don't know earns more respect than a rushed answer."
+          }
+        ]
+      },
+      {
+        "id": "u15-l2",
+        "title": "My story",
+        "phrases": [
+          {
+            "fr": "Jésus a changé ma vie",
+            "en": "Jesus changed my life",
+            "note": "Keep your story short and personal: before, how you met Jesus, and today."
+          },
+          {
+            "fr": "Avant, j'avais peur de l'avenir",
+            "en": "Before, I was afraid of the future"
+          },
+          {
+            "fr": "J'ai lu l'Évangile de Jean",
+            "en": "I read the Gospel of John"
+          },
+          {
+            "fr": "J'ai donné ma vie à Jésus",
+            "en": "I gave my life to Jesus",
+            "note": "Common among French evangelicals; elsewhere people may say je suis devenu chrétien (devenue for a woman)."
+          },
+          {
+            "fr": "Dieu m'a pardonné",
+            "en": "God forgave me"
+          },
+          {
+            "fr": "Aujourd'hui, j'ai la paix",
+            "en": "Today I have peace"
+          },
+          {
+            "fr": "Ma foi me donne de l'espérance",
+            "en": "My faith gives me hope",
+            "note": "L'espérance is the deep hope of faith; l'espoir is everyday hope."
+          },
+          {
+            "fr": "Je prie tous les jours",
+            "en": "I pray every day"
+          }
+        ]
+      },
+      {
+        "id": "u15-l3",
+        "title": "The good news, simply",
+        "phrases": [
+          {
+            "fr": "Dieu nous aime",
+            "en": "God loves us"
+          },
+          {
+            "fr": "Nous avons tous péché",
+            "en": "We have all sinned"
+          },
+          {
+            "fr": "Le péché nous sépare de Dieu",
+            "en": "Sin separates us from God"
+          },
+          {
+            "fr": "Jésus est mort sur la croix pour nous",
+            "en": "Jesus died on the cross for us"
+          },
+          {
+            "fr": "Il est ressuscité",
+            "en": "He is risen",
+            "note": "At Easter (Pâques) French Christians greet each other with Christ est ressuscité !"
+          },
+          {
+            "fr": "Il nous offre son pardon",
+            "en": "He offers us his forgiveness"
+          },
+          {
+            "fr": "La repentance, c'est se tourner vers Dieu",
+            "en": "Repentance is turning back to God",
+            "note": "Repentance is more than feeling sorry: it means turning away from sin and back to God."
+          },
+          {
+            "fr": "Par la foi, nous recevons ce cadeau",
+            "en": "Through faith we receive this gift"
+          },
+          {
+            "fr": "Voulez-vous le connaître ?",
+            "en": "Would you like to know him?",
+            "note": "Ask, then let the person answer in their own time.",
+            "tu": "Tu veux le connaître ?"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u8",
+    "title": "Au secours !",
+    "blurb": "Help, health and emergencies",
+    "lessons": [
+      {
+        "id": "u8-l1",
+        "title": "Asking for help",
+        "phrases": [
+          {
+            "fr": "J'ai perdu mon passeport",
+            "en": "I lost my passport",
+            "note": "Report it to the police, then contact the US Consulate in Strasbourg and your trip leader."
+          },
+          {
+            "fr": "J'ai perdu mon téléphone",
+            "en": "I lost my phone"
+          },
+          {
+            "fr": "Où est le commissariat ?",
+            "en": "Where is the police station?"
+          },
+          {
+            "fr": "On m'a volé mon sac",
+            "en": "Someone stole my bag"
+          },
+          {
+            "fr": "Pouvez-vous appeler ce numéro ?",
+            "en": "Can you call this number?"
+          },
+          {
+            "fr": "Mon téléphone n'a plus de batterie",
+            "en": "My phone battery is dead"
+          },
+          {
+            "fr": "C'est urgent",
+            "en": "It's urgent"
+          },
+          {
+            "fr": "Laissez-moi tranquille !",
+            "en": "Leave me alone!",
+            "note": "Say it firmly if someone bothers you, then walk toward a busy place or your group."
+          }
+        ]
+      },
+      {
+        "id": "u8-l2",
+        "title": "Feeling unwell",
+        "phrases": [
+          {
+            "fr": "Je ne me sens pas bien",
+            "en": "I don't feel well"
+          },
+          {
+            "fr": "J'ai mal à la tête",
+            "en": "I have a headache"
+          },
+          {
+            "fr": "J'ai mal au ventre",
+            "en": "I have a stomachache"
+          },
+          {
+            "fr": "J'ai de la fièvre",
+            "en": "I have a fever"
+          },
+          {
+            "fr": "Où est la pharmacie la plus proche ?",
+            "en": "Where is the nearest pharmacy?",
+            "note": "Look for the green cross; at night, the door lists the pharmacie de garde that is open."
+          },
+          {
+            "fr": "Avez-vous quelque chose contre la toux ?",
+            "en": "Do you have something for a cough?"
+          },
+          {
+            "fr": "Je suis allergique à la pénicilline",
+            "en": "I am allergic to penicillin"
+          },
+          {
+            "fr": "J'ai besoin d'un médecin",
+            "en": "I need a doctor",
+            "note": "French pharmacists give good advice for minor problems before you see a doctor."
+          }
+        ]
+      },
+      {
+        "id": "u8-l3",
+        "title": "Emergencies",
+        "phrases": [
+          {
+            "fr": "Au secours !",
+            "en": "Help!"
+          },
+          {
+            "fr": "Appelez le cent douze !",
+            "en": "Call 112!",
+            "note": "112 is free from any phone in Europe, and operators can switch to English."
+          },
+          {
+            "fr": "Appelez les secours, s'il vous plaît !",
+            "en": "Please call emergency services!",
+            "note": "112 works everywhere in Europe; 15 = SAMU (medical), 17 = police."
+          },
+          {
+            "fr": "Appelez une ambulance !",
+            "en": "Call an ambulance!"
+          },
+          {
+            "fr": "Il y a eu un accident",
+            "en": "There has been an accident"
+          },
+          {
+            "fr": "Quelqu'un est blessé",
+            "en": "Someone is hurt"
+          },
+          {
+            "fr": "Au feu !",
+            "en": "Fire!"
+          },
+          {
+            "fr": "Où sont les urgences ?",
+            "en": "Where is the emergency room?",
+            "note": "Les urgences is the hospital ER; for minor problems, a pharmacy is much faster."
+          },
+          {
+            "fr": "Restez avec moi",
+            "en": "Stay with me"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u16",
+    "title": "Écouter d'abord",
+    "blurb": "Responding with respect to no, other beliefs and hurt",
+    "lessons": [
+      {
+        "id": "u16-l1",
+        "title": "When the answer is no",
+        "phrases": [
+          {
+            "fr": "Non merci, ça ne m'intéresse pas",
+            "en": "No thanks, I'm not interested",
+            "note": "You will hear this often; a smile and Bonne journée is the best reply."
+          },
+          {
+            "fr": "Je n'ai pas le temps",
+            "en": "I don't have time",
+            "note": "In speech it is often j'ai pas le temps."
+          },
+          {
+            "fr": "Je ne suis pas religieux",
+            "en": "I'm not religious",
+            "note": "A woman says religieuse."
+          },
+          {
+            "fr": "Je respecte votre avis",
+            "en": "I respect your opinion",
+            "note": "Same idea as je respecte votre point de vue, just shorter.",
+            "tu": "Je respecte ton avis"
+          },
+          {
+            "fr": "Merci de m'avoir écouté",
+            "en": "Thank you for listening to me",
+            "note": "A woman writes écoutée; it sounds the same."
+          },
+          {
+            "fr": "Je vous souhaite une belle journée",
+            "en": "I wish you a lovely day",
+            "tu": "Je te souhaite une belle journée"
+          },
+          {
+            "fr": "Pas de souci",
+            "en": "No worries"
+          },
+          {
+            "fr": "Peut-être une autre fois",
+            "en": "Maybe another time"
+          }
+        ]
+      },
+      {
+        "id": "u16-l2",
+        "title": "Other beliefs",
+        "phrases": [
+          {
+            "fr": "Je suis catholique",
+            "en": "I'm Catholic",
+            "note": "Alsace has deep Catholic and Lutheran roots; start from what you share: Jesus, the Bible, prayer."
+          },
+          {
+            "fr": "Je suis protestant",
+            "en": "I'm Protestant",
+            "note": "A woman says protestante."
+          },
+          {
+            "fr": "Je suis musulman",
+            "en": "I'm Muslim",
+            "note": "A woman says musulmane. Strasbourg has a large Muslim community; ask about their faith with real interest."
+          },
+          {
+            "fr": "Je suis athée",
+            "en": "I'm an atheist",
+            "note": "Athée is the same for women and men."
+          },
+          {
+            "fr": "Je ne crois pas en Dieu",
+            "en": "I don't believe in God"
+          },
+          {
+            "fr": "Je crois en quelque chose",
+            "en": "I believe in something",
+            "note": "A very common French answer: ask what that something is."
+          },
+          {
+            "fr": "Merci de m'en parler",
+            "en": "Thanks for telling me about it"
+          },
+          {
+            "fr": "Qu'est-ce qui est important pour vous ?",
+            "en": "What is important to you?",
+            "tu": "Qu'est-ce qui est important pour toi ?"
+          },
+          {
+            "fr": "Pouvez-vous m'en dire plus ?",
+            "en": "Can you tell me more?",
+            "tu": "Tu peux m'en dire plus ?"
+          }
+        ]
+      },
+      {
+        "id": "u16-l3",
+        "title": "When church has hurt",
+        "phrases": [
+          {
+            "fr": "J'ai été blessé par l'Église",
+            "en": "I was hurt by the Church",
+            "note": "With a capital, l'Église is the institution, often the Catholic Church. A woman says blessée; it sounds the same."
+          },
+          {
+            "fr": "Je suis vraiment désolé",
+            "en": "I'm truly sorry",
+            "note": "A woman writes désolée; it sounds the same."
+          },
+          {
+            "fr": "Ça a dû être difficile",
+            "en": "That must have been hard"
+          },
+          {
+            "fr": "Vous n'êtes pas obligé d'en parler",
+            "en": "You don't have to talk about it",
+            "tu": "Tu n'es pas obligé d'en parler"
+          },
+          {
+            "fr": "Je suis là pour écouter",
+            "en": "I'm here to listen",
+            "note": "Listen first; don't defend the institution or explain the hurt away."
+          },
+          {
+            "fr": "Prenez votre temps",
+            "en": "Take your time",
+            "tu": "Prends ton temps"
+          },
+          {
+            "fr": "Les chrétiens ne sont pas parfaits",
+            "en": "Christians are not perfect"
+          },
+          {
+            "fr": "Merci de votre confiance",
+            "en": "Thank you for trusting me",
+            "tu": "Merci de ta confiance"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u7",
+    "title": "À l'hôtel",
+    "blurb": "Hotel, hostel and everyday needs",
+    "lessons": [
+      {
+        "id": "u7-l1",
+        "title": "Checking in",
+        "phrases": [
+          {
+            "fr": "J'ai une réservation au nom de Smith",
+            "en": "I have a reservation under the name Smith"
+          },
+          {
+            "fr": "La clé de la chambre, s'il vous plaît",
+            "en": "The room key, please"
+          },
+          {
+            "fr": "À quelle heure est le petit-déjeuner ?",
+            "en": "What time is breakfast?"
+          },
+          {
+            "fr": "Quel est le code du wifi ?",
+            "en": "What is the wifi password?",
+            "note": "Wifi is pronounced 'wee-fee' in French."
+          },
+          {
+            "fr": "Est-ce que je peux laisser mon sac ici ?",
+            "en": "Can I leave my bag here?"
+          },
+          {
+            "fr": "Il n'y a pas d'eau chaude",
+            "en": "There is no hot water"
+          },
+          {
+            "fr": "Le chauffage ne marche pas",
+            "en": "The heating doesn't work"
+          },
+          {
+            "fr": "Je voudrais une serviette, s'il vous plaît",
+            "en": "I would like a towel, please",
+            "note": "Serviette means both towel and napkin; context makes it clear."
+          }
+        ]
+      },
+      {
+        "id": "u7-l2",
+        "title": "Everyday needs",
+        "phrases": [
+          {
+            "fr": "Où est-ce que je peux recharger mon téléphone ?",
+            "en": "Where can I charge my phone?"
+          },
+          {
+            "fr": "Vous avez un adaptateur ?",
+            "en": "Do you have a plug adapter?",
+            "note": "France uses round two-pin plugs, so bring an adapter from home."
+          },
+          {
+            "fr": "On peut boire l'eau du robinet ?",
+            "en": "Is the tap water safe to drink?"
+          },
+          {
+            "fr": "Il y a un supermarché près d'ici ?",
+            "en": "Is there a supermarket nearby?"
+          },
+          {
+            "fr": "Jusqu'à quelle heure c'est ouvert ?",
+            "en": "Until what time is it open?"
+          },
+          {
+            "fr": "Où est la laverie ?",
+            "en": "Where is the laundromat?"
+          },
+          {
+            "fr": "Je peux utiliser les toilettes ?",
+            "en": "May I use the restroom?",
+            "note": "Public restrooms are rare; cafés usually expect you to buy something first."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u17",
+    "title": "Sauvés par la grâce",
+    "blurb": "Key verses, part 2: grace, faith and Jesus' invitation",
+    "lessons": [
+      {
+        "id": "u17-l1",
+        "title": "Éphésiens 2:8-9",
+        "verse": "EPH 2:8-9",
+        "phrases": [
+          {
+            "fr": "C'est par la grâce que vous êtes sauvés",
+            "en": "It is by grace you have been saved",
+            "note": "Sauvés is plural: Paul is writing to a whole church."
+          },
+          {
+            "fr": "La grâce",
+            "en": "Grace",
+            "note": "Grace is God's kindness that nobody can earn."
+          },
+          {
+            "fr": "Par le moyen de la foi",
+            "en": "Through faith"
+          },
+          {
+            "fr": "Cela ne vient pas de vous",
+            "en": "This does not come from you"
+          },
+          {
+            "fr": "C'est le don de Dieu",
+            "en": "It is the gift of God"
+          },
+          {
+            "fr": "Cela ne vient pas des œuvres",
+            "en": "This does not come from works",
+            "note": "Œ sounds like the eu in peu; you can type it oe."
+          },
+          {
+            "fr": "Afin que personne ne puisse se glorifier",
+            "en": "So that no one can boast"
+          },
+          {
+            "fr": "Le salut",
+            "en": "Salvation"
+          },
+          {
+            "fr": "Éphésiens, chapitre deux, versets huit et neuf",
+            "en": "Ephesians 2:8-9, read aloud"
+          }
+        ]
+      },
+      {
+        "id": "u17-l2",
+        "title": "Romains 10:9",
+        "verse": "ROM 10:9",
+        "phrases": [
+          {
+            "fr": "Si vous confessez de votre bouche",
+            "en": "If you declare with your mouth",
+            "note": "The verse itself says tu, as the Bible often does: si tu confesses de ta bouche.",
+            "tu": "Si tu confesses de ta bouche"
+          },
+          {
+            "fr": "Jésus est Seigneur",
+            "en": "Jesus is Lord"
+          },
+          {
+            "fr": "Si vous croyez dans votre cœur",
+            "en": "If you believe in your heart",
+            "note": "In the verse: si tu crois dans ton cœur. You can type cœur as coeur.",
+            "tu": "Si tu crois dans ton cœur"
+          },
+          {
+            "fr": "Dieu l'a ressuscité des morts",
+            "en": "God raised him from the dead"
+          },
+          {
+            "fr": "Vous serez sauvé",
+            "en": "You will be saved",
+            "note": "The verse says tu seras sauvé.",
+            "tu": "Tu seras sauvé"
+          },
+          {
+            "fr": "La résurrection",
+            "en": "The resurrection"
+          },
+          {
+            "fr": "Romains, chapitre dix, verset neuf",
+            "en": "Romans 10:9, read aloud"
+          }
+        ]
+      },
+      {
+        "id": "u17-l3",
+        "title": "Jean 14:6",
+        "verse": "JHN 14:6",
+        "phrases": [
+          {
+            "fr": "Jésus lui dit",
+            "en": "Jesus said to him",
+            "note": "Lui is to him: Jesus is answering Thomas."
+          },
+          {
+            "fr": "Je suis le chemin, la vérité et la vie",
+            "en": "I am the way, the truth and the life"
+          },
+          {
+            "fr": "Le chemin",
+            "en": "The way (the path)"
+          },
+          {
+            "fr": "La vérité",
+            "en": "The truth"
+          },
+          {
+            "fr": "Personne ne vient au Père que par moi",
+            "en": "No one comes to the Father except through me",
+            "note": "Ne ... que means only: no one comes, except through me."
+          },
+          {
+            "fr": "Le Père",
+            "en": "The Father"
+          },
+          {
+            "fr": "Jean, chapitre quatorze, verset six",
+            "en": "John 14:6, read aloud",
+            "note": "Quatorze is fourteen."
+          }
+        ]
+      },
+      {
+        "id": "u17-l4",
+        "title": "Apocalypse 3:20",
+        "verse": "REV 3:20",
+        "phrases": [
+          {
+            "fr": "Je me tiens à la porte et je frappe",
+            "en": "I stand at the door and knock"
+          },
+          {
+            "fr": "Si quelqu'un entend ma voix",
+            "en": "If anyone hears my voice"
+          },
+          {
+            "fr": "Et ouvre la porte",
+            "en": "And opens the door"
+          },
+          {
+            "fr": "J'entrerai chez lui",
+            "en": "I will come in to him"
+          },
+          {
+            "fr": "Je prendrai le repas avec lui",
+            "en": "I will share a meal with him",
+            "note": "Sharing a meal is a strong picture of friendship in France too."
+          },
+          {
+            "fr": "Et lui avec moi",
+            "en": "And he with me"
+          },
+          {
+            "fr": "Jésus frappe à la porte",
+            "en": "Jesus is knocking at the door"
+          },
+          {
+            "fr": "Apocalypse, chapitre trois, verset vingt",
+            "en": "Revelation 3:20, read aloud",
+            "note": "Apocalypse is the French name of Revelation."
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "u10",
     "title": "Strasbourg",
     "blurb": "The cathedral, Petite France and Alsace",
@@ -1591,6 +2483,153 @@
           {
             "fr": "J'adore cette région",
             "en": "I love this region"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "u18",
+    "title": "Invitations et prière",
+    "blurb": "Inviting, praying together and following up",
+    "lessons": [
+      {
+        "id": "u18-l1",
+        "title": "Invitations",
+        "phrases": [
+          {
+            "fr": "Vous êtes invité",
+            "en": "You're invited",
+            "note": "Invitée for a woman, invités for a group: all sound the same.",
+            "tu": "Tu es invité"
+          },
+          {
+            "fr": "Voulez-vous venir avec nous ?",
+            "en": "Would you like to come with us?",
+            "tu": "Tu veux venir avec nous ?"
+          },
+          {
+            "fr": "Nous avons une étude biblique jeudi soir",
+            "en": "We have a Bible study on Thursday evening"
+          },
+          {
+            "fr": "Le culte commence à dix heures",
+            "en": "The service starts at ten (10:00)"
+          },
+          {
+            "fr": "Il y a un concert à l'église samedi",
+            "en": "There's a concert at the church on Saturday",
+            "note": "Concerts are an easy first visit: many Strasbourg churches hold them."
+          },
+          {
+            "fr": "C'est gratuit et ouvert à tous",
+            "en": "It's free and open to everyone"
+          },
+          {
+            "fr": "Voici l'adresse",
+            "en": "Here is the address"
+          },
+          {
+            "fr": "On peut prendre un café ensemble ?",
+            "en": "Shall we get a coffee together?",
+            "note": "A coffee is often a better next step than a church service."
+          },
+          {
+            "fr": "Vous pouvez venir avec un ami",
+            "en": "You can come with a friend",
+            "tu": "Tu peux venir avec un ami"
+          }
+        ]
+      },
+      {
+        "id": "u18-l2",
+        "title": "Praying together",
+        "phrases": [
+          {
+            "fr": "Je peux prier pour vous maintenant ?",
+            "en": "Can I pray for you right now?",
+            "tu": "Je peux prier pour toi maintenant ?"
+          },
+          {
+            "fr": "Vous pouvez garder les yeux ouverts",
+            "en": "You can keep your eyes open",
+            "note": "A short prayer with open eyes feels natural in a café or on the street.",
+            "tu": "Tu peux garder les yeux ouverts"
+          },
+          {
+            "fr": "Seigneur, bénis Marie",
+            "en": "Lord, bless Marie",
+            "note": "French Christians speak to God with tu, so bénis is the tu form; use the person's name."
+          },
+          {
+            "fr": "Au nom de Jésus, amen",
+            "en": "In Jesus' name, amen",
+            "note": "Amen is said 'ah-men'."
+          },
+          {
+            "fr": "Comment vous sentez-vous ?",
+            "en": "How do you feel?",
+            "tu": "Comment tu te sens ?"
+          },
+          {
+            "fr": "Vous pouvez prier pour moi ?",
+            "en": "Can you pray for me?",
+            "tu": "Tu peux prier pour moi ?"
+          },
+          {
+            "fr": "Oui, avec plaisir",
+            "en": "Yes, gladly"
+          },
+          {
+            "fr": "Merci, ça me touche",
+            "en": "Thank you, that means a lot to me"
+          }
+        ]
+      },
+      {
+        "id": "u18-l3",
+        "title": "Prayer requests",
+        "phrases": [
+          {
+            "fr": "Avez-vous un sujet de prière ?",
+            "en": "Do you have a prayer request?",
+            "note": "Un sujet de prière is the usual church phrase for a prayer request.",
+            "tu": "Tu as un sujet de prière ?"
+          },
+          {
+            "fr": "Pour votre famille ?",
+            "en": "For your family?",
+            "tu": "Pour ta famille ?"
+          },
+          {
+            "fr": "Ma mère est malade",
+            "en": "My mom is sick"
+          },
+          {
+            "fr": "J'ai perdu mon travail",
+            "en": "I lost my job"
+          },
+          {
+            "fr": "Je peux noter votre prénom ?",
+            "en": "Can I write down your first name?",
+            "note": "Ask before writing anything down, and never ask for a last name or address.",
+            "tu": "Je peux noter ton prénom ?"
+          },
+          {
+            "fr": "Mon équipe va prier pour vous aussi",
+            "en": "My team will pray for you too",
+            "tu": "Mon équipe va prier pour toi aussi"
+          },
+          {
+            "fr": "Dieu vous entend",
+            "en": "God hears you",
+            "tu": "Dieu t'entend"
+          },
+          {
+            "fr": "Vous voulez qu'on reste en contact ?",
+            "en": "Would you like to stay in touch?",
+            "note": "Offer once; a local church contact is often better than your own number.",
+            "tu": "Tu veux qu'on reste en contact ?"
           }
         ]
       }

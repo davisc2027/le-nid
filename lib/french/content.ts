@@ -2,7 +2,8 @@ import units from "@/content/french/units.json";
 
 /** `tu` is the informal version of a vous phrase, used only by the tu/vous exercise and accepted when typed. */
 export type Phrase = { fr: string; en: string; note?: string; tu?: string };
-export type Lesson = { id: string; title: string; phrases: Phrase[] };
+/** `verse` names the Bible verse a lesson teaches (a verse key such as "JHN 3:16"), linking it to the Scripture drill. */
+export type Lesson = { id: string; title: string; phrases: Phrase[]; verse?: string };
 export type Unit = { id: string; title: string; blurb: string; lessons: Lesson[] };
 
 export const UNITS = units as Unit[];

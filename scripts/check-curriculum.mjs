@@ -5,6 +5,7 @@
 // It imports the real engine through tiny loader hooks (the "@/" alias, extensionless .ts imports, JSON modules),
 // so the checks always test the code the app ships. Exit code 1 when an invariant fails.
 import { register } from "node:module";
+import { readFileSync } from "node:fs";
 
 const hooks = `
 import { readFileSync } from "node:fs";
@@ -50,7 +51,18 @@ section("units.json invariants");
     unitIds.add(u.id);
     if (!u.title || !u.blurb) fail(`unit ${u.id} needs title and blurb`);
     u.lessons.forEach((l, k) => {
-      if (!/^u[0-9]+-l[0-9]+$/.test(l.id)) fail(`lesson id ${l.id}`);
+      // the same pattern complete_lesson() accepts in the database (migration 0010)
+      if (!/^u([0-9]|[12][0-9]|30)-l([0-9]|1[0-9]|20)$/.test(l.id)) fail(`lesson id ${l.id} (u0-u30, l0-l20)`);
+      if (l.verse !== undefined) {
+        // a verse lesson names a key like "JHN 3:16" or "EPH 2:8-9" that exists in the French Bible text
+        const m = /^([1-3]?[A-Z]{2,3}) (\d+):(\d+)(?:-(\d+))?$/.exec(l.verse);
+        let ok = false;
+        try {
+          const book = m && JSON.parse(readFileSync(new URL(`../public/bible/fr/${m[1]}.json`, import.meta.url), "utf8"));
+          ok = !!book?.[m[2] - 1]?.[(m[4] ?? m[3]) - 1];
+        } catch {}
+        if (!ok) fail(`lesson ${l.id} names verse "${l.verse}" that is not in public/bible/fr`);
+      }
       if (l.id !== `${u.id}-l${k + 1}`) fail(`lesson ${l.id} should be ${u.id}-l${k + 1} (no gaps inside a unit)`);
       if (l.phrases.length < 5 || l.phrases.length > 10) fail(`${l.id} has ${l.phrases.length} phrases (5-10)`);
       for (const p of l.phrases) {

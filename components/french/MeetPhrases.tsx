@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, Lightbulb } from "lucide-react";
-import type { Phrase } from "@/lib/french/content";
+import Link from "next/link";
+import { BookOpen, ChevronLeft, Lightbulb } from "lucide-react";
+import { ALL_LESSONS, type Phrase } from "@/lib/french/content";
+import { refLabel } from "@/lib/bible/reference";
 import { speak } from "@/lib/french/speech";
 import Speaker from "./Speaker";
 
@@ -16,12 +18,19 @@ export default function MeetPhrases({ phrases, onDone }: { phrases: Phrase[]; on
   const p = phrases[k];
   const last = k === phrases.length - 1;
   const go = (n: number) => { setK(n); speak(phrases[n].fr); };
+  // verse lessons name their Bible verse; the hint links to the memory drill for it
+  const verse = ALL_LESSONS.find((l) => l.phrases[0]?.fr === phrases[0]?.fr)?.verse;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="label">New phrase {k + 1} of {phrases.length}</p>
         <button className="min-h-11 px-3 text-sm text-muted underline" onClick={onDone}>Skip intro</button>
       </div>
+      {verse && k === 0 && (
+        <Link href={`/scripture/learn?ref=${encodeURIComponent(verse)}`} className="flex items-center gap-1.5 self-start text-sm text-muted underline">
+          <BookOpen size={16} className="shrink-0 text-accent" aria-hidden="true" />Words from {refLabel(verse)} · learn the verse by heart
+        </Link>
+      )}
       <div key={k} className="card flex flex-col gap-3">
         <p lang="fr" className="text-2xl font-extrabold">{p.fr}</p>
         <p className="text-lg font-semibold">{p.en}</p>

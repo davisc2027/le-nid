@@ -78,6 +78,17 @@ export const SAME_MEANING: [string, string][] = [
   ["Pardon", "Pouvez-vous répéter, s'il vous plaît ?"], ["Courage !", "Ne perdez pas espoir"],
   ["Prenez soin de vous", "Bonne continuation"], ["Bonne continuation", "Bonne chance !"], ["Merci", "Merci pour tout"],
   ["Oui", "D'accord"], ["Oui", "Bien sûr"], ["D'accord", "Bien sûr"],
+  ["D'accord", "Je suis d'accord"], ["Oui", "Je suis d'accord"], ["Bien sûr", "Je suis d'accord"], ["C'est vrai", "Je suis d'accord"],
+  ["Je comprends", "Je vois"], ["Je ne sais pas", "Je ne sais pas trop"], ["Merci, c'est gentil", "Merci, ça me touche"],
+  ["Qu'est-ce que vous recommandez ?", "Qu'est-ce que vous me conseillez de visiter ?"],
+  ["Comment allez-vous ?", "Comment vous sentez-vous ?"], ["Ça va ?", "Comment vous sentez-vous ?"],
+  ["Je respecte votre point de vue", "Je respecte votre avis"], ["Bonne journée", "Je vous souhaite une belle journée"],
+  ["Pas de problème, merci quand même", "Pas de souci"], ["Je suis athée", "Je ne crois pas en Dieu"],
+  ["Puis-je prier pour vous ?", "Je peux prier pour vous maintenant ?"], ["Comment puis-je prier pour vous ?", "Avez-vous un sujet de prière ?"],
+  // the same person or truth in other words: never offered as a wrong translation of each other
+  ["Dieu", "Le Seigneur"], ["Jésus-Christ", "Le Fils de Dieu"], ["Christ est mort pour nous", "Jésus est mort sur la croix pour nous"],
+  ["Il est ressuscité", "Dieu l'a ressuscité des morts"], ["Dieu nous aime", "L'amour de Dieu"], ["Dieu vous aime", "L'amour de Dieu"],
+  ["Dieu nous aime", "Dieu manifeste son amour envers nous"],
 ];
 
 /** Classic confusions, used as preferred wrong options, each with the reason shown after a miss. */
@@ -123,6 +134,25 @@ export const NEAR_MISS: [string, string, string][] = [
   ["Dieu vous aime", "Dieu est fidèle", "Aime is loves; fidèle is faithful."],
   ["Je pense à vous", "Je vais prier pour vous", "Penser à is to think of; prier pour is to pray for."],
   ["Ce week-end", "Bon week-end !", "Ce week-end is this weekend; bon week-end wishes someone a good one."],
+  ["Salut", "Le salut", "Salut alone is hi; le salut is salvation."],
+  ["La croix", "Je crois en Dieu", "Croix (the cross) and crois (I believe) sound the same: 'krwa'."],
+  ["Prier", "La prière", "Prier is the verb, to pray; la prière is the noun, prayer."],
+  ["Je vous en prie", "Je prie tous les jours", "Je vous en prie means you're welcome; je prie means I pray."],
+  ["Dieu vous aime", "Dieu nous aime", "Vous is you; nous is us."],
+  ["Croyez-vous en Dieu ?", "Je crois en Dieu", "Croyez-vous asks; je crois says what you believe."],
+  ["Je crois en Dieu", "Je crois en quelque chose", "En Dieu is in God; en quelque chose is in something."],
+  ["Le don gratuit de Dieu", "C'est le don de Dieu", "Gratuit means free of charge; c'est means it is."],
+  ["Cela ne vient pas de vous", "Cela ne vient pas des œuvres", "De vous is from you; des œuvres is from works."],
+  ["Jésus est Seigneur", "Jésus-Christ notre Seigneur", "Est Seigneur says Jesus is Lord; notre Seigneur is our Lord."],
+  ["Le culte", "La messe", "Le culte is a Protestant service; la messe is Catholic Mass."],
+  ["Je suis catholique", "Je suis protestant", "Catholique is Catholic; protestant is Protestant."],
+  ["Nous sommes protestants", "Je suis protestant", "Nous sommes is we are; je suis is I am."],
+  ["Merci de votre temps", "Prenez votre temps", "Merci de votre temps thanks someone; prenez votre temps means take your time."],
+  ["Ma mère est infirmière", "Ma mère est malade", "Infirmière is a nurse; malade is sick."],
+  ["J'ai perdu mon téléphone", "J'ai perdu mon travail", "Mon téléphone is my phone; mon travail is my job."],
+  ["Vous êtes d'ici ?", "Vous travaillez dans le quartier ?", "D'ici asks where someone is from; travaillez asks about work."],
+  ["Romains, chapitre trois, verset vingt-trois", "Romains, chapitre six, verset vingt-trois", "Trois is 3, six is 6."],
+  ["Jean, chapitre trois, verset seize", "Jean, chapitre quatorze, verset six", "Trois seize is 3:16; quatorze six is 14:6."],
 ];
 
 const pairKey = (a: string, b: string) => (a < b ? a + "\u0000" + b : b + "\u0000" + a);
