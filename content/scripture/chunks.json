@@ -1,0 +1,55 @@
+{
+  "_help": "Hand-tuned chunks for verses learned in Le Nid. Key = verse key as stored (\"JHN 3:16\", \"EPH 2:8-9\"). Each entry is the verse split into 2 to 5 pieces, in order, with an optional English meaning. The pieces must add up to the exact French verse (spacing and apostrophe style may differ); if they do not, the app ignores the entry and splits the verse automatically. Check with: node scripts/check-verses.mjs",
+  "JHN 3:16": [
+    { "fr": "Car Dieu a tant aimé le monde", "en": "For God so loved the world" },
+    { "fr": "qu'il a donné son Fils unique,", "en": "that he gave his only Son," },
+    { "fr": "afin que quiconque croit en lui", "en": "so that whoever believes in him" },
+    { "fr": "ne périsse pas,", "en": "should not perish," },
+    { "fr": "mais qu'il ait la vie éternelle.", "en": "but have eternal life." }
+  ],
+  "ROM 3:23": [
+    { "fr": "tous ont péché", "en": "all have sinned" },
+    { "fr": "et sont privés de la gloire de Dieu ;", "en": "and fall short of the glory of God;" }
+  ],
+  "ROM 5:8": [
+    { "fr": "Mais Dieu manifeste son amour", "en": "But God shows his love" },
+    { "fr": "envers nous en ceci :", "en": "for us in this:" },
+    { "fr": "alors que nous étions encore pécheurs,", "en": "while we were still sinners," },
+    { "fr": "Christ est mort pour nous.", "en": "Christ died for us." }
+  ],
+  "ROM 6:23": [
+    { "fr": "Car le salaire du péché,", "en": "For the wages of sin" },
+    { "fr": "c’est la mort ;", "en": "is death," },
+    { "fr": "mais le don gratuit de Dieu,", "en": "but the free gift of God" },
+    { "fr": "c’est la vie éternelle", "en": "is eternal life" },
+    { "fr": "en Jésus-Christ notre Seigneur.", "en": "in Christ Jesus our Lord." }
+  ],
+  "ROM 10:9": [
+    { "fr": "si tu confesses de ta bouche", "en": "if you declare with your mouth" },
+    { "fr": "que Jésus est Seigneur,", "en": "that Jesus is Lord," },
+    { "fr": "et si tu crois dans ton cœur", "en": "and believe in your heart" },
+    { "fr": "que Dieu l’a ressuscité des morts,", "en": "that God raised him from the dead," },
+    { "fr": "tu seras sauvé.", "en": "you will be saved." }
+  ],
+  "EPH 2:8-9": [
+    { "fr": "Car c’est par la grâce que vous êtes sauvés,", "en": "For it is by grace you have been saved," },
+    { "fr": "par le moyen de la foi.", "en": "through faith." },
+    { "fr": "Cela ne vient pas de vous : c’est le don de Dieu.", "en": "This does not come from you: it is the gift of God." },
+    { "fr": "Cela ne vient pas des œuvres,", "en": "It does not come from works," },
+    { "fr": "afin que personne ne puisse se glorifier.", "en": "so that no one can boast." }
+  ],
+  "JHN 14:6": [
+    { "fr": "Jésus lui dit :", "en": "Jesus said to him," },
+    { "fr": "« Je suis le chemin,", "en": "“I am the way," },
+    { "fr": "la vérité et la vie.", "en": "the truth, and the life." },
+    { "fr": "Personne ne vient au Père", "en": "No one comes to the Father" },
+    { "fr": "que par moi.", "en": "except through me." }
+  ],
+  "REV 3:20": [
+    { "fr": "Je me tiens à la porte et je frappe.", "en": "I stand at the door and knock." },
+    { "fr": "Si quelqu’un entend ma voix et ouvre la porte,", "en": "If anyone hears my voice and opens the door," },
+    { "fr": "j’entrerai chez lui,", "en": "I will come in to him," },
+    { "fr": "je prendrai le repas avec lui,", "en": "I will eat with him," },
+    { "fr": "et lui avec moi.", "en": "and he with me." }
+  ]
+}

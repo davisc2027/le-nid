@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { Flame, Landmark } from "lucide-react";
+import { CARDS } from "@/components/culture/data";
 import { createClient } from "@/lib/supabase/server";
 import { ALL_LESSONS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
@@ -30,6 +31,10 @@ export default async function Learn() {
       <Link href="/scripture" className="card flex min-h-28 flex-row items-center gap-4">
         <Rosace filled={learned} total={Math.max(learned, 6)} size={72} />
         <div><h2 className="text-lg font-extrabold">Verses</h2><p className="text-sm text-muted">{learned} learned{due > 0 ? ` · ${due} due for review` : ""}</p></div>
+      </Link>
+      <Link href="/culture" className="card flex min-h-28 flex-row items-center gap-4">
+        <span className="grid size-[72px] shrink-0 place-items-center rounded-full bg-tint text-primary"><Landmark size={36} aria-hidden="true" /></span>
+        <div><h2 className="text-lg font-extrabold">Culture</h2><p className="text-sm text-muted">À savoir · etiquette, faith context and Strasbourg · {CARDS.length} cards and a quiz</p></div>
       </Link>
     </div>
   );

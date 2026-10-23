@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { BOOKS, findBook, type Book } from "@/lib/bible/books";
 import { bibleInstalled, loadBookText, loadVerse } from "@/lib/bible/load";
 import { parseRef, refKey } from "@/lib/bible/reference";
+import TapWords from "./TapWords";
 
 type Item = { key: string; label: string; hint?: string; fill: string; done?: boolean };
 
@@ -116,7 +117,7 @@ export default function AddVerse() {
           </ul>
         )}
       </div>
-      {preview && !open && <p className="verse-text text-base text-muted" aria-live="polite">{snippet(preview)}</p>}
+      {preview && !open && <div aria-live="polite"><TapWords text={preview} className="verse-text text-base text-muted" /></div>}
       {msg && <p className="text-sm text-muted" role="status">{msg}</p>}
     </form>
   );

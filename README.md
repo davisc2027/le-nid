@@ -6,7 +6,7 @@ Stack: Next.js (App Router) + Tailwind, Supabase (Postgres, Auth, Storage), `web
 
 ## Quick start (see SETUP.md for the full checklist)
 1. `npm install`
-2. Create a free Supabase project. Run `supabase/migrations/0001` through `0009` (0009 adds the French Practice and end-of-lesson review) in order in the SQL editor (or `npx supabase link` then `npx supabase db push`).
+2. Create a free Supabase project. Run `supabase/migrations/0001` through `0009` (0009 adds the French Practice and end-of-lesson review) in order in the SQL editor (or `npx supabase link` then `npx supabase db push`). `0011_verse_progress.sql` saves each learner's place on the verse mastery path across devices (safe to re-run; without it progress stays on the device, see docs/verse-learning.md).
 3. Supabase dashboard -> Authentication -> URL Configuration: set Site URL to your deployed URL and add `<url>/auth/callback` (and `http://localhost:3000/auth/callback`) to Redirect URLs.
 4. `cp .env.example .env.local` and fill it in (variables are listed in SETUP.md section 2). Generate push keys with `npx web-push generate-vapid-keys`. Never commit `vercel-env.txt` or any env file.
 5. `npm run dev`, sign in with your email, then make yourself admin in the SQL editor:

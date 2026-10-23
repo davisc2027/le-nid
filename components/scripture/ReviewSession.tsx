@@ -7,13 +7,16 @@ import { createClient } from "@/lib/supabase/client";
 import { bibleInstalled, loadVerse } from "@/lib/bible/load";
 import { refLabel } from "@/lib/bible/reference";
 import { firstLetters, gradeRecall, PASS } from "@/lib/scripture/drills";
+import { cementFromReview } from "@/lib/scripture/mastery";
+import { mergeSaved, saveProgress } from "@/lib/scripture/store";
 import { Rating, schedule } from "@/lib/srs";
 import OdileActor from "@/components/art/OdileActor";
 import OdileTrack from "@/components/art/OdileTrack";
 import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import VerseDiff from "./VerseDiff";
+import { AudioBar } from "./TapWords";
 
-type Card = { ref: string; state: Record<string, unknown> | null };
+type Card = { ref: string; state: Record<string, unknown> | null; learned_at?: string | null; progress?: unknown };
 
 export default function ReviewSession({ cards }: { cards: Card[] }) {
   const [i, setI] = useState(0);
@@ -49,6 +52,11 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
     setRes({ ok, marks: g.marks });
     setOdile(cue(pickReaction(ok ? "calmRight" : "calmWrong")));
     if (ok) setPassed((n) => n + 1);
+    // a clean recall after the delay is exactly what the Cement retest asks for
+    if (ok && !hint) {
+      const np = cementFromReview(mergeSaved(card.ref, card.progress), card.learned_at ?? null);
+      if (np) saveProgress(card.ref, np, true);
+    }
   }
 
   async function next() {
@@ -98,9 +106,10 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
         </div>
       )}
       {res && (
-        <div className={`card ${res.ok ? "!border-good" : "!border-primary"}`} role="status">
+        <div className={`card flex flex-col gap-2 ${res.ok ? "!border-good" : "!border-primary"}`} role="status">
           <p className="font-extrabold">{res.ok ? "Bien !" : "Not yet. It will come back soon."}</p>
-          <VerseDiff marks={res.marks} />
+          <VerseDiff marks={res.marks} group={`review-${i}`} />
+          {verse && <AudioBar group={`review-${i}`} texts={[verse]} label="Play verse" />}
           <button className="btn" onClick={next} disabled={busy}>Continue</button>
         </div>
       )}

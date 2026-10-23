@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Flame, Lock, Play } from "lucide-react";
+import { Check, ChevronRight, Flame, Landmark, Lock, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { UNITS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
@@ -34,6 +34,7 @@ export default async function French() {
         <p className="text-sm font-bold text-primary"><Flame size={18} className="mr-1 inline -mt-0.5 text-accent" aria-hidden="true" /><StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {total} XP</p>
       </div>
       <OdileSays topic={streak?.last_day ? "missed" : "welcome"} mood="happy" lastDay={streak?.last_day ?? null} />
+      <Link href="/culture" className="card flex min-h-12 items-center gap-3 !py-3 font-bold"><Landmark size={20} className="shrink-0 text-accent" aria-hidden="true" /><span className="flex-1">À savoir: culture and etiquette</span><ChevronRight size={20} className="text-muted" aria-hidden="true" /></Link>
       {practiceOk && (learned > 0 ? (
         <Link href="/french/practice" className="btn w-full">{dueCount > 0 ? `Practice · ${dueCount} due` : "Practice"}</Link>
       ) : (

@@ -15,7 +15,7 @@ const TABS = [
   { href: "/", label: "Home", icon: "home", match: (p: string) => p === "/" },
   { href: "/itinerary", label: "Itinerary", icon: "trip", match: (p: string) => p.startsWith("/itinerary") },
   { href: "/todos", label: "To-dos", icon: "todos", match: (p: string) => p.startsWith("/todos") },
-  { href: "/learn", label: "Learn", icon: "learn", match: (p: string) => /^\/(learn|french|scripture)/.test(p) },
+  { href: "/learn", label: "Learn", icon: "learn", match: (p: string) => /^\/(learn|french|scripture|culture)/.test(p) },
   { href: "/translate", label: "Translate", icon: "translate", match: (p: string) => p.startsWith("/translate") },
   { href: "/files", label: "Files", icon: "files", match: (p: string) => p.startsWith("/files") },
 ];

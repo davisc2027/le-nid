@@ -1,0 +1,1069 @@
+{
+  "themes": [
+    { "id": "politeness", "title": "Hello, vous and la bise", "blurb": "The greetings and forms of address that open every door." },
+    { "id": "out", "title": "Shops, cafés and meals", "blurb": "Bakeries, terraces, bills, tips and opening hours." },
+    { "id": "around", "title": "Trams, safety and the street", "blurb": "Getting around as a big group, and staying safe." },
+    { "id": "homes", "title": "Homes and conversation", "blurb": "Being a guest, table manners and what to talk about." },
+    { "id": "faith", "title": "Faith conversations", "blurb": "Laïcité, loaded words, and talking about faith with respect." },
+    { "id": "history", "title": "Strasbourg's story", "blurb": "The Reformation, the cathedral, two countries and Europe." },
+    { "id": "alsace", "title": "Alsatian life", "blurb": "Dialect, storks, winstubs, holidays and the Christmas market." }
+  ],
+  "cards": [
+    {
+      "id": "bonjour-rule", "type": "etiquette", "theme": "politeness",
+      "title": "Bonjour first, every time",
+      "text": "Say Bonjour, with madame or monsieur, when you walk into a shop, bakery, pharmacy or small café, and before any question. Skipping it sounds rude, not efficient. Leave with Merci, au revoir. In the evening many people switch to Bonsoir.",
+      "phrase": { "fr": "Bonjour, madame", "gloss": "Hello, ma'am: the shop greeting" },
+      "unit": "u1", "lesson": "u1-l1", "moment": "done",
+      "odile": "Bonjour opens every door in France. Even bakery doors.",
+      "odileSass": "Walk in without Bonjour and the baker will remember you. So will I.",
+      "source": [
+        "https://connexionfrance.com/magazine/connexion-tip-dont-forget-to-greet/509669",
+        "https://thegoodlifefrance.com/french-etiquette-tips/",
+        "https://en.selectra.info/moving-to-france/culture/french-customs"
+      ]
+    },
+    {
+      "id": "vous-default", "type": "etiquette", "theme": "politeness",
+      "title": "When in doubt, vous",
+      "text": "Use vous with anyone you don't know: shop staff, older people, officials, a pastor you just met, and any group. Being too formal costs nothing; being too familiar can offend. Children and friends your age get tu.",
+      "phrase": { "fr": "Vous", "gloss": "You (polite or plural)" },
+      "unit": "u0", "lesson": "u0-l2", "moment": "done",
+      "odile": "When in doubt, vous. Nobody was ever offended by too much politeness.",
+      "source": [
+        "https://www.thelocal.fr/20250122/what-are-the-rules-on-using-tu-and-vous-in-modern-france",
+        "https://www.frenchentree.com/living-in-france/to-vouvoyer/"
+      ]
+    },
+    {
+      "id": "tu-switch", "type": "etiquette", "theme": "politeness",
+      "title": "Let them offer tu",
+      "text": "Students and people your age often switch to tu almost at once. With adults, let the older or more senior person offer it, often with On se tutoie ?. If a French person says tu to you, you can answer with tu.",
+      "phrase": { "fr": "On se tutoie ?", "gloss": "Shall we say tu to each other?" },
+      "unit": "u1", "lesson": "u1-l3", "moment": "done",
+      "source": [
+        "https://www.thelocal.fr/20250122/what-are-the-rules-on-using-tu-and-vous-in-modern-france",
+        "https://thelocal.fr/20190806/french-language-dilemmas-when-to-drop-the-vous-and-get-friendly",
+        "https://www.commeunefrancaise.com/?p=2363"
+      ],
+      "review": "native", "reviewNote": "How fast do students at the partner church switch to tu with visiting Americans?"
+    },
+    {
+      "id": "la-bise", "type": "etiquette", "theme": "politeness",
+      "title": "La bise: follow their lead",
+      "text": "Friends, and friends of friends, often greet with la bise: a light touch of cheeks with a kiss sound, usually two. With strangers, shop staff or in a formal first meeting, a handshake is normal. Since covid many people do it less, so let the French person lead.",
+      "phrase": { "fr": "Enchanté", "gloss": "Nice to meet you" },
+      "unit": "u1", "lesson": "u1-l2", "moment": "done",
+      "odile": "Two cheeks, a light touch, and follow their lead. Storks clatter beaks instead.",
+      "source": [
+        "https://www.connexionfrance.com/magazine/french-etiquette-guide-greetings-gifts-and-when-to-use-vous/606231",
+        "https://culturalatlas.sbs.com.au/french-culture/french-culture-greetings",
+        "https://www.lebonbon.fr/lille/societe/pourcentage-francais-bise/"
+      ],
+      "review": "native", "reviewNote": "What is usual at the partner church between young men, young women, and men and women?"
+    },
+    {
+      "id": "start-in-french", "type": "etiquette", "theme": "politeness",
+      "title": "Start in French, then ask",
+      "text": "Open in French, even if it's shaky: Bonjour, then Excusez-moi, parlez-vous anglais ?. Starting in English assumes; trying French first shows respect, and people often switch to help. Je parle un peu français tells them to slow down.",
+      "phrase": { "fr": "Parlez-vous anglais ?", "gloss": "Do you speak English?" },
+      "unit": "u11", "lesson": "u11-l1", "moment": "done",
+      "odile": "A wobbly Bonjour beats a perfect Hello. Every time.",
+      "source": [
+        "https://en.selectra.info/moving-to-france/culture/french-customs",
+        "https://connexionfrance.com/magazine/connexion-tip-dont-forget-to-greet/509669"
+      ]
+    },
+    {
+      "id": "handshake", "type": "etiquette", "theme": "politeness",
+      "title": "Greet each person",
+      "text": "With adults you are introduced to, a short, firm handshake is the normal greeting. In a small group, people tend to greet each person one by one rather than wave to the room, and do the same when they leave. A big hug from someone you just met can feel like too much.",
+      "unit": "u1",
+      "source": [
+        "https://culturalatlas.sbs.com.au/french-culture/french-culture-greetings",
+        "https://www.connexionfrance.com/magazine/french-etiquette-guide-greetings-gifts-and-when-to-use-vous/606231"
+      ],
+      "review": "native", "reviewNote": "Is greeting everyone one by one usual at the partner church and in student groups?"
+    },
+    {
+      "id": "bise-count", "type": "fact", "theme": "politeness",
+      "title": "Two, three or four kisses?",
+      "text": "The number of bises depends on the region and even the family. Two is by far the most common; three or four belong to a few areas, mostly in the south. Don't count out loud: follow the other person, including which cheek they start with.",
+      "unit": "u1",
+      "source": [
+        "https://www.lawlessfrench.com/travel-and-culture/combien-de-bises/",
+        "https://migaku.com/blog/language-fun/bisous-etiquette-how-many-cheek-kisses-by-region-in-france",
+        "https://bigthink.com/?p=26769"
+      ],
+      "review": "native", "reviewNote": "Confirm that two is the usual count in Strasbourg (not verified from a primary source)."
+    },
+    {
+      "id": "cafe-terrasse", "type": "etiquette", "theme": "out",
+      "title": "Counter, table or terrasse",
+      "text": "In many cafés a coffee costs less standing at the counter (au comptoir) than at a table or on the terrasse, and both prices are posted. At a table, wait for the server rather than ordering at the bar. Catch their eye and say S'il vous plaît; don't wave, whistle or snap.",
+      "phrase": { "fr": "Un café, s'il vous plaît", "gloss": "A coffee, please" },
+      "unit": "u3", "lesson": "u3-l1", "moment": "done",
+      "odile": "Counter coffee is cheaper. Terrace coffee comes with a view of me.",
+      "source": [
+        "https://www.islands.com/1839848/rick-steves-french-france-cafe-etiquette-where-sit-affects-price-look-local-lower-price-budget",
+        "https://cooknwithclass.com/paris-cafe-etiquette/"
+      ]
+    },
+    {
+      "id": "bill-ask", "type": "etiquette", "theme": "out",
+      "title": "The bill comes when you ask",
+      "text": "At a sit-down meal the table is yours for as long as you like, and the bill only comes when you ask for it. With a big group, ask before ordering whether they can split the bill; many places prefer one bill per table. Settling up among yourselves afterwards is easiest.",
+      "phrase": { "fr": "L'addition, s'il vous plaît", "gloss": "The bill, please" },
+      "unit": "u3", "lesson": "u3-l3", "moment": "done",
+      "source": [
+        "https://cooknwithclass.com/paris-cafe-etiquette/",
+        "https://tasteoffrancemag.com/trending/tipping-in-france-what-you-need-to-know-about-service-compris/"
+      ]
+    },
+    {
+      "id": "tipping", "type": "etiquette", "theme": "out",
+      "title": "Service compris",
+      "text": "Service is included in French restaurant and café prices (service compris), so tipping is optional. People round up or leave a little change for good service, a bit more at a nicer restaurant. If a card machine suggests a tip, you can skip it.",
+      "phrase": { "fr": "Je peux payer par carte ?", "gloss": "Can I pay by card?" },
+      "unit": "u6", "lesson": "u6-l1", "moment": "done",
+      "odile": "The tip is already in the price. Rounding up is a kind extra, not a rule.",
+      "source": [
+        "https://www.connexionfrance.com/article/Practical/Everyday-Life/Make-sense-of-Leaving-a-tip-in-France",
+        "https://anglophone-direct.com/tipping-in-france/",
+        "https://tasteoffrancemag.com/trending/tipping-in-france-what-you-need-to-know-about-service-compris/"
+      ]
+    },
+    {
+      "id": "meal-times", "type": "fact", "theme": "out",
+      "title": "Lunch at noon, dinner at eight",
+      "text": "Restaurants usually serve lunch from about 12:00 to 14:00 and dinner from about 19:00 or 19:30, and many kitchens close in between. Hungry at 16:00? Look for service continu, a bakery or a snack stand. A family dinner can start late and last for hours.",
+      "phrase": { "fr": "Il est midi", "gloss": "It's noon" },
+      "unit": "u5", "lesson": "u5-l3", "moment": "done",
+      "odile": "Lunch at three? The kitchen is having its nap.",
+      "source": [
+        "https://frenchentree.com/living-in-france/local-life/opening-hours-in-france-shops-services-restaurants",
+        "https://www.thelocal.fr/20230306/reader-question-what-time-do-the-french-eat-dinner",
+        "https://universite-paris-saclay.fr/en/campus-life/international-welcome-desk/eating-france"
+      ]
+    },
+    {
+      "id": "sunday-closing", "type": "alsace", "theme": "out",
+      "title": "Quiet Sundays",
+      "text": "Alsace and Moselle protect Sunday rest more strictly than the rest of France, so most shops are closed on Sundays, with only a few hours allowed for some food shops such as bakeries. Some shops open on the Sundays before Christmas. Buy snacks and supplies on Saturday.",
+      "phrase": { "fr": "Les magasins ferment le dimanche", "gloss": "Shops close on Sundays" },
+      "unit": "u5", "lesson": "u5-l4", "moment": "done",
+      "odile": "Sunday is for rest, church and long lunches. Shop on Saturday.",
+      "source": [
+        "https://grand-est.dreets.gouv.fr/sites/grand-est.dreets.gouv.fr/IMG/pdf/guide_droit_local_du_travail_dec_2022.pdf",
+        "https://www.senat.fr/leg/ppl10-093.html",
+        "https://www.journaldeleconomie.fr/?p=6889"
+      ],
+      "review": "leader", "reviewNote": "Check what is actually open on Sunday near the team's lodging."
+    },
+    {
+      "id": "market-touch", "type": "etiquette", "theme": "out",
+      "title": "Let the vendor choose",
+      "text": "At a market stall the vendor usually picks and bags your fruit and vegetables: say what you want, or point. Serve yourself only if you see baskets or bags set out on your side of the stall. In small shops, ask before handling delicate things.",
+      "phrase": { "fr": "Je regarde seulement, merci", "gloss": "I'm just looking, thanks" },
+      "unit": "u6", "lesson": "u6-l2", "moment": "done",
+      "source": [
+        "https://misadventureswithandi.com/french-etiquette-at-the-market/",
+        "https://snippetsofparis.com/markets-in-france/",
+        "https://devourtours.com/blog/paris-market-tips/"
+      ]
+    },
+    {
+      "id": "queue", "type": "etiquette", "theme": "out",
+      "title": "Whose turn is it?",
+      "text": "At a bakery counter or market stall, people keep track of who came first even without a neat line. If you're not sure, ask C'est à qui ? or wave the other person ahead. Slipping in front is noticed, even if nobody says a word.",
+      "phrase": { "fr": "C'est à qui ?", "gloss": "Whose turn is it?", "extra": true },
+      "unit": "u6",
+      "source": [
+        "https://lafrance.com/french-cultural-etiquette/",
+        "https://www.connexionfrance.com/magazine/french-etiquette-guide-greetings-gifts-and-when-to-use-vous/606231"
+      ],
+      "review": "native", "reviewNote": "Is C'est à qui ? the natural question here (or C'est à qui le tour ?)? Not in the course yet."
+    },
+    {
+      "id": "numbers-format", "type": "fact", "theme": "out",
+      "title": "Commas, dates and 18 h 30",
+      "text": "Prices use a comma: 3,50 € is three euros fifty. Dates go day then month, so 03/12 is 3 December. Times use the 24-hour clock, written like 18 h 30 and read dix-huit heures trente.",
+      "phrase": { "fr": "Ça fait vingt euros", "gloss": "That comes to twenty euros" },
+      "unit": "u5", "lesson": "u5-l5", "moment": "done",
+      "source": [
+        "https://en.wikipedia.org/wiki/Date_and_time_notation_in_France",
+        "https://marketfinder.thinkwithgoogle.com/intl/en_us/guide/france-localisation-guide"
+      ]
+    },
+    {
+      "id": "volume", "type": "etiquette", "theme": "around",
+      "title": "Soft voices on the tram",
+      "text": "On trams, buses and in restaurants, people speak quietly, and a group of thirty-five Americans is hard to miss. Keep your voices low, let people off before you get on, and offer your seat to older people. Travel in small groups so you don't fill a whole car.",
+      "phrase": { "fr": "Pardon", "gloss": "Sorry (to squeeze past)" },
+      "unit": "u2", "lesson": "u2-l1", "moment": "done",
+      "odile": "Small groups and soft voices. The tram will thank you.",
+      "odileSass": "Thirty-five Americans on one tram? I can hear you from my chimney.",
+      "source": [
+        "https://cts-strasbourg.eu/en/getting-around/bus-tram-rules-and-regulations",
+        "https://lafrance.com/french-cultural-etiquette/",
+        "https://yourmileagemayvary.com/2026/09/18/french-etiquette-rules-tourists-break/"
+      ]
+    },
+    {
+      "id": "tram-validate", "type": "etiquette", "theme": "around",
+      "title": "Validate every time",
+      "text": "Validate your ticket at the machine on the tram platform before you board, and again each time you change lines. Inspectors check often, and an unvalidated ticket gets the same fine as no ticket: 60 euros on the CTS list at the time of writing.",
+      "phrase": { "fr": "Faut-il valider le ticket ?", "gloss": "Does the ticket need to be validated?" },
+      "unit": "u2", "lesson": "u2-l3", "moment": "done",
+      "odile": "Validate at the platform. Future you, facing an inspector, says merci.",
+      "odileSass": "Validate. Every. Time. Inspectors have better eyes than storks.",
+      "source": [
+        "https://cts-strasbourg.eu/en/faq/travel-legally/",
+        "https://www.cts-strasbourg.eu/en/faq/travel-legally/details/What-are-the-different-fixed-indemnity-amounts/"
+      ],
+      "review": "leader", "reviewNote": "Confirm the current fine and the team's ticket plan (group, day or multi-trip tickets)."
+    },
+    {
+      "id": "kehl-id", "type": "fact", "theme": "around",
+      "title": "Kehl is in Germany",
+      "text": "Tram D crosses the Rhine into Kehl, Germany. There is normally no passport check inside the Schengen area, but Germany has run border checks at times, so carry your passport or ID. Germany uses the euro too.",
+      "phrase": { "fr": "Est-ce que ce tram va à Kehl ?", "gloss": "Does this tram go to Kehl?" },
+      "unit": "u2",
+      "source": [
+        "https://www.thelocal.de/20181212/german-french-border-controls-tightened-as-shooting-suspect-on-the-loose",
+        "https://www.stuttgarter-zeitung.de/lokales/baden-wuerttemberg/apell-an-merz-beschwerde-ueber-grenzkontrollen-keine-antwort-fuer-kehl-und-strassburg-79127589.html"
+      ],
+      "review": "leader", "reviewNote": "Check whether German border checks are in force at the time of the trip."
+    },
+    {
+      "id": "pickpocket", "type": "etiquette", "theme": "around",
+      "title": "Crowds and pickpockets",
+      "text": "Phone and bag theft are common in crowded places: the Christmas market, the station, busy trams. Keep your phone in a front pocket, wear your bag in front and zipped, and don't leave a phone on a café table. Keep a photo of your passport, and the passport somewhere safe.",
+      "phrase": { "fr": "On m'a volé mon sac", "gloss": "Someone stole my bag" },
+      "unit": "u8", "lesson": "u8-l1", "moment": "done",
+      "source": [
+        "https://travel.state.gov/en/international-travel/travel-advisories/france.html",
+        "https://www.worldnomads.com/travel-safety/europe/france/crime-in-france"
+      ]
+    },
+    {
+      "id": "emergency", "type": "fact", "theme": "around",
+      "title": "112 and friends",
+      "text": "112 works from any phone across Europe. In France 15 is the SAMU (medical emergencies), 17 the police and 18 the fire brigade. Save your leader's number and the team's address before you need them.",
+      "phrase": { "fr": "Appelez le cent douze !", "gloss": "Call 112!" },
+      "unit": "u8", "lesson": "u8-l3", "moment": "done",
+      "source": [
+        "https://travel.state.gov/en/international-travel/travel-advisories/france.html"
+      ]
+    },
+    {
+      "id": "dress", "type": "etiquette", "theme": "around",
+      "title": "Neat, simple, covered for church",
+      "text": "Strasbourg dress is neat and simple: clean jeans, layers and comfortable shoes fit in almost everywhere. For churches, skip beachwear and very short shorts, take hats off inside, and carry a light scarf or layer for your shoulders. Ask your leader when to wear team T-shirts.",
+      "unit": "u10",
+      "source": [
+        "https://www.notredamedeparis.fr/en/?p=5081",
+        "https://www.islands.com/1956948/rick-steves-shares-clothing-mistake-avoid-europe-historic-churches-mosques-shorts-shoulders"
+      ],
+      "review": "leader", "reviewNote": "Team dress code for services, street outreach and visits; the cathedral's own rules were not found online."
+    },
+    {
+      "id": "money-privacy", "type": "etiquette", "theme": "homes",
+      "title": "Ask about life, not salary",
+      "text": "Asking what someone earns, what their flat cost or who they vote for can feel intrusive, especially with older people. Younger people talk about money more openly, but let them bring it up. Food, the city, travel, music and studies are easy topics.",
+      "phrase": { "fr": "Qu'est-ce que vous aimez faire ?", "gloss": "What do you like to do?" },
+      "unit": "u9", "lesson": "u9-l1", "moment": "done",
+      "source": [
+        "https://www.thelocal.fr/20221201/is-it-true-that-the-french-dont-like-to-talk-about-money",
+        "https://connexionfrance.com/practical/is-it-ever-ok-to-ask-your-colleagues-what-they-earn-in-france/697870",
+        "https://bonjourparis.com/lifestyle/french-etiquette-the-dos-and-the-donts-from-an-insiders-perspective/"
+      ]
+    },
+    {
+      "id": "invited-home", "type": "etiquette", "theme": "homes",
+      "title": "Invited to a home",
+      "text": "Arrive on time or a few minutes late, never early. Bring a small gift: flowers (not chrysanthemums, which are for graves), good chocolates or pastries; ask your leader before bringing wine. Wait for the host's Bon appétit, and expect a long meal with several courses.",
+      "phrase": { "fr": "Merci pour tout", "gloss": "Thanks for everything" },
+      "unit": "u9", "lesson": "u9-l2", "moment": "done",
+      "odile": "Flowers, yes. Chrysanthemums, no. Those are for cemeteries.",
+      "source": [
+        "https://www.trafalgar.com/real-word/french-customs/",
+        "https://www.polyglottistlanguageacademy.com/language-culture-travelling-blog/2025/8/23/cultural-dos-and-donts-for-visiting-a-french-friends-house",
+        "https://www.commeunefrancaise.com/blog/french-etiquette"
+      ],
+      "review": "native", "reviewNote": "Guides say 10 to 15 minutes late is normal for a home dinner; check what Alsatian hosts expect."
+    },
+    {
+      "id": "table-manners", "type": "etiquette", "theme": "homes",
+      "title": "Hands on the table",
+      "text": "At a French table, keep both hands resting on the table, not in your lap, and elbows off. Bread often sits right on the tablecloth beside your plate. Try a little of everything you're offered; C'est délicieux ! is always welcome.",
+      "phrase": { "fr": "C'est délicieux !", "gloss": "It is delicious!" },
+      "unit": "u3", "lesson": "u3-l2", "moment": "done",
+      "source": [
+        "https://www.talkinfrench.com/french-table-etiquette/",
+        "https://www.commeunefrancaise.com/blog/french-etiquette",
+        "https://frenchtoday.com/blog/mastering-french-table-etiquette"
+      ]
+    },
+    {
+      "id": "debate", "type": "fact", "theme": "homes",
+      "title": "Debate is a compliment",
+      "text": "Many French people enjoy discussing ideas and will disagree openly; a lively debate usually shows interest, not anger. Ask for their view, listen, and give yours honestly and kindly. Agreeing with everything can sound like you aren't really listening.",
+      "phrase": { "fr": "Qu'est-ce que vous en pensez ?", "gloss": "What do you think about it?" },
+      "unit": "u11", "lesson": "u11-l2", "moment": "done",
+      "source": [
+        "https://snippetsofparis.com/taboos/",
+        "https://bonjourparis.com/lifestyle/french-etiquette-the-dos-and-the-donts-from-an-insiders-perspective/"
+      ],
+      "review": "native", "reviewNote": "Check the tone: is this true of Alsatians, often described as more reserved?"
+    },
+    {
+      "id": "words-protestant", "type": "faith-context", "theme": "faith",
+      "title": "Protestant, évangélique, catholique",
+      "text": "In Alsace, protestant usually means the Lutheran and Reformed churches people know from their own towns. Évangélique is a real and growing part of French Protestantism, roughly a third of it, but some people hear it as a pushy American import. Nous sommes protestants, plus the name of your partner church, is accurate and reassuring.",
+      "phrase": { "fr": "Nous sommes protestants", "gloss": "We are Protestants" },
+      "unit": "u13", "lesson": "u13-l2", "moment": "intro",
+      "odile": "Say who you are and who you're with. It answers half the questions before they're asked.",
+      "source": [
+        "https://museeprotestant.org/en/notice/la-federation-protestante-de-france/",
+        "https://www.slate.fr/story/30535/evangeliques-fer-de-lance-du-protestantisme-en-france",
+        "https://www.rcf.fr/articles/actualite/pour-les-protestants-la-laicite-est-mal-comprise"
+      ],
+      "review": "both", "reviewNote": "How does the partner church describe itself (protestante, évangélique, libre, membre de la FPF)?"
+    },
+    {
+      "id": "permission-first", "type": "faith-context", "theme": "faith",
+      "title": "Ask first, accept no",
+      "text": "Ask before any faith topic, say how long you need, and make no an easy answer. Never follow someone, block their way or ask again after a no. If someone is open, ask questions and listen more than you talk.",
+      "phrase": { "fr": "Vous pouvez dire non", "gloss": "You can say no" },
+      "unit": "u12", "lesson": "u12-l2", "moment": "intro",
+      "odile": "Ask first, then listen. A kind Pas de problème can say more than a long speech.",
+      "source": [
+        "https://www.macsf.fr/responsabilite-professionnelle/relation-au-patient-et-deontologie/derives-sectaires-en-sante-forte-augmentation-entre-2022-et-2024",
+        "https://www.savoie.gouv.fr/contenu/telechargement/45505/369317/file/Charte%20de%20la%20laicite.pdf"
+      ],
+      "review": "leader", "reviewNote": "Align with the team's outreach guidelines and the partner church's practice."
+    },
+    {
+      "id": "laicite", "type": "faith-context", "theme": "faith",
+      "title": "Laïcité in plain words",
+      "text": "Laïcité means the state is neutral about religion and protects everyone's freedom to believe or not. Public servants and state schools stay neutral, but private people may talk about faith, pray and invite, as long as they don't disturb public order. Many French people still see faith as a private matter.",
+      "phrase": { "fr": "Je respecte votre point de vue", "gloss": "I respect your point of view" },
+      "unit": "u12", "lesson": "u12-l1", "moment": "intro",
+      "odile": "Freedom to believe, freedom not to. Respect both and people will listen.",
+      "source": [
+        "https://www.savoie.gouv.fr/contenu/telechargement/45505/369317/file/Charte%20de%20la%20laicite.pdf",
+        "https://cdg14.fr/system/files/2024-08/laicite-et-service-public.pdf",
+        "https://www.seban-associes.avocat.fr/wp-content/uploads/2020/02/Lapplication-du-principe-de-la%C3%AFcit%C3%A9-par-les-collectivit%C3%A9s-f%C3%A9v-mars2020-1.pdf"
+      ],
+      "review": "leader", "reviewNote": "Check against any local rules for street outreach (permits for stands, leaflets) with the partner church."
+    },
+    {
+      "id": "secte", "type": "faith-context", "theme": "faith",
+      "title": "Why secte is a heavy word",
+      "text": "In French, une secte means a manipulative cult, and the state runs an agency, the MIVILUDES, that tracks cult-like abuse. Strangers who bring up religion in the street can be mistaken for one. Naming a local church, keeping it short and never pressing for personal details makes the difference.",
+      "phrase": { "fr": "Nous aidons une église de Strasbourg", "gloss": "We are helping a church in Strasbourg" },
+      "unit": "u4", "lesson": "u4-l1", "moment": "intro",
+      "source": [
+        "https://www.gendarmerie.interieur.gouv.fr/gendinfo/actualites/2024/une-campagne-de-sensibilisation-et-de-prevention-contre-les-derives-sectaires",
+        "https://www.publicsenat.fr/article/politique/la-mission-anti-sectes-au-front-contre-la-radicalisation-51686",
+        "https://www.macsf.fr/responsabilite-professionnelle/relation-au-patient-et-deontologie/les-derives-sectaires-en-france"
+      ],
+      "review": "both", "reviewNote": "How should the team answer Vous êtes une secte ? in the partner church's own words?"
+    },
+    {
+      "id": "secular-majority", "type": "faith-context", "theme": "faith",
+      "title": "Half say no religion",
+      "text": "In a large national survey (INSEE and INED, 2019 to 2020), 51% of adults aged 18 to 59 in mainland France said they had no religion; 29% said Catholic and 10% Muslim. Many people were baptized but rarely go to church. Je ne suis pas religieux is a normal answer, not a closed door.",
+      "phrase": { "fr": "Je ne suis pas religieux", "gloss": "I'm not religious" },
+      "unit": "u4", "lesson": "u4-l3", "moment": "intro",
+      "odile": "A no is not the end of a friendship. Ask what matters to them instead.",
+      "source": [
+        "https://www.insee.fr/fr/statistiques/6793308",
+        "https://www.insee.fr/en/statistiques/fichier/7342918/IMMFRA23-D2-en.pdf",
+        "https://www.ined.fr/fr/tout-savoir-population/focus-sur/religion-en-france"
+      ]
+    },
+    {
+      "id": "proselytisme", "type": "faith-context", "theme": "faith",
+      "title": "Prosélytisme sounds like pressure",
+      "text": "In French, prosélytisme usually sounds negative: pushing a religion on people. Talk about partager (sharing) or parler de ma foi instead. If someone says you are doing prosélytisme, thank them, apologize for any pressure and step back.",
+      "phrase": { "fr": "Je peux vous parler de ma foi ?", "gloss": "Can I tell you about my faith?" },
+      "unit": "u15", "lesson": "u15-l1", "moment": "intro",
+      "source": [
+        "https://www.universalis.fr/encyclopedie/apotres-et-apostolat/3-nature-de-l-apostolat/",
+        "https://www.schoolmouv.fr/definitions/proselytisme/definition",
+        "https://www.lalanguefrancaise.com/dictionnaire/definition/proselytiste"
+      ],
+      "review": "both", "reviewNote": "Confirm the connotation and the suggested wording (partager, parler de ma foi)."
+    },
+    {
+      "id": "other-beliefs", "type": "faith-context", "theme": "faith",
+      "title": "Many faiths, much in common",
+      "text": "Many people in Alsace grew up Catholic or Lutheran, and Strasbourg also has large Muslim and Jewish communities. Treat a Catholic or Lutheran as a fellow Christian, not someone to win over, and ask people of other faiths about their beliefs with real interest. Start from what you share.",
+      "phrase": { "fr": "Je suis catholique", "gloss": "I'm Catholic" },
+      "unit": "u16", "lesson": "u16-l2", "moment": "intro",
+      "source": [
+        "https://www.insee.fr/fr/statistiques/6793308",
+        "https://jguideeurope.org/?p=4884",
+        "https://www.kas.de/es/web/suedbaden/veranstaltungen/detail/-/content/juedisches-und-muslimisches-gemeindeleben-in-strassburg"
+      ],
+      "review": "leader", "reviewNote": "The team's stance on conversations with Catholics, Lutherans, Muslims and Jews."
+    },
+    {
+      "id": "church-hurt", "type": "faith-context", "theme": "faith",
+      "title": "When church has hurt",
+      "text": "In 2021 an independent commission (CIASE) estimated that about 216,000 children had been abused by Catholic clergy and religious in France since 1950. Many French people know this report, and some carry painful stories of their own. Listen, believe them, and don't defend the institution or explain the pain away.",
+      "phrase": { "fr": "Je suis là pour écouter", "gloss": "I'm here to listen" },
+      "unit": "u16", "lesson": "u16-l3", "moment": "intro",
+      "source": [
+        "https://www.ciase.fr/medias/Ciase-Rapport-5-octobre-2021-Resume.pdf",
+        "https://www.vaticannews.va/fr/eglise/news/2022-10/france-abus-sexuels-mineurs-rapport-commission-sauve.html"
+      ],
+      "review": "leader", "reviewNote": "Sensitive: decide whether to cite the figure, and how leaders want disclosures of abuse handled."
+    },
+    {
+      "id": "prayer-public", "type": "faith-context", "theme": "faith",
+      "title": "Praying with someone in public",
+      "text": "Praying with someone in a café or a park is allowed, as long as it doesn't disturb others. Keep it short and quiet, eyes open, and never touch someone or pray over them without asking. Step aside so you don't block a path or a shop door.",
+      "phrase": { "fr": "Vous pouvez garder les yeux ouverts", "gloss": "You can keep your eyes open" },
+      "unit": "u18", "lesson": "u18-l2", "moment": "intro",
+      "source": [
+        "https://www.savoie.gouv.fr/contenu/telechargement/45505/369317/file/Charte%20de%20la%20laicite.pdf"
+      ],
+      "review": "leader", "reviewNote": "Team guidance on public prayer, touch and laying on of hands."
+    },
+    {
+      "id": "contact-data", "type": "faith-context", "theme": "faith",
+      "title": "First names only",
+      "text": "Under European data law (RGPD in French), information that reveals someone's religious beliefs is especially sensitive. Write down a first name only, with permission, never keep lists of people you met, and offer the local church's contact instead of collecting theirs.",
+      "phrase": { "fr": "Je peux noter votre prénom ?", "gloss": "Can I write down your first name?" },
+      "unit": "u18", "lesson": "u18-l3", "moment": "intro",
+      "source": [
+        "https://www.cnil.fr/en/cnil-direct/question/1823",
+        "https://www.conseil-etat.fr/fr/arianeweb/CE/decision/2024-02-02/461093"
+      ],
+      "review": "leader", "reviewNote": "Agree a follow-up process with the partner church (who keeps contacts, and how)."
+    },
+    {
+      "id": "cathedral-visit", "type": "etiquette", "theme": "faith",
+      "title": "Visiting a working church",
+      "text": "The cathedral is a working Catholic church with daily masses. Speak softly, silence your phone, take hats off, and during a service keep to the back or come back later. Follow posted signs about photos, and never photograph people praying up close.",
+      "unit": "u10",
+      "source": [
+        "https://www.frommers.com/destinations/strasbourg/attractions/cathdrale-notre-dame-de-strasbourg/",
+        "https://www.fodors.com/community/europe/cathedrals-280055-printthread"
+      ],
+      "review": "leader", "reviewNote": "Check the cathedral's current visiting rules and mass times before the visit."
+    },
+    {
+      "id": "cathedral", "type": "history", "theme": "history",
+      "title": "The cathedral",
+      "text": "Built of pink Vosges sandstone and finished in 1439, the cathedral's 142-metre spire made it the tallest building in the world from 1647 to 1874. After the Reformation it served Protestant worship, until Louis XIV returned it to the Catholic Church in 1681.",
+      "phrase": { "fr": "Où est la cathédrale ?", "gloss": "Where is the cathedral?" },
+      "unit": "u10", "lesson": "u10-l1", "moment": "done",
+      "odile": "142 metres. I've landed on it. Don't tell the cathedral staff.",
+      "source": [
+        "https://en.wikipedia.org/wiki/Strasbourg_Cathedral",
+        "https://itinerairesprotestants.fr/en/tours/strasbourg-1",
+        "https://www.francethisway.com/places/strasbourg-cathedral.php"
+      ],
+      "review": "leader", "reviewNote": "Sources give 1524, 1527 or 1529 for the start of Protestant use; the text avoids a single date."
+    },
+    {
+      "id": "reformation", "type": "history", "theme": "history",
+      "title": "A Reformation city",
+      "text": "From the 1520s Strasbourg became a leading Protestant city on the Rhine. Preachers such as Matthäus Zell, Martin Bucer and Wolfgang Capito taught salvation by grace through faith, and in 1529 the city council abolished the mass. Bucer spent his life trying to keep Protestants united.",
+      "phrase": { "fr": "La grâce", "gloss": "Grace" },
+      "unit": "u17", "lesson": "u17-l1", "moment": "intro",
+      "source": [
+        "https://museeprotestant.org/en/notice/the-reformation-in-alsace/",
+        "https://capito.itergateway.org/page2.html",
+        "https://tudorsociety.com/martin-bucer-a-reformer-who-wanted-peace/"
+      ],
+      "review": "leader", "reviewNote": "One older source gives 1528 for the abolition of the mass; most give 1529."
+    },
+    {
+      "id": "katharina-zell", "type": "history", "theme": "history",
+      "title": "Katharina Zell",
+      "text": "Katharina Schütz married the preacher Matthäus Zell in 1523, one of the first pastors' marriages of the Reformation. She wrote a widely read defence of clerical marriage, published hymn books and took in refugees fleeing persecution. She is remembered as a reformer in her own right.",
+      "unit": "u17",
+      "source": [
+        "https://en.wikipedia.org/wiki/Katharina_Zell",
+        "https://www.worldhistory.org/Katharina_Zell/"
+      ]
+    },
+    {
+      "id": "calvin", "type": "history", "theme": "history",
+      "title": "Calvin's Strasbourg years",
+      "text": "John Calvin lived in Strasbourg from 1538 to 1541, pastoring a church of French-speaking refugees and staying with Martin Bucer's family. Here he wrote his commentary on Romans, expanded his Institutes and married Idelette de Bure, a widow from his congregation.",
+      "phrase": { "fr": "Romains, chapitre trois, verset vingt-trois", "gloss": "Romans 3:23, read aloud" },
+      "unit": "u14", "lesson": "u14-l2", "moment": "intro",
+      "source": [
+        "https://christianhistoryinstitute.org/magazine/article/idelette-john-calvins-search-for-the-right-wife",
+        "https://www.worldhistory.org/John_Calvin/.md",
+        "https://learn.ligonier.org/articles/who-was-martin-bucer"
+      ]
+    },
+    {
+      "id": "gutenberg", "type": "history", "theme": "history",
+      "title": "Gutenberg in Strasbourg",
+      "text": "Johannes Gutenberg lived in Strasbourg from about 1434 to 1444. Court records from 1439 mention a secret project and a press, though historians debate whether he printed anything here. His famous Bible was printed later in Mainz; a statue on Place Gutenberg remembers his Strasbourg years.",
+      "phrase": { "fr": "La Bible", "gloss": "The Bible" },
+      "unit": "u14", "lesson": "u14-l1", "moment": "intro",
+      "source": [
+        "https://www.gutenberg-gesellschaft.de/en/johannes-gutenberg/gutenberg-in-strasbourg/",
+        "https://www.mainz.de/medien/internet/downloads/Gutenberg-Pfad-Mainz-englisch.pdf",
+        "https://en.wikipedia.org/wiki/Johannes_Gutenberg"
+      ]
+    },
+    {
+      "id": "concordat", "type": "history", "theme": "history",
+      "title": "Alsace's own church law",
+      "text": "The 1905 law separating churches and state never applied in Alsace and Moselle, which were German at the time. The older concordat system stayed: Catholic, Lutheran, Reformed and Jewish clergy are paid by the state, and public schools offer religion classes that families can opt out of. Opinions about it differ, so ask before you assume.",
+      "phrase": { "fr": "Le pasteur", "gloss": "The pastor" },
+      "unit": "u13", "lesson": "u13-l1", "moment": "intro",
+      "source": [
+        "https://www.eurojuris.fr/articles/la-preservation-du-regime-concordataire-en-alsace-moselle-par-les-sages-de-la-rue-montpensier-1847.htm",
+        "https://questions.assemblee-nationale.fr/dyn/11/questions/QANR5L11QE31256.pdf",
+        "https://www.assemblee-nationale.fr/dyn/15/questions/QANR5L15QE4739.pdf"
+      ],
+      "review": "leader", "reviewNote": "Free and evangelical churches are outside the concordat; check how the partner church fits."
+    },
+    {
+      "id": "saint-thomas", "type": "history", "theme": "history",
+      "title": "The Protestant cathedral",
+      "text": "Saint-Thomas, nicknamed the Protestant cathedral, became Strasbourg's main Lutheran church after 1681. Martin Bucer preached here, and Mozart played its Silbermann organ in 1778. Concerts in churches like this one are an easy first visit with a new friend.",
+      "unit": "u10",
+      "source": [
+        "https://museeprotestant.org/en/notice/saint-thomas",
+        "https://itinerairesprotestants.fr/en/sit-to-visit/strasbourg-c"
+      ]
+    },
+    {
+      "id": "alsace-history", "type": "history", "theme": "history",
+      "title": "French, German, French again",
+      "text": "Alsace changed countries several times: German from 1871 to 1918, French again after the First World War, then annexed in practice by Nazi Germany from 1940 to 1944, when local men were forced into the German army (the malgré-nous). This history is personal for many families, so ask with care and never joke that Alsatians are German.",
+      "phrase": { "fr": "Les panneaux sont en deux langues", "gloss": "The signs are in two languages" },
+      "unit": "u10", "lesson": "u10-l3", "moment": "done",
+      "source": [
+        "https://museeprotestant.org/en/notice/alsace-from-1871-to-1918/",
+        "https://snl.no/Alsace-Lorraine_-_historie",
+        "https://thecollector.com/alsace-ww2-french-province"
+      ],
+      "review": "native", "reviewNote": "Tone check by an Alsatian: how to raise the malgré-nous respectfully, if at all."
+    },
+    {
+      "id": "petite-france", "type": "history", "theme": "history",
+      "title": "Petite France",
+      "text": "Petite France was the quarter of tanners, millers and fishermen, where the Ill splits into canals. Its name probably comes from a 16th-century hospital for people with syphilis, then nicknamed the French disease. The old town around it, the Grande Île, has been a UNESCO World Heritage site since 1988.",
+      "phrase": { "fr": "La Petite France est magnifique", "gloss": "Petite France is gorgeous" },
+      "unit": "u2", "lesson": "u2-l4", "moment": "done",
+      "source": [
+        "https://en.wikipedia.org/wiki/Petite_France,_Strasbourg",
+        "https://voicemap.me/tour/strasbourg/cobblestones-and-cathedrals-a-tour-of-strasbourg-s-grand-ile/sites/la-petite-france-2",
+        "https://www.strasbourg.eu/fr/label-patrimoine-mondial-unesco"
+      ],
+      "review": "native", "reviewNote": "Sources disagree on the hospital's date and history; the name origin is the common account."
+    },
+    {
+      "id": "grande-ile", "type": "fact", "theme": "history",
+      "title": "An island city",
+      "text": "The old town sits on an island, the Grande Île, ringed by the Ill and a canal and linked by about 21 bridges. In 2017 UNESCO added the Neustadt, the grand district built under German rule after 1871, so the listing shows the city's French and German sides together.",
+      "unit": "u10",
+      "source": [
+        "https://int.strasbourg.eu/unesco-world-heritage",
+        "https://whc.unesco.org/document/159766"
+      ]
+    },
+    {
+      "id": "european", "type": "fact", "theme": "history",
+      "title": "A capital of Europe",
+      "text": "Strasbourg is the official seat of the European Parliament and home to the Council of Europe and the European Court of Human Rights. The Council of Europe chose it in 1949 as a symbol of reconciliation after centuries of French-German conflict. You will hear many languages on the tram.",
+      "phrase": { "fr": "Strasbourg est une ville européenne", "gloss": "Strasbourg is a European city" },
+      "unit": "u10",
+      "source": [
+        "https://int.strasbourg.eu/european-institutions-and-international-organisations",
+        "https://www.cvce.eu/content/publication/2004/9/30/14542187-89fd-47b0-9ab0-7f92c4f4980e/publishable_en.pdf"
+      ]
+    },
+    {
+      "id": "storks", "type": "alsace", "theme": "alsace",
+      "title": "Why a stork?",
+      "text": "The white stork, la cigogne, is the symbol of Alsace. By the mid-1970s fewer than ten breeding pairs were left, and a breeding programme that began at Strasbourg's Orangerie park helped bring them back. Today hundreds of pairs nest on Alsatian roofs and chimneys.",
+      "unit": "u0", "lesson": "u0-l1", "moment": "done",
+      "odile": "Yes, that's my family. Nearly gone in the 1970s, and now on every chimney. Comebacks are a stork specialty.",
+      "source": [
+        "https://www.nationalgeographic.com/adventure/article/150721-alsace-france-storks-conservation-birds",
+        "https://enjoystrasbourg.com/storks-strasbourg",
+        "https://francetravelplanner.com/go/alsace/storks.html"
+      ]
+    },
+    {
+      "id": "alsatian-greetings", "type": "alsace", "theme": "alsace",
+      "title": "Salü! A little Alsatian",
+      "text": "Alsatian (alsacien) is a Germanic dialect; in a 2012 survey 43% of adults in Alsace said they spoke it well, most of them older. Try Salü (hi or bye), Güete Morje (good morning) and Merci vielmols (thanks a lot). Spellings vary from village to village, and people enjoy being asked.",
+      "phrase": { "fr": "Comment dit-on merci en alsacien ?", "gloss": "How do you say thank you in Alsatian?" },
+      "unit": "u1", "lesson": "u1-l4", "moment": "done",
+      "odile": "Salü! Say it at the market and watch someone light up.",
+      "source": [
+        "https://olcalsace.org/sites/default/files/documents/etude_linguistique_olca_edinstitut.pdf",
+        "https://www.education.gouv.fr/bo/BoAnnexes/2003/hs2/alsace_mosellans1.pdf",
+        "https://omniglot.com/language/phrases/alsatian.php"
+      ],
+      "review": "native", "reviewNote": "Pronunciation and spelling of Salü, Güete Morje and Merci vielmols in Strasbourg."
+    },
+    {
+      "id": "christmas-market", "type": "alsace", "theme": "alsace",
+      "title": "The Christkindelsmärik",
+      "text": "Strasbourg's Christmas market dates to 1570, when the Protestant city replaced the Saint Nicholas fair with a market named after the Christ child. It is often called the oldest Christmas market in France. Drinks come in a deposit mug, and the crowds are huge, so watch your bags.",
+      "phrase": { "fr": "Où est le marché de Noël ?", "gloss": "Where is the Christmas market?" },
+      "unit": "u10", "lesson": "u10-l2", "moment": "done",
+      "odile": "Since 1570! I've been going for a while myself.",
+      "source": [
+        "https://noel.strasbourg.eu/en/culture-et-traditions",
+        "https://www.connexionfrance.com/article/Mag/French-Facts/Did-you-know-Strasbourg-was-France-s-first-Christmas-market",
+        "https://frenchmoments.eu/christkind-and-christkindel/"
+      ]
+    },
+    {
+      "id": "winstub", "type": "alsace", "theme": "alsace",
+      "title": "Winstub classics",
+      "text": "A winstub (wine room) is a cosy Alsatian tavern serving hearty regional food. Try tarte flambée (flammekueche), choucroute, baeckeoffe (meats and potatoes slow-baked in a sealed dish) and kougelhopf, a tall cake with raisins. Many dishes contain pork or bacon, so ask if you need to.",
+      "phrase": { "fr": "Est-ce qu'il y a du porc ?", "gloss": "Is there pork in it?" },
+      "unit": "u3", "lesson": "u3-l4", "moment": "done",
+      "source": [
+        "https://www.visitstrasbourg.fr/?p=75523",
+        "https://guide.michelin.com/fr/fr/best-of/les-meilleures-winstubs-a-strasbourg-et-dans-les-environs",
+        "https://tablejourney.com/france/strasbourg/signature-dishes/"
+      ]
+    },
+    {
+      "id": "holidays", "type": "alsace", "theme": "alsace",
+      "title": "Two extra holidays",
+      "text": "Alsace and Moselle keep two public holidays the rest of France doesn't: Good Friday (Vendredi saint) and Saint Stephen's Day on 26 December. They come from the German-era law of 1892 and were kept after 1918. Good Friday is a holiday in towns that have a Protestant or mixed church.",
+      "unit": "u5",
+      "source": [
+        "https://questions.assemblee-nationale.fr/dyn/11/questions/QANR5L11QE67970.pdf",
+        "https://payfit.com/fr/fiches-pratiques/jours-feries-alsace/",
+        "https://www.journaldunet.com/management/vie-personnelle/1538103-cd1-2-jours-feries-region/"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-bonjour-bakery", "card": "bonjour-rule",
+      "scenario": "You walk into a small bakery. The baker is busy serving someone else. What do you do first?",
+      "options": ["Say “Bonjour, madame” as you come in, then wait", "Wait quietly until she looks up, then order", "Point at what you want so you don't interrupt"],
+      "answer": 0,
+      "explain": "In small shops the greeting comes first, even when the person is busy. Ordering without Bonjour comes across as rude, however polite the rest is.",
+      "fact": "Many people switch to Bonsoir in the evening; there is no exact hour."
+    },
+    {
+      "id": "q-goodbye-pharmacy", "card": "bonjour-rule",
+      "scenario": "You've paid for cough drops at a pharmacy and turn to leave. What's the most natural goodbye?",
+      "options": ["“Salut, bonne journée !”", "“Merci, au revoir !”", "A smile and a nod: you're done"],
+      "answer": 1,
+      "explain": "A polite thanks and goodbye closes the exchange. Salut is for friends, and leaving in silence feels abrupt.",
+      "fact": "Bonne journée is a warm extra: Merci, au revoir, bonne journée !"
+    },
+    {
+      "id": "q-vous-stranger", "card": "vous-default",
+      "scenario": "You need help from an older man at a tram stop. Which sounds right?",
+      "options": ["“Tu peux m'aider ?”", "“Aide-moi, s'il te plaît.”", "“Pouvez-vous m'aider ?”"],
+      "answer": 2,
+      "explain": "Strangers and older people get vous. The other two use tu, which sounds overfamiliar from a young stranger.",
+      "fact": "Vous is also the plural: use it for any group, even of friends."
+    },
+    {
+      "id": "q-tu-student", "card": "tu-switch",
+      "scenario": "At a youth evening, a French student your age asks “Tu viens d'où ?”. How do you answer?",
+      "options": ["Answer with tu as well", "Keep using vous to stay extra polite", "Use vous, then ask if tu is okay"],
+      "answer": 0,
+      "explain": "When someone your age uses tu, answering with tu is friendly. Sticking to vous can sound distant.",
+      "fact": "People propose the switch with On se tutoie ?"
+    },
+    {
+      "id": "q-tu-older", "card": "tu-switch",
+      "scenario": "You've now met the pastor's wife, about 50, three times. She still says vous to you. What do you do?",
+      "options": ["Switch to tu, since you know each other now", "Keep using vous unless she suggests tu", "Use tu but add madame to stay polite"],
+      "answer": 1,
+      "explain": "With an older adult, the older person offers tu. Switching on your own can feel too familiar.",
+      "fact": "Being invited to say tu is a small sign of friendship."
+    },
+    {
+      "id": "q-bise-how", "card": "la-bise",
+      "scenario": "A French student you're introduced to at a church lunch leans in for la bise. What's the right way?",
+      "options": ["Kiss her cheek properly with your lips", "Give her a warm hug instead, with a pat on the back to be friendly", "Touch cheeks lightly, usually twice, as she does"],
+      "answer": 2,
+      "explain": "La bise is a light touch of cheeks with a kiss sound, not a real kiss or a hug. Follow her lead on the side and the count.",
+      "fact": "Two is the most common count in France; some southern areas do three or four."
+    },
+    {
+      "id": "q-bise-market", "card": "la-bise",
+      "scenario": "At a market stall, the vendor greets you warmly with “Bonjour !”. What fits?",
+      "options": ["Bonjour back with a smile, no bise or handshake", "La bise, since market vendors are friendly and expect it", "A handshake across the stall"],
+      "answer": 0,
+      "explain": "With shop staff and vendors a spoken Bonjour is all that's expected. La bise is for friends and people you're introduced to socially.",
+      "fact": "Adding madame or monsieur makes it warmer."
+    },
+    {
+      "id": "q-handshake-group", "card": "handshake",
+      "scenario": "You arrive at a small home Bible study with eight adults already sitting down. What's most polite?",
+      "options": ["Wave to the room and take the empty seat", "Greet each person, one by one, as they do", "Sit down, and introduce yourself at the end"],
+      "answer": 1,
+      "explain": "In small groups people usually greet each person individually, with a handshake or as the others do. A wave to the room can feel cold.",
+      "fact": "People often do the same round of goodbyes when they leave."
+    },
+    {
+      "id": "q-english-directions", "card": "start-in-french",
+      "scenario": "You're lost and want directions from a passer-by. How do you start?",
+      "options": ["“Excuse me, do you speak English?”", "“Hi! Sorry, where is Place Kléber? We are a bit lost.”", "“Bonjour ! Excusez-moi, parlez-vous anglais ?”"],
+      "answer": 2,
+      "explain": "Starting in French, with Bonjour, shows respect, and people are more willing to help. Opening in English assumes they will switch for you.",
+      "fact": "Place Kléber is the main square, a short walk from the Homme de Fer tram stop."
+    },
+    {
+      "id": "q-cafe-order", "card": "cafe-terrasse",
+      "scenario": "You sit down on a café terrace and want to order, but the server is busy. What do you do?",
+      "options": ["Wait, then catch their eye and say “S'il vous plaît”", "Go inside and order at the bar yourself", "Raise your hand high and snap your fingers so they see you"],
+      "answer": 0,
+      "explain": "At a table you order through the server; ordering at the bar confuses who serves you and what you pay. Eye contact and S'il vous plaît is the polite signal.",
+      "fact": "A coffee is often cheaper standing at the counter (au comptoir) than on the terrace."
+    },
+    {
+      "id": "q-bill-wait", "card": "bill-ask",
+      "scenario": "You finished dinner 20 minutes ago and the server hasn't brought the bill. What's going on?",
+      "options": ["The server is ignoring your table", "In France the bill comes when you ask for it", "You're expected to go and pay at the bar"],
+      "answer": 1,
+      "explain": "Bringing the bill unasked would look like rushing you out. Say L'addition, s'il vous plaît when you are ready.",
+      "fact": "Lingering over coffee after a meal is completely normal."
+    },
+    {
+      "id": "q-bill-split", "card": "bill-ask",
+      "scenario": "Your group of twelve wants to pay separately at a busy restaurant. When should you ask?",
+      "options": ["Before ordering", "When you ask for the bill", "Never: one person pays and the others pay back later"],
+      "answer": 0,
+      "explain": "Many restaurants prefer one bill per table. Asking early lets them plan, or lets you plan to settle it among yourselves.",
+      "fact": "Est-ce qu'on peut payer séparément ? is the phrase from the café unit."
+    },
+    {
+      "id": "q-tip", "card": "tipping",
+      "scenario": "Your café bill says “service compris”. What's normal?",
+      "options": ["Add 18 to 20 percent, as at home", "Ask the server politely how much tip is expected here", "Tip is optional: round up if you liked it"],
+      "answer": 2,
+      "explain": "Service compris means service is already in the price. A little extra is a kind gesture, not an obligation.",
+      "fact": "If a card machine offers tip options, choosing none is fine."
+    },
+    {
+      "id": "q-meal-late", "card": "meal-times",
+      "scenario": "Your team wants a sit-down restaurant lunch at 15:00. What's likely?",
+      "options": ["Many kitchens are closed until the evening", "Most restaurants serve lunch until 16:00", "It's the best time: restaurants are empty"],
+      "answer": 0,
+      "explain": "Lunch service usually ends around 14:00, and dinner starts around 19:00 or 19:30. Look for service continu, a bakery or a snack stand.",
+      "fact": "Schedules use the 24-hour clock: 15:00 is quinze heures."
+    },
+    {
+      "id": "q-sunday", "card": "sunday-closing",
+      "scenario": "You need picnic supplies for Sunday in Strasbourg. What's the best plan?",
+      "options": ["Go to the supermarket on Sunday morning", "Buy everything on Saturday", "Ask a café to sell you groceries on Sunday"],
+      "answer": 1,
+      "explain": "Alsace's local law makes Sunday closing stricter than elsewhere in France, so most shops are shut. Saturday is the safe bet.",
+      "fact": "Some shops are allowed to open on the Sundays before Christmas."
+    },
+    {
+      "id": "q-holiday", "card": "holidays",
+      "scenario": "Your trip includes Good Friday. A friend in Paris says it's a normal working day there. And in Strasbourg?",
+      "options": ["Same as Paris: everything is open", "Only churches and schools close; shops stay open", "It's a public holiday, so expect closures"],
+      "answer": 2,
+      "explain": "Good Friday and 26 December are public holidays in Alsace and Moselle, a legacy of the German-era law.",
+      "fact": "The rule covers towns with a Protestant or mixed church."
+    },
+    {
+      "id": "q-market-apples", "card": "market-touch",
+      "scenario": "At a market stall you'd like four apples, and there are no baskets on your side. What do you do?",
+      "options": ["Say Bonjour, ask for four and let the vendor choose", "Choose the four best ones yourself and hand them to the vendor", "Gently squeeze a few to find ripe ones"],
+      "answer": 0,
+      "explain": "The vendor usually picks and bags produce for you. Handling the fruit yourself can annoy them unless self-service is clearly set up.",
+      "fact": "Saying when you'll eat them helps the vendor choose ripe ones."
+    },
+    {
+      "id": "q-queue", "card": "queue",
+      "scenario": "You and two other people reach the bakery counter at the same moment. What's polite?",
+      "options": ["Order quickly before they start", "Wait silently and let the baker decide", "Ask “C'est à qui ?” or wave them ahead"],
+      "answer": 2,
+      "explain": "People keep track of whose turn it is. Asking or offering the turn is polite; jumping in is noticed.",
+      "fact": "Even in a busy shop, Bonjour comes before your order."
+    },
+    {
+      "id": "q-numbers", "card": "numbers-format",
+      "scenario": "A shop sign reads “9 h 30 - 18 h 30” and a price tag says “3,50 €”. What do they mean?",
+      "options": ["Open 9:30 am to 6:30 pm; three euros fifty", "Open 9:30 to 6:30, am or pm unclear; 350 euros", "Open 9:30 am to 8:30 pm; three euros five"],
+      "answer": 0,
+      "explain": "French times use the 24-hour clock, so 18 h 30 is 6:30 pm. The comma is the decimal mark: 3,50 € is three euros fifty.",
+      "fact": "Dates go day first: 03/12 is 3 December."
+    },
+    {
+      "id": "q-tram-group", "card": "volume",
+      "scenario": "Fifteen of you board a busy tram after a fun evening. What's best?",
+      "options": ["Stay together by the doors so nobody gets lost", "Spread out, keep voices low and let people off first", "Keep chatting normally: French people like a lively, happy group"],
+      "answer": 1,
+      "explain": "People speak quietly on public transport, and a big group by the doors blocks everyone. Smaller groups and soft voices fit in.",
+      "fact": "Offering your seat to older passengers is expected and appreciated."
+    },
+    {
+      "id": "q-tram-validate", "card": "tram-validate",
+      "scenario": "You bought a tram ticket at the platform machine. When do you validate it?",
+      "options": ["Only if an inspector asks to see it", "Once a day, the first time you ride, then it stays valid all day", "Before boarding, and again at each change of line"],
+      "answer": 2,
+      "explain": "CTS asks you to validate at the platform before each boarding, including transfers. An unvalidated ticket gets the same fine as no ticket.",
+      "fact": "The fine on CTS's list was 60 euros at the time of writing."
+    },
+    {
+      "id": "q-kehl", "card": "kehl-id",
+      "scenario": "On a free afternoon you take tram D to Kehl in Germany. What should you bring?",
+      "options": ["Your passport or ID, and a valid ticket", "Just a ticket: borders inside Europe are never checked", "Euros changed into German currency"],
+      "answer": 0,
+      "explain": "There's normally no passport check inside Schengen, but Germany has run checks at times. Germany uses the euro too.",
+      "fact": "Kehl is only a short tram ride from the centre of Strasbourg."
+    },
+    {
+      "id": "q-phone-market", "card": "pickpocket",
+      "scenario": "You're at a crowded Christmas market table with a hot drink. Where's your phone safest?",
+      "options": ["On the table, where you can see it", "In a front pocket or a zipped bag", "In your back pocket"],
+      "answer": 1,
+      "explain": "Phones on café tables and in back pockets are easy targets in crowds. Front pockets and zipped bags worn in front are safest.",
+      "fact": "Keep a photo of your passport on your phone, and the passport somewhere safe."
+    },
+    {
+      "id": "q-emergency", "card": "emergency",
+      "scenario": "Someone in your group collapses in the street. Which number do you call first?",
+      "options": ["17, the line for hospitals", "Your trip leader, before anything else", "112, or 15 for the SAMU"],
+      "answer": 2,
+      "explain": "112 works from any phone in Europe, and 15 is the SAMU, the medical emergency service. 17 is the police; call your leader once help is on the way.",
+      "fact": "18 is the fire brigade; 17 is the police."
+    },
+    {
+      "id": "q-dress-church", "card": "dress",
+      "scenario": "After a hot afternoon, your team heads straight to a church. What fits?",
+      "options": ["Tank tops are fine: it's a tourist site", "A light layer over your shoulders; hats off inside", "Shorts and caps are fine, as long as everyone stays quiet inside"],
+      "answer": 1,
+      "explain": "Churches are places of worship first. Covered shoulders, no beachwear and no hats inside show respect.",
+      "fact": "A light scarf or shirt in your bag solves it in seconds."
+    },
+    {
+      "id": "q-mass-visit", "card": "cathedral-visit",
+      "scenario": "You arrive at the cathedral just as a mass is starting. What do you do?",
+      "options": ["Stay at the back quietly, or come back after the service", "Walk around the side aisles quickly while it's on", "Take a few quick photos of the altar, but without the flash on"],
+      "answer": 0,
+      "explain": "During a service the cathedral is a church at worship, not a museum. Stay at the back or return later.",
+      "fact": "The astronomical clock's figures parade at 12:30 each day."
+    },
+    {
+      "id": "q-money", "card": "money-privacy",
+      "scenario": "You're getting to know a French student over coffee. Which question is the best opener?",
+      "options": ["“Qu'est-ce que vous aimez faire ?”", "“Combien gagnent vos parents ?”", "“Vous avez voté pour qui ?”"],
+      "answer": 0,
+      "explain": "Money and voting can feel intrusive, especially early on. Hobbies, food, studies and the city are easy, friendly topics.",
+      "fact": "Younger French people talk about salaries more openly than older ones."
+    },
+    {
+      "id": "q-invited-time", "card": "invited-home",
+      "scenario": "A church family invites you to dinner at 19:30. When do you ring the bell?",
+      "options": ["At 19:00, to help them get ready", "Around 19:30, or a few minutes after", "Around 20:30: French dinners start late"],
+      "answer": 1,
+      "explain": "Arriving early can catch hosts unprepared, and an hour late is rude. On time or a few minutes after is safe.",
+      "fact": "Wait for the host's Bon appétit before you start eating."
+    },
+    {
+      "id": "q-invited-gift", "card": "invited-home",
+      "scenario": "What's a good small gift for that dinner?",
+      "options": ["A pot of chrysanthemums", "A box of good chocolates", "A gift card in an envelope"],
+      "answer": 1,
+      "explain": "Chocolates, pastries or flowers are classic. Chrysanthemums are for graves in France, and cash-like gifts feel odd.",
+      "fact": "Ask your leader before bringing wine."
+    },
+    {
+      "id": "q-table-hands", "card": "table-manners",
+      "scenario": "At a French family's dinner table, where do your hands go between bites?",
+      "options": ["In your lap, out of the way", "Resting on the table, elbows off", "Under the table, holding your phone"],
+      "answer": 1,
+      "explain": "In France hands stay visible, resting on the table; hands in the lap can look odd. Elbows on the table are the bigger faux pas.",
+      "fact": "Bread often sits right on the tablecloth beside your plate."
+    },
+    {
+      "id": "q-debate", "card": "debate",
+      "scenario": "A French student disagrees sharply with your opinion about a film. What does it most likely mean?",
+      "options": ["She's annoyed, so change the subject", "She's enjoying the discussion", "She thinks you don't know films"],
+      "answer": 1,
+      "explain": "Debating ideas openly is part of conversation for many French people. Give your view kindly and ask for hers.",
+      "fact": "Qu'est-ce que vous en pensez ? keeps the conversation going."
+    },
+    {
+      "id": "q-laicite", "card": "laicite",
+      "scenario": "A friend back home asks whether talking about faith in public is illegal in France. What's accurate?",
+      "options": ["It's banned in public places by the 1905 law", "It's legal only inside church buildings", "It's legal for private people; the state stays neutral"],
+      "answer": 2,
+      "explain": "Laïcité requires the state and its staff to be neutral, and protects everyone's freedom of belief. Private people may share their faith without disturbing public order.",
+      "fact": "The 1905 separation law does not even apply in Alsace and Moselle."
+    },
+    {
+      "id": "q-not-religious", "card": "secular-majority",
+      "scenario": "You ask “Est-ce que la foi compte pour vous ?” and hear “Non, je ne suis pas religieux.” What's best?",
+      "options": ["Thank them warmly, and maybe ask what matters to them", "Explain kindly why they should think about faith again", "Ask whether they were at least baptized"],
+      "answer": 0,
+      "explain": "About half of French adults under 60 say they have no religion, so this is an ordinary answer. Respecting it keeps the door open.",
+      "fact": "Qu'est-ce qui est important pour vous ? is in the u16 lessons."
+    },
+    {
+      "id": "q-two-minutes", "card": "permission-first",
+      "scenario": "You asked a woman for “juste deux minutes”. Two minutes in, she glances at her watch. What do you do?",
+      "options": ["Finish your point quickly", "Ask if you can have two more minutes", "Thank her and let her go"],
+      "answer": 2,
+      "explain": "Keeping your word on time builds trust, and her glance is a polite signal. A warm Merci de votre temps is a good ending.",
+      "fact": "Je ne veux pas vous déranger is a gentle way to open."
+    },
+    {
+      "id": "q-secte", "card": "secte",
+      "scenario": "Someone asks, half-joking, “Vous êtes une secte ?” What's the most reassuring answer?",
+      "options": ["“Non, nous sommes des évangéliques américains.”", "“Non, nous sommes protestants, avec une église d'ici.”", "“Pourquoi ? Vous avez peur de nous ?”"],
+      "answer": 1,
+      "explain": "Naming a familiar tradition and a local church answers the worry directly. Évangélique alone can sound unfamiliar, and a counter-question sounds defensive.",
+      "fact": "Nous ne vendons rien (we're not selling anything) helps too."
+    },
+    {
+      "id": "q-proselytisme", "card": "proselytisme",
+      "scenario": "A man tells you, “C'est du prosélytisme, ça.” What is he telling you?",
+      "options": ["He feels pressured; apologize and step back", "He wants to know which church or group you're from", "He's complimenting your enthusiasm"],
+      "answer": 0,
+      "explain": "Prosélytisme usually means pushing your religion on people. Thank him, apologize for any pressure and leave him in peace.",
+      "fact": "Je respecte votre avis is a kind way to close."
+    },
+    {
+      "id": "q-catholic", "card": "other-beliefs",
+      "scenario": "A woman tells you “Je suis catholique” when you ask about faith. What's the best response?",
+      "options": ["Explain how Protestants see things differently", "Ask what her faith means to her", "Invite her to try your church instead"],
+      "answer": 1,
+      "explain": "Catholics are fellow Christians, and Alsace has deep Catholic roots. Start from what you share and listen to her story.",
+      "fact": "Catholics go to la messe; Protestants call the service le culte."
+    },
+    {
+      "id": "q-hurt", "card": "church-hurt",
+      "scenario": "Someone tells you the Church hurt them badly. What do you say first?",
+      "options": ["“Ce n'étaient pas de vrais chrétiens, vous savez.”", "“Mais notre église est différente.”", "“Je suis vraiment désolé. Je suis là pour écouter.”"],
+      "answer": 2,
+      "explain": "Listening and sympathy come first. Defending the institution or your own church can feel like brushing the pain aside.",
+      "fact": "Vous n'êtes pas obligé d'en parler (you don't have to talk about it) gives them a way out."
+    },
+    {
+      "id": "q-prayer-cafe", "card": "prayer-public",
+      "scenario": "A woman in a café accepts your offer to pray for her. How do you pray?",
+      "options": ["Briefly and quietly, eyes open, without touching her", "With a hand on her shoulder, out loud so she hears clearly", "Invite the people at the next table to join you"],
+      "answer": 0,
+      "explain": "A short, quiet prayer with open eyes feels natural and respects her and the people around you. Touch only with permission.",
+      "fact": "French Christians pray to God with tu: Seigneur, bénis Marie."
+    },
+    {
+      "id": "q-contact", "card": "contact-data",
+      "scenario": "After a good talk, someone shares a prayer request. What do you write down?",
+      "options": ["Name, phone number and address for follow-up", "Only a first name, with their permission", "Their full name, so the team can pray specifically"],
+      "answer": 1,
+      "explain": "Information about someone's faith is especially sensitive under European data law. A first name is enough to pray, and the local church can follow up.",
+      "fact": "Offer the church's contact rather than asking for theirs."
+    },
+    {
+      "id": "q-cathedral-history", "card": "cathedral",
+      "scenario": "A teammate says the cathedral has always been Catholic. Is that right?",
+      "options": ["Yes: it has never changed hands", "No: it is a Protestant church today, like Saint-Thomas", "No: it served Protestant worship until 1681"],
+      "answer": 2,
+      "explain": "After the Reformation the cathedral was used for Protestant worship until Louis XIV returned it to the Catholic Church in 1681.",
+      "fact": "Its spire made it the world's tallest building from 1647 to 1874."
+    },
+    {
+      "id": "q-calvin", "card": "calvin",
+      "scenario": "A local guide asks your group which Reformer pastored French refugees in Strasbourg from 1538 to 1541. Who?",
+      "options": ["Martin Luther", "John Calvin", "John Knox"],
+      "answer": 1,
+      "explain": "Calvin spent three years in Strasbourg between his two periods in Geneva. Luther never lived in Strasbourg.",
+      "fact": "Calvin married Idelette de Bure in Strasbourg."
+    },
+    {
+      "id": "q-concordat", "card": "concordat",
+      "scenario": "A Strasbourg woman mentions that her pastor is paid by the state. Is she joking?",
+      "options": ["No: Alsace-Moselle still has the concordat system", "Yes: the 1905 law forbids it everywhere in France", "Partly: only Catholic priests are paid"],
+      "answer": 0,
+      "explain": "The 1905 separation law never applied in Alsace-Moselle, so Catholic, Lutheran, Reformed and Jewish clergy are still paid by the state.",
+      "fact": "Public schools there offer religion classes, with an opt-out."
+    },
+    {
+      "id": "q-malgre-nous", "card": "alsace-history",
+      "scenario": "An older Alsatian mentions that his grandfather fought in the German army. What's the best response?",
+      "options": ["Ask why his family took the German side", "Listen with care: many local men were forced in", "Change the subject quickly to avoid an awkward moment"],
+      "answer": 1,
+      "explain": "Under the Nazi annexation, tens of thousands of Alsatian men were conscripted against their will, the malgré-nous. It is a painful family memory, not a political choice.",
+      "fact": "Alsace was German from 1871 to 1918 and annexed in practice from 1940 to 1944."
+    },
+    {
+      "id": "q-alsatian-thanks", "card": "alsatian-greetings",
+      "scenario": "An older vendor smiles when he hears your accent. You want to thank him in Alsatian. What do you say?",
+      "options": ["“Vielen Dank !”", "“Salü bisàmme, merci !”", "“Merci vielmols !”"],
+      "answer": 2,
+      "explain": "Merci vielmols is the Alsatian thanks a lot. Vielen Dank is standard German, and Salü bisàmme is a goodbye to everyone.",
+      "fact": "Salü works for both hi and bye."
+    },
+    {
+      "id": "q-christkindel", "card": "christmas-market",
+      "scenario": "A friend asks why Strasbourg's market is called the Christkindelsmärik. What's the story?",
+      "options": ["German soldiers founded it in 1871", "In 1570 the Protestant city named it after the Christ child", "It started as a market selling only toys for children at Christmas"],
+      "answer": 1,
+      "explain": "The Reformation city replaced the Saint Nicholas fair with a market of the Christ child in 1570. It is often called the oldest Christmas market in France.",
+      "fact": "Market drinks come in a deposit mug you can return or keep."
+    },
+    {
+      "id": "q-storks", "card": "storks",
+      "scenario": "Why might people in Strasbourg smile at your app's stork mascot?",
+      "options": ["Storks are the symbol of Paris", "Storks are the official symbol of the European Parliament", "Storks are the symbol of Alsace, and they made a comeback"],
+      "answer": 2,
+      "explain": "The white stork is Alsace's emblem. Fewer than ten pairs were left in the mid-1970s; today hundreds nest on roofs again.",
+      "fact": "The reintroduction began at Strasbourg's Orangerie park."
+    },
+    {
+      "id": "q-european", "card": "european",
+      "scenario": "Which of these institutions is NOT based in Strasbourg?",
+      "options": ["The European Commission", "The European Parliament", "The Council of Europe"],
+      "answer": 0,
+      "explain": "The European Commission is in Brussels. Strasbourg is the official seat of the European Parliament and home to the Council of Europe.",
+      "fact": "The European Court of Human Rights also sits in Strasbourg."
+    },
+    {
+      "id": "q-winstub-pork", "card": "winstub",
+      "scenario": "At a winstub, your friend doesn't eat pork. Which question helps most?",
+      "options": ["“C'est une spécialité alsacienne ?”", "“Est-ce qu'il y a du porc ?”", "“Qu'est-ce que vous recommandez ?”"],
+      "answer": 1,
+      "explain": "Many Alsatian dishes, from choucroute to tarte flambée, contain pork or bacon. Ask directly.",
+      "fact": "Winstub means wine room: a cosy traditional tavern."
+    }
+  ],
+  "checklist": [
+    { "id": "do-bonjour", "kind": "do", "text": "Say Bonjour (madame, monsieur) when you walk in, and Merci, au revoir when you leave.", "card": "bonjour-rule" },
+    { "id": "do-vous", "kind": "do", "text": "Use vous with adults you don't know, and let them offer tu.", "card": "vous-default" },
+    { "id": "do-french-first", "kind": "do", "text": "Start in French, then ask Parlez-vous anglais ?", "card": "start-in-french" },
+    { "id": "do-validate", "kind": "do", "text": "Validate your tram ticket before every boarding, transfers included.", "card": "tram-validate" },
+    { "id": "do-quiet", "kind": "do", "text": "Keep voices low on trams and in restaurants; travel in small groups.", "card": "volume" },
+    { "id": "do-bill", "kind": "do", "text": "Ask for the bill; tipping is optional because service is included.", "card": "tipping" },
+    { "id": "do-saturday", "kind": "do", "text": "Buy what you need on Saturday: most shops close on Sunday.", "card": "sunday-closing" },
+    { "id": "do-ask-first", "kind": "do", "text": "Ask permission before any faith topic, and accept a no warmly.", "card": "permission-first" },
+    { "id": "do-church-name", "kind": "do", "text": "Say who you are and name the local church you're with.", "card": "secte" },
+    { "id": "do-listen", "kind": "do", "text": "Listen more than you talk; ask what matters to the other person.", "card": "secular-majority" },
+    { "id": "do-phone", "kind": "do", "text": "Keep your phone in a front pocket and your bag zipped in crowds.", "card": "pickpocket" },
+    { "id": "do-112", "kind": "do", "text": "Save 112, your leader's number and the team's address.", "card": "emergency" },
+    { "id": "dont-bise", "kind": "dont", "text": "Don't start la bise with people you just met; follow their lead.", "card": "la-bise" },
+    { "id": "dont-touch", "kind": "dont", "text": "Don't handle fruit at market stalls; let the vendor choose.", "card": "market-touch" },
+    { "id": "dont-money", "kind": "dont", "text": "Don't open with salary, politics or religion.", "card": "money-privacy" },
+    { "id": "dont-pressure", "kind": "dont", "text": "Don't follow, block or keep asking someone who said no.", "card": "proselytisme" },
+    { "id": "dont-defend", "kind": "dont", "text": "Don't defend the Church when someone tells you it hurt them.", "card": "church-hurt" },
+    { "id": "dont-data", "kind": "dont", "text": "Don't collect names, numbers or addresses: first names only, with permission.", "card": "contact-data" },
+    { "id": "dont-german", "kind": "dont", "text": "Don't joke that Alsatians are German.", "card": "alsace-history" },
+    { "id": "dont-beachwear", "kind": "dont", "text": "Don't wear beachwear or hats inside churches.", "card": "dress" }
+  ]
+}

@@ -92,8 +92,111 @@ section("units.json invariants");
   console.log(`  ${UNITS.length} units, ${ALL_LESSONS.length} lessons, ${ALL_PHRASES.length} phrases, ${keys.size} unique keys`);
 }
 
+// ---------------------------------------------------------------- culture.json invariants
+// The culture and etiquette layer (docs/culture-track.md). Cards appear in the lesson flow by lesson id, quote phrases
+// from units.json by their exact `fr` text, and carry sources; check questions are 3-option multiple choice.
+section("culture.json invariants");
+{
+  const culture = JSON.parse(readFileSync(new URL("../content/french/culture.json", import.meta.url), "utf8"));
+  const unitIds = new Set(UNITS.map((u) => u.id));
+  const lessonUnit = new Map(UNITS.flatMap((u) => u.lessons.map((l) => [l.id, u.id])));
+  const frs = new Set(ALL_PHRASES.map((p) => p.fr));
+  const TYPES = new Set(["fact", "etiquette", "history", "faith-context", "alsace"]);
+  const REVIEW = new Set(["native", "leader", "both"]);
+  const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  const emoji = /\p{Extended_Pictographic}/u;
+  const sentences = (s) => (s.match(/[.!?](?=\s+[A-ZÀ-Ý“]|\s*$)/g) ?? []).length;
+  const urlOk = (u) => { try { return new URL(u).protocol === "https:" && !/\s/.test(u); } catch { return false; } };
+  const text = (s, max, what) => {
+    if (typeof s !== "string" || !s.trim()) return fail(`culture: ${what} is empty`);
+    if (s.length > max) fail(`culture: ${what} is ${s.length} chars (max ${max})`);
+    if (/\s{2,}|^\s|\s$/.test(s)) fail(`culture: stray whitespace in ${what}`);
+    if (emoji.test(s)) fail(`culture: emoji in ${what}`);
+  };
+
+  const themes = new Set();
+  for (const t of culture.themes) {
+    if (!ID.test(t.id) || themes.has(t.id)) fail(`culture: theme id "${t.id}" invalid or duplicate`);
+    themes.add(t.id);
+    text(t.title, 40, `theme ${t.id} title`); text(t.blurb, 90, `theme ${t.id} blurb`);
+  }
+  const cards = new Map();
+  const byLesson = new Map();
+  for (const c of culture.cards) {
+    if (!ID.test(c.id) || cards.has(c.id)) fail(`culture: card id "${c.id}" invalid or duplicate`);
+    cards.set(c.id, c);
+    if (!TYPES.has(c.type)) fail(`culture: card ${c.id} has type "${c.type}"`);
+    if (!themes.has(c.theme)) fail(`culture: card ${c.id} names missing theme "${c.theme}"`);
+    text(c.title, 48, `card ${c.id} title`);
+    text(c.text, 440, `card ${c.id} text`);
+    const n = sentences(c.text);
+    if (n < 2 || n > 4) fail(`culture: card ${c.id} text has ${n} sentences (2-4)`);
+    if (!unitIds.has(c.unit)) fail(`culture: card ${c.id} names missing unit "${c.unit}"`);
+    if (c.lesson !== undefined) {
+      if (!lessonUnit.has(c.lesson)) fail(`culture: card ${c.id} names missing lesson "${c.lesson}"`);
+      else if (lessonUnit.get(c.lesson) !== c.unit) fail(`culture: card ${c.id} lesson ${c.lesson} is not in unit ${c.unit}`);
+      if (c.moment !== "intro" && c.moment !== "done") fail(`culture: card ${c.id} needs moment "intro" or "done"`);
+      // never more than one card per lesson
+      if (byLesson.has(c.lesson)) fail(`culture: lesson ${c.lesson} has two cards ("${byLesson.get(c.lesson)}" and "${c.id}")`);
+      byLesson.set(c.lesson, c.id);
+    } else if (c.moment !== undefined) fail(`culture: card ${c.id} has a moment but no lesson`);
+    if (c.phrase !== undefined) {
+      text(c.phrase.fr, 60, `card ${c.id} phrase`); text(c.phrase.gloss, 60, `card ${c.id} gloss`);
+      if (!c.phrase.extra && !frs.has(c.phrase.fr)) fail(`culture: card ${c.id} quotes a phrase not in units.json "${c.phrase.fr}" (mark it "extra": true if intended)`);
+      if (c.phrase.extra && frs.has(c.phrase.fr)) fail(`culture: card ${c.id} marks an existing phrase as extra "${c.phrase.fr}"`);
+      if (/[^\s ][?!:;]/.test(c.phrase.fr)) fail(`culture: missing space before punctuation in "${c.phrase.fr}"`);
+    }
+    if (c.odile !== undefined) text(c.odile, 140, `card ${c.id} odile`);
+    if (c.odileSass !== undefined) {
+      text(c.odileSass, 140, `card ${c.id} odileSass`);
+      if (c.odile === undefined) fail(`culture: card ${c.id} has a sass line but no gentle line`);
+      if (c.type === "faith-context") fail(`culture: card ${c.id} is faith context and must not have a sass line`);
+    }
+    if (!Array.isArray(c.source) || !c.source.length) fail(`culture: card ${c.id} has no source`);
+    else for (const u of c.source) if (!urlOk(u)) fail(`culture: card ${c.id} has a bad source URL "${u}"`);
+    if (c.review !== undefined && !REVIEW.has(c.review)) fail(`culture: card ${c.id} review "${c.review}" (native, leader or both)`);
+    if (c.review !== undefined) text(c.reviewNote, 160, `card ${c.id} reviewNote`);
+  }
+
+  const qIds = new Set();
+  const lengthRank = { longest: 0, shortest: 0 };
+  for (const q of culture.questions) {
+    if (!ID.test(q.id) || qIds.has(q.id)) fail(`culture: question id "${q.id}" invalid or duplicate`);
+    qIds.add(q.id);
+    if (!cards.has(q.card)) fail(`culture: question ${q.id} names missing card "${q.card}"`);
+    text(q.scenario, 160, `question ${q.id} scenario`);
+    text(q.explain, 260, `question ${q.id} explain`);
+    if (sentences(q.explain) > 2) fail(`culture: question ${q.id} explanation has more than 2 sentences`);
+    if (q.fact !== undefined) text(q.fact, 140, `question ${q.id} fact`);
+    if (!Array.isArray(q.options) || q.options.length !== 3) { fail(`culture: question ${q.id} needs exactly 3 options`); continue; }
+    q.options.forEach((o, k) => text(o, 90, `question ${q.id} option ${k + 1}`));
+    if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 2) fail(`culture: question ${q.id} answer must be 0, 1 or 2 (exactly one correct option)`);
+    if (new Set(q.options.map((o) => E.normalize(o))).size !== 3) fail(`culture: question ${q.id} has duplicate options`);
+    const L = q.options.map((o) => o.length), a = L[q.answer] ?? 0;
+    if (a === Math.max(...L)) lengthRank.longest++;
+    if (a === Math.min(...L)) lengthRank.shortest++;
+  }
+  const checks = new Set();
+  for (const it of culture.checklist) {
+    if (!ID.test(it.id) || checks.has(it.id)) fail(`culture: checklist id "${it.id}" invalid or duplicate`);
+    checks.add(it.id);
+    if (it.kind !== "do" && it.kind !== "dont") fail(`culture: checklist ${it.id} kind "${it.kind}"`);
+    if (!cards.has(it.card)) fail(`culture: checklist ${it.id} names missing card "${it.card}"`);
+    text(it.text, 110, `checklist ${it.id}`);
+  }
+  if (cards.size < 40) fail(`culture: only ${cards.size} cards (at least 40)`);
+  if (qIds.size < 30) fail(`culture: only ${qIds.size} questions (at least 30)`);
+  // options are shuffled in the app, so position is no tell; length can be, so keep it near chance (1 in 3)
+  const nq = culture.questions.length || 1;
+  const longest = lengthRank.longest / nq;
+  if (longest > 0.5) fail(`culture: the answer is the longest option in ${(100 * longest).toFixed(0)}% of questions (keep it under 50%)`);
+  const perTheme = [...themes].map((t) => `${t} ${[...cards.values()].filter((c) => c.theme === t).length}`).join(", ");
+  console.log(`  ${cards.size} cards (${perTheme}), ${byLesson.size} placed in lessons, ${qIds.size} questions, ${checks.size} checklist items`);
+  console.log(`  answer is the longest option ${(100 * longest).toFixed(0)}%, the shortest ${((100 * lengthRank.shortest) / nq).toFixed(0)}% (chance about 33%)`);
+}
+
 // ---------------------------------------------------------------- generated exercises
-const isMC = (e) => Array.isArray(e.choices) && typeof e.answer === "string";
+const isMC =(e) => Array.isArray(e.choices) && typeof e.answer === "string";
 const shown = (e) => e.choices; // what the learner reads
 const endP = (s) => (/[?]\s*$/.test(s) ? "?" : /!\s*$/.test(s) ? "!" : ".");
 const len = (s) => s.length;

@@ -6,6 +6,8 @@ import { BookOpen, ChevronLeft, Lightbulb } from "lucide-react";
 import { ALL_LESSONS, type Phrase } from "@/lib/french/content";
 import { refLabel } from "@/lib/bible/reference";
 import { speak } from "@/lib/french/speech";
+import TapWords from "@/components/scripture/TapWords";
+import CultureNote from "@/components/culture/CultureNote";
 import Speaker from "./Speaker";
 
 /**
@@ -19,7 +21,8 @@ export default function MeetPhrases({ phrases, onDone }: { phrases: Phrase[]; on
   const last = k === phrases.length - 1;
   const go = (n: number) => { setK(n); speak(phrases[n].fr); };
   // verse lessons name their Bible verse; the hint links to the memory drill for it
-  const verse = ALL_LESSONS.find((l) => l.phrases[0]?.fr === phrases[0]?.fr)?.verse;
+  const lesson = ALL_LESSONS.find((l) => l.phrases[0]?.fr === phrases[0]?.fr);
+  const verse = lesson?.verse;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -31,8 +34,10 @@ export default function MeetPhrases({ phrases, onDone }: { phrases: Phrase[]; on
           <BookOpen size={16} className="shrink-0 text-accent" aria-hidden="true" />Words from {refLabel(verse)} · learn the verse by heart
         </Link>
       )}
+      {/* the lesson's "À savoir" culture card, if it has one before the phrases: folded, one tap to read */}
+      {lesson && k === 0 && <CultureNote lessonId={lesson.id} moment="intro" />}
       <div key={k} className="card flex flex-col gap-3">
-        <p lang="fr" className="text-2xl font-extrabold">{p.fr}</p>
+        <TapWords text={p.fr} className="text-2xl font-extrabold" />
         <p className="text-lg font-semibold">{p.en}</p>
         <Speaker text={p.fr} />
         {p.tu && <p className="text-sm text-muted">With a friend your age: <b lang="fr" className="text-foreground">{p.tu}</b></p>}

@@ -17,6 +17,7 @@ import OdileSays from "@/components/art/OdileSays";
 import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
 import { Bank, Choose, Gap, Hear, Listen, Match, Pick, Register, Type, type Report } from "./ExerciseViews";
 import MeetPhrases from "./MeetPhrases";
+import CultureNote from "@/components/culture/CultureNote";
 
 const NONE: string[] = []; // stable defaults so the queue effect does not re-run every render
 
@@ -129,6 +130,8 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
         <p className="text-lg font-bold text-primary">+{summary.xp} XP · <Flame size={18} className="inline -mt-0.5 text-accent" aria-hidden="true" /> {summary.streak}-day streak</p>
         <div className="w-full"><OdileSays topic="done" size={120} celebrate /></div>
         <Link href={nextHref} className="btn w-full">{practice ? "Back to French" : "Continue"}</Link>
+        {/* the lesson's "À savoir" culture card, if it has one: below Continue so it never blocks */}
+        {lesson && <div className="w-full"><CultureNote lessonId={lesson.id} moment="done" /></div>}
       </div>
     );
 
