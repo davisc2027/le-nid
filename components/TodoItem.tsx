@@ -40,7 +40,9 @@ export default function TodoItem(p: Props) {
   const days = Math.round((Date.parse(p.dueDate) - Date.parse(today)) / 86_400_000);
   const late = !p.completed && days < 0;
   const soon = !p.completed && days >= 0 && days <= 3;
-  const due = new Date(p.dueDate + "T12:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
+  // Built by hand: toLocaleDateString punctuation differs between server and browser ICU and breaks hydration.
+  const dd = new Date(p.dueDate + "T12:00:00Z");
+  const due = `${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dd.getUTCDay()]} ${dd.getUTCDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][dd.getUTCMonth()]}`;
 
   return (
     <div className={`card flex flex-col gap-2 ${p.completed ? "opacity-60" : ""}`}>

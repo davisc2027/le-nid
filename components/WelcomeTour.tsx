@@ -82,6 +82,11 @@ export default function WelcomeTour({ auto }: { auto: boolean }) {
   }, []);
 
   // per-step Odile cue + highlight of the matching nav tab
+  // take them to the feature being described
+  useEffect(() => {
+    if (open && pathname !== step.href) router.push(step.href);
+  }, [open, step.href, pathname, router]);
+
   useEffect(() => {
     if (!open) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reduced-motion is a browser setting
