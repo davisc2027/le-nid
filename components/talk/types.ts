@@ -13,6 +13,17 @@ export type Turn = {
   /** Safari backup: words still coming in. */
   interim?: boolean;
   note?: string;
+  /** 0..1 from Whisper; lowConfidence dims the original line. */
+  confidence?: number;
+  lowConfidence?: boolean;
+  /** Sanity-check codes from the translator ("negation", "numbers"...): shows the "may be off" chip. */
+  warnings?: string[];
+  /** Back-translation ("Check meaning"), shown in the speaker's language. */
+  check?: { status: "loading" | "done" | "failed"; text: string };
+  /** The person corrected this turn (edit or wrong language). */
+  edited?: boolean;
+  /** Where the translation came from: "phrasebook" for curated course phrases. */
+  engine?: string;
 };
 
 export type Layout = "chat" | "side";

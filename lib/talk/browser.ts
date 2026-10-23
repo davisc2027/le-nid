@@ -70,3 +70,6 @@ export function readJson<T>(key: string, fallback: T): T {
 export function writeJson(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode or storage full */ }
 }
+
+/** Current time in ms (a function so React lint rules treat it as an event-time value). */
+export const nowMs = (): number => Date.now();

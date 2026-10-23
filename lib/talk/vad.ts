@@ -6,6 +6,7 @@
  *   armed --(rms over the start level within armMs)--> speaking ("start")
  *   armed --(no confirmation within armMs)--> idle ("cancel": throw the recording away)
  *   speaking --(endSilenceMs without voice)--> idle ("end", keep = long and loud enough)
+ *   speaking --(softCapMs reached, then a short pause)--> idle ("end", reason "softcap")
  *   speaking --(maxMs reached)--> idle ("end", reason "cap"; a new utterance can start right away)
  *
  * The noise floor adapts while nobody is talking, so a noisy café raises the bar and a quiet room lowers it.
@@ -31,6 +32,14 @@ export type VadConfig = {
   minPeakRms: number;
   /** Hard cap for one utterance. */
   maxMs: number;
+  /** After this long, the first short pause ends the utterance (instead of cutting mid-word at maxMs). Infinity = off. */
+  softCapMs: number;
+  softCapPauseMs: number;
+  /** Hang time depends on the sentence so far: hesitating learners get longer, long sentences shorter. */
+  adaptiveEnd: boolean;
+  /** Share of energy in 300-3400 Hz needed to confirm speech when the room is loud (floor above bandFloor). */
+  minBandRatio: number;
+  bandFloor: number;
   /** Noise-floor smoothing per frame while idle (0..1). */
   floorAlpha: number;
   /** Noise-floor step after a false alarm (armed but never confirmed). */
@@ -44,7 +53,7 @@ export type VadConfig = {
 };
 
 export const DEFAULT_VAD: VadConfig = {
-  armRatio: 2,
+  armRatio: 1.5,
   minArmRms: 0.008,
   startRatio: 3,
   minStartRms: 0.015,
@@ -54,7 +63,12 @@ export const DEFAULT_VAD: VadConfig = {
   endSilenceMs: 900,
   minSpeechMs: 600,
   minPeakRms: 0.03,
-  maxMs: 25_000,
+  maxMs: 20_000,
+  softCapMs: 12_000,
+  softCapPauseMs: 300,
+  adaptiveEnd: true,
+  minBandRatio: 0.2,
+  bandFloor: 0.02,
   floorAlpha: 0.05,
   cancelAlpha: 0.3,
   minWindowFrames: 30,
@@ -68,7 +82,9 @@ export type VadEnd = {
   type: "end";
   /** Discard when false (too short or too quiet). */
   keep: boolean;
-  reason: "silence" | "cap";
+  reason: "silence" | "cap" | "softcap";
+  /** Milliseconds of silence at the end (after the last voiced frame): the caller keeps ~300 ms and trims the rest. */
+  silenceMs: number;
   /** Whole clip, from arm to now. */
   durationMs: number;
   /** Time from the first to the last voiced frame. */
@@ -94,13 +110,22 @@ export function createVad(partial: Partial<VadConfig> = {}) {
   const startLevel = () => Math.max(c.minStartRms, floor * c.startRatio);
   const holdLevel = () => Math.max(c.minHoldRms, floor * c.holdRatio);
 
-  function finish(now: number, reason: "silence" | "cap"): VadEnd {
+  /** In a loud room, energy alone is not enough: speech has a share of its energy in the 300-3400 Hz band. */
+  const bandOk = (band?: number) => band === undefined || floor <= c.bandFloor || band >= c.minBandRatio;
+  function hangMs() {
+    if (!c.adaptiveEnd) return c.endSilenceMs;
+    const spoken = lastVoice - firstVoice;
+    return spoken < 1500 ? Math.max(c.endSilenceMs, 1100) : spoken > 6000 ? Math.min(c.endSilenceMs, 700) : c.endSilenceMs;
+  }
+
+  function finish(now: number, reason: "silence" | "cap" | "softcap"): VadEnd {
     const speechMs = Math.max(0, lastVoice - firstVoice);
     const ev: VadEnd = {
       type: "end",
       // The peak must also stand clearly above the (possibly just raised) floor, so steady noise is dropped.
       keep: speechMs >= c.minSpeechMs && peak >= Math.max(c.minPeakRms, floor * c.startRatio),
       reason,
+      silenceMs: Math.max(0, now - lastVoice),
       durationMs: Math.max(0, now - armedAt),
       speechMs,
       peakRms: peak,
@@ -111,7 +136,7 @@ export function createVad(partial: Partial<VadConfig> = {}) {
     return ev;
   }
 
-  function step(rms: number, now: number): VadEvent {
+  function step(rms: number, now: number, band?: number): VadEvent {
     if (!Number.isFinite(rms) || rms < 0) rms = 0;
     if (phase === "idle") {
       if (rms > armLevel()) {
@@ -120,7 +145,7 @@ export function createVad(partial: Partial<VadConfig> = {}) {
         peak = rms;
         firstVoice = lastVoice = now;
         // Loud right away: confirm in the same frame.
-        if (rms > startLevel()) { phase = "speaking"; return { type: "arm", confirmed: true }; }
+        if (rms > startLevel() && bandOk(band)) { phase = "speaking"; return { type: "arm", confirmed: true }; }
         return { type: "arm", confirmed: false };
       }
       floor = clampFloor(floor * (1 - c.floorAlpha) + rms * c.floorAlpha);
@@ -128,7 +153,7 @@ export function createVad(partial: Partial<VadConfig> = {}) {
     }
     if (phase === "armed") {
       peak = Math.max(peak, rms);
-      if (rms > startLevel()) { phase = "speaking"; lastVoice = now; return { type: "start" }; }
+      if (rms > startLevel() && bandOk(band)) { phase = "speaking"; lastVoice = now; return { type: "start" }; }
       if (now - armedAt > c.armMs) {
         phase = "idle";
         peak = 0;
@@ -149,12 +174,20 @@ export function createVad(partial: Partial<VadConfig> = {}) {
     }
     if (rms > holdLevel()) lastVoice = now;
     if (now - armedAt >= c.maxMs) return finish(now, "cap");
-    if (now - lastVoice >= c.endSilenceMs) return finish(now, "silence");
+    const quiet = now - lastVoice;
+    if (now - armedAt >= c.softCapMs && quiet >= c.softCapPauseMs) return finish(now, "softcap");
+    if (quiet >= hangMs()) return finish(now, "silence");
     return { type: "none" };
   }
 
   return {
     step,
+    /** Idle update only: learn the noise floor without ever arming (used while the Noisy place buttons are waiting). */
+    learn(rms: number) {
+      if (!Number.isFinite(rms) || rms < 0) rms = 0;
+      phase = "idle"; peak = 0; recent = [];
+      floor = clampFloor(floor * (1 - c.floorAlpha) + rms * c.floorAlpha);
+    },
     /** True once speech is confirmed (the "hearing you" state). */
     phase: () => phase,
     floor: () => floor,
@@ -170,6 +203,29 @@ export function rmsFromBytes(buf: ArrayLike<number>): number {
   let sum = 0;
   for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
   return Math.sqrt(sum / buf.length);
+}
+
+/** RMS of float samples (AnalyserNode.getFloatTimeDomainData, or PCM frames). */
+export function rmsFromFloats(buf: ArrayLike<number>): number {
+  if (!buf.length) return 0;
+  let sum = 0;
+  for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+  return Math.sqrt(sum / buf.length);
+}
+
+/** Share (0..1) of spectral energy in loHz..hiHz, from AnalyserNode.getFloatFrequencyData (dB per bin). */
+export function bandRatio(db: ArrayLike<number>, sampleRate: number, loHz = 300, hiHz = 3400): number {
+  const n = db.length;
+  if (!n) return 0;
+  const hzPerBin = sampleRate / 2 / n;
+  let band = 0, total = 0;
+  for (let i = 1; i < n; i++) {
+    const p = Number.isFinite(db[i]) ? Math.pow(10, db[i] / 10) : 0;
+    total += p;
+    const hz = i * hzPerBin;
+    if (hz >= loHz && hz <= hiHz) band += p;
+  }
+  return total > 0 ? band / total : 0;
 }
 
 /** 0..1 for the level meter: roughly logarithmic so normal speech fills most of the bar. */

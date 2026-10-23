@@ -7,7 +7,7 @@
  */
 import type { SttErrorCode } from "@/lib/talk/api";
 import type { SttResult, TranslateResult, HandoffResult } from "@/lib/talk/client";
-import type { DeepLTarget } from "@/lib/talk/lang";
+import type { DeepLTarget, Side } from "@/lib/talk/lang";
 
 export type DemoOptions = { fail?: SttErrorCode; standalone?: boolean };
 
@@ -26,9 +26,10 @@ export function createDemo(opts: DemoOptions) {
   let n = 0;
   const lastBy = new Map<string, string>();
   return {
-    async transcribe(): Promise<SttResult> {
+    async transcribe(forced?: Side): Promise<SttResult> {
       await wait(700);
-      const i = n++;
+      let i = n++;
+      if (forced) { while (DEMO_LINES[i % DEMO_LINES.length].lang !== forced) i++; n = i + 1; }
       if (opts.fail && i >= 2) {
         const messages: Record<string, string> = {
           rate_limited: "The group's voice limit is used up for a moment.",
@@ -39,12 +40,14 @@ export function createDemo(opts: DemoOptions) {
       }
       const line = DEMO_LINES[i % DEMO_LINES.length];
       lastBy.set(line.text, line.other);
-      return { ok: true, text: line.text, language: line.lang, dropped: false };
+      // Index 3 pretends Whisper was unsure, so the dimmed original line can be seen in screenshots.
+      return { ok: true, text: line.text, language: line.lang, dropped: false, confidence: i % 6 === 3 ? 0.41 : 0.9, lowConfidence: i % 6 === 3, forced: !!forced };
     },
     async translate(text: string, target: DeepLTarget): Promise<TranslateResult> {
       await wait(500);
       const known = lastBy.get(text) ?? DEMO_LINES.find((l) => l.text === text)?.other;
-      return { ok: true, text: known ?? (target === "FR" ? `(FR) ${text}` : `(EN) ${text}`) };
+      // The tram line pretends the number check fired, so the "May be off" chip can be seen in screenshots.
+      return { ok: true, text: known ?? (target === "FR" ? `(FR) ${text}` : `(EN) ${text}`), engine: "demo", warnings: text.startsWith("Prenez le tram") ? ["numbers"] : undefined };
     },
     async handoff(): Promise<HandoffResult> {
       await wait(400);

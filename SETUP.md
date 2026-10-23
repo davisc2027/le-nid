@@ -22,6 +22,8 @@ Copy `.env.example` to `.env.local` for local work and add the same variables in
 | `VAPID_SUBJECT` | Must start with `mailto:` (for example `mailto:you@example.com`) or `https:`. |
 | `CRON_SECRET` | Any long random string. The reminder endpoint rejects requests without it. |
 | `DEEPL_API_KEY` | Optional. DeepL key (translate, tried first). Without it, translation uses Groq. See "DeepL setup" below. |
+| `STT_MODEL` | Optional. Whisper model for Conversation mode: `whisper-large-v3-turbo` (default) or `whisper-large-v3`. |
+| `DEEPL_GLOSSARY_EN_FR`, `DEEPL_GLOSSARY_FR_EN` | Optional. DeepL glossary ids from `scripts/sync-deepl-glossary.mjs` (see "Glossary" below). |
 | `GROQ_API_KEY` | Free key from console.groq.com. Used for speech to text in Conversation mode and as the fallback translator. Server only. See "Conversation mode" below. |
 | `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` (and optional `SMTP_HOST`, `SMTP_PORT`) | Optional, for the weekly to-do summary email (Mondays). Use the same mailbox you gave Supabase for sign-in codes (Gmail: user = the address, pass = the same 16-character app password; host and port default to smtp.gmail.com and 465). Supabase cannot send custom emails through its own SMTP setting, so the app connects to that mailbox directly. `RESEND_API_KEY` is an alternative if SMTP is not set. |
 
@@ -47,7 +49,7 @@ Translate -> Conversation mode (`/translate/talk`) listens continuously, cuts sp
 
 **What leaves the phone.** Each sentence is recorded as a short audio clip and sent to Le Nid's server, which forwards it to Groq to be turned into text, then sends that text to DeepL to be translated. Le Nid does not keep recordings or transcripts (nothing is saved to the database or logged); the conversation lives only on the screen until the page is closed or cleared. The page shows a small "AI audio processing used" line. Groq's and DeepL's own policies apply to what they receive.
 
-**Limits (free tiers).** Groq allows about 20 transcription requests per minute and about 8 hours of audio per day **for the whole key, so for the whole group together** (it counts at least 10 seconds per request). Le Nid also limits each person to 30 sentences per minute and 300 per hour, and holds back when the group is near Groq's per-minute limit. Each sentence is also one DeepL request, so it counts toward the Translate limit of 40 per person per hour and DeepL's 500,000 characters per month. Limits are kept in memory per server instance, so they are approximate.
+**Limits (free tiers).** Groq allows about 20 transcription requests per minute and about 8 hours of audio per day **for the whole key, so for the whole group together** (it counts at least 10 seconds per request). Le Nid also limits each person to 30 sentences per minute, 120 per hour and 120 per day (a single automatic retry with the language forced counts toward the minute, hour and group limits, not the day), and holds back when the group is near Groq's per-minute limit. Each sentence is also one translation request, so it counts toward the Translate limit of 120 per person per hour, 15,000 characters per person per day, and DeepL's 500,000 characters per month. Limits are kept in memory per server instance, so they are approximate.
 
 **Safari backup.** When Groq can't be used (limit reached, not set up, or failing), the page switches to Safari's built-in speech recognition: two big buttons, English and Français, choose the language being spoken. It doesn't use Groq at all. It only works in Safari, not in the installed Home Screen app, so in the app the page shows "Copy Safari link" instead. That link signs the person into Safari as themselves (Safari doesn't share the app's login): it is made by `/api/handoff` from the signed-in session's own email (using `SUPABASE_SERVICE_ROLE_KEY`), works once, expires with Supabase's email-link expiry (Authentication -> Providers -> Email -> Email OTP Expiration, 1 hour by default), and each person can make 5 per hour. Steps for the person: tap Copy Safari link, open Safari, paste into the address bar, tap Go. Anyone can also open the backup from "Having trouble? Use the Safari backup".
 
@@ -75,6 +77,7 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 - Run a French lesson with sound on and the silent switch off; confirm audio plays.
 - Translate: type, and dictate with the keyboard microphone.
 - Conversation mode in the installed app: allow the microphone, talk in English and French, check the screen stays on, turn Read aloud on and confirm French translations are spoken (and not re-transcribed), switch to Side by side, lock the phone and confirm listening pauses.
+- Conversation accuracy (docs/conversation-accuracy.md, sections 9 and 12): first words not clipped; Noisy place buttons; tap a bubble (edit, wrong language, delete, check meaning); Diagnostics export.
 - Safari backup: in the app tap "Having trouble? Use the Safari backup" -> Copy Safari link, paste it in Safari, confirm it opens Conversation mode signed in, tap English / Français and talk. Paste the same link into a Private tab: it should say the link was already used.
 - Turn on airplane mode and check what loads.
 - Check light and dark mode and the bottom nav above the home bar.
@@ -86,6 +89,11 @@ On a computer that can reach ebible.org: `node scripts/build-bible.mjs`, spot-ch
 
 ## Sign-in code length
 Supabase sends 8-digit codes by default (Authentication -> Sign In / Providers -> Email -> **Email OTP Length**). The login screen expects exactly 8 digits, so if you change that setting, change the length in `app/login/page.tsx` too.
+
+## Glossary, Noisy place and diagnostics (Conversation mode)
+**Glossary (optional, DeepL).** `content/talk/glossary.json` holds faith terms and local names (for example *culte* = worship service, never "cult"). Have a French speaker review it (every entry says `reviewed: false`). Then, on your computer: `DEEPL_API_KEY=your-key node scripts/sync-deepl-glossary.mjs` (add `--dry-run` to preview without a key). It creates two glossaries and prints `DEEPL_GLOSSARY_EN_FR=...` and `DEEPL_GLOSSARY_FR_EN=...`; add both in Vercel and redeploy. Each run makes new ids, so repeat that step after editing the file. Without the ids, translation works as before. The same terms also guide the Groq fallback automatically.
+**Noisy place.** A switch in the Conversation screen: you tap English or Français before each sentence, and the language goes to the speech engine instead of being guessed.
+**Diagnostics.** Tap the Conversation title five times (or add `?diag=1`). Use it to compare `whisper-large-v3` against the default, turn the Whisper vocabulary prompt on or off (off by default until tested), and export a JSON log. Nothing leaves the phone.
 
 ## DeepL setup (optional)
 1. Go to deepl.com/pro-api and choose the free API plan. Read the plan shown on that page before entering anything: DeepL has changed its free offer over time (monthly characters vs a one-time pool), and a card may be requested for verification. If the page only offers paid plans or asks you to pay, skip DeepL: Groq translates without it.

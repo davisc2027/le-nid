@@ -25,3 +25,19 @@ export function createSerialQueue() {
     clear() { generation++; },
   };
 }
+
+/** At most `max` async jobs running at once; the rest wait in order. Used to start speech-to-text early (pipelining). */
+export function createLimiter(max: number) {
+  let running = 0;
+  const waiting: (() => void)[] = [];
+  const next = () => { running--; waiting.shift()?.(); };
+  return {
+    run<T>(job: () => Promise<T>): Promise<T> {
+      return new Promise<T>((resolve, reject) => {
+        const go = () => { running++; job().then(resolve, reject).finally(next); };
+        if (running < max) go(); else waiting.push(go);
+      });
+    },
+    active: () => running + waiting.length,
+  };
+}

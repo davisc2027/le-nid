@@ -1,0 +1,349 @@
+{
+  "note": "Faith terms and local names for Conversation mode. Synced to two DeepL glossaries by scripts/sync-deepl-glossary.mjs (EN->FR and FR->EN) and used to guide the Groq language-model fallback. Only unambiguous terms: no 'salut' both ways, no 'Jean'/'Marc'/'Luc'/'Job'. dir is 'both', 'en-fr' or 'fr-en'. capVariant:false stops the script adding a Capitalised copy.",
+  "reviewed": false,
+  "reviewStatus": "DRAFT: every entry still needs a French speaker's review (reviewed:false). Entries with a 'question' have a specific doubt.",
+  "entries": [
+    {
+      "en": "worship service",
+      "fr": "culte",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Critical FR->EN: without this 'culte' can come out as 'cult'. Is 'culte' the word your church uses for the Sunday service?"
+    },
+    {
+      "en": "church service",
+      "fr": "culte",
+      "dir": "en-fr",
+      "reviewed": false
+    },
+    {
+      "en": "Holy Spirit",
+      "fr": "Saint-Esprit",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "Bible study",
+      "fr": "étude biblique",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "Gospel",
+      "fr": "Évangile",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "Lord's Supper",
+      "fr": "Cène",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Protestant usage is 'la Cène'. Do Strasbourg churches say 'la Sainte Cène' or 'la communion'?"
+    },
+    {
+      "en": "testimony",
+      "fr": "témoignage",
+      "dir": "both",
+      "reviewed": false,
+      "question": "'témoignage' also means 'account' or 'witness' in everyday French; fine for faith talk, may be wrong elsewhere."
+    },
+    {
+      "en": "pastor",
+      "fr": "pasteur",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "grace",
+      "fr": "grâce",
+      "dir": "en-fr",
+      "reviewed": false,
+      "capVariant": false,
+      "question": "One direction only: French 'grâce à' means 'thanks to'."
+    },
+    {
+      "en": "salvation",
+      "fr": "salut",
+      "dir": "en-fr",
+      "reviewed": false,
+      "question": "One direction only: French 'salut' also means 'hi'."
+    },
+    {
+      "en": "sin",
+      "fr": "péché",
+      "dir": "fr-en",
+      "reviewed": false,
+      "question": "One direction only: English 'sin' is also a verb."
+    },
+    {
+      "en": "repentance",
+      "fr": "repentance",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Would a French speaker say 'repentance' or 'repentir'?"
+    },
+    {
+      "en": "baptism",
+      "fr": "baptême",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "resurrection",
+      "fr": "résurrection",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "born again",
+      "fr": "né de nouveau",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Check the expression used in French evangelical churches."
+    },
+    {
+      "en": "Sunday school",
+      "fr": "école du dimanche",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "youth group",
+      "fr": "groupe de jeunes",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "prayer request",
+      "fr": "sujet de prière",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Is 'sujet de prière' the usual expression?"
+    },
+    {
+      "en": "Jesus Christ",
+      "fr": "Jésus-Christ",
+      "dir": "both",
+      "reviewed": false
+    },
+    {
+      "en": "Reformation",
+      "fr": "Réforme",
+      "dir": "both",
+      "reviewed": false,
+      "question": "Strasbourg was an early centre of the Reformation: 'la Réforme'."
+    },
+    {
+      "en": "Genesis",
+      "fr": "Genèse",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Exodus",
+      "fr": "Exode",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Leviticus",
+      "fr": "Lévitique",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Deuteronomy",
+      "fr": "Deutéronome",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Psalms",
+      "fr": "Psaumes",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Proverbs",
+      "fr": "Proverbes",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Isaiah",
+      "fr": "Ésaïe",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Jeremiah",
+      "fr": "Jérémie",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Romans",
+      "fr": "Romains",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Corinthians",
+      "fr": "Corinthiens",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Galatians",
+      "fr": "Galates",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Ephesians",
+      "fr": "Éphésiens",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Philippians",
+      "fr": "Philippiens",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Colossians",
+      "fr": "Colossiens",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Thessalonians",
+      "fr": "Thessaloniciens",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Hebrews",
+      "fr": "Hébreux",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Revelation",
+      "fr": "Apocalypse",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false,
+      "question": "English 'revelation' is also an ordinary noun; the entry is capitalised on purpose."
+    },
+    {
+      "en": "Strasbourg",
+      "fr": "Strasbourg",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Homme de Fer",
+      "fr": "Homme de Fer",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Petite France",
+      "fr": "Petite France",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Place Kléber",
+      "fr": "Place Kléber",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Kléber",
+      "fr": "Kléber",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "winstub",
+      "fr": "winstub",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "tarte flambée",
+      "fr": "tarte flambée",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "bredele",
+      "fr": "bredele",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Krutenau",
+      "fr": "Krutenau",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Neudorf",
+      "fr": "Neudorf",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Orangerie",
+      "fr": "Orangerie",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Ponts Couverts",
+      "fr": "Ponts Couverts",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    },
+    {
+      "en": "Gutenberg",
+      "fr": "Gutenberg",
+      "dir": "both",
+      "reviewed": false,
+      "capVariant": false
+    }
+  ]
+}

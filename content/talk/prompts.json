@@ -1,0 +1,6 @@
+{
+  "note": "Vocabulary hints for Whisper's `prompt` parameter (spelling and style only, never instructions). Keep each under about 60 tokens. Edit freely: the app reads this file as is. Used only when the 'Whisper vocabulary prompt' diagnostics flag is on.",
+  "fr": "Jésus-Christ, le Saint-Esprit, l'Évangile, la Bible, le culte, le pasteur, une étude biblique, la grâce, le péché, le salut, Romains, Éphésiens, Apocalypse, Strasbourg, l'Homme de Fer, place Kléber, la Petite France, une tarte flambée, une winstub.",
+  "en": "Jesus Christ, the Holy Spirit, the Gospel, the Bible, a Bible study, grace, sin, salvation, Romans, Ephesians, Revelation, Strasbourg, Homme de Fer, Kléber, Petite France, tarte flambée.",
+  "auto": "Strasbourg, Homme de Fer, Kléber, Petite France, tarte flambée, winstub."
+}
