@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/art/Logo";
 import Backdrop from "@/components/art/Backdrop";
 import InstallBanner from "@/components/InstallBanner";
+import InstallFirst from "@/components/InstallFirst";
+import { installState, SKIP_INSTALL_KEY } from "@/lib/install";
 
 function friendly(message: string) {
   if (/trip list|database error saving new user/i.test(message)) return "This email isn't on the trip list yet. Ask a trip leader to add your email, then try again.";
@@ -22,6 +24,25 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [wait, setWait] = useState(0);
+  // iPhone visitors in Safari are sent through "add to Home Screen" before they see the sign-in form.
+  const [gate, setGate] = useState<"checking" | "install" | "login">("checking");
+  const [inApp, setInApp] = useState(false);
+  const [skipped, setSkipped] = useState(false);
+
+  useEffect(() => {
+    const s = installState();
+    let skip = false;
+    try { skip = sessionStorage.getItem(SKIP_INSTALL_KEY) === "1"; } catch {}
+    setInApp(s.inApp);
+    setSkipped(skip);
+    setGate(s.ios && !s.standalone && !skip ? "install" : "login");
+  }, []);
+
+  function skipInstall() {
+    try { sessionStorage.setItem(SKIP_INSTALL_KEY, "1"); } catch {}
+    setSkipped(true);
+    setGate("login");
+  }
 
   useEffect(() => {
     if (wait <= 0) return;
@@ -54,12 +75,20 @@ export default function LoginPage() {
     setBusy(false);
   }
 
+  if (gate === "install") return <InstallFirst inApp={inApp} onSkip={skipInstall} />;
+  if (gate === "checking") return (
+    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 px-4">
+      <h1 className="sr-only">Le Nid</h1>
+      <Logo stacked size={120} />
+    </main>
+  );
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 px-4">
       <Backdrop aboveNav={false} />
       <h1 className="sr-only">Le Nid</h1>
       <Logo stacked size={120} />
-      <InstallBanner compact />
+      {skipped && <InstallBanner compact />}
       <div className="card">
         {step === "email" ? (
           <form onSubmit={sendCode} className="flex flex-col gap-3">
