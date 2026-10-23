@@ -17,7 +17,7 @@ create policy "profiles update own" on public.profiles for update to authenticat
 create table public.trip_goal (
   id int primary key default 1 check (id = 1),
   title text not null default 'Raise the spire',
-  target_xp int not null default 10000 check (target_xp > 0)
+  target_xp int not null default 15000 check (target_xp > 0)
 );
 insert into public.trip_goal default values;
 alter table public.trip_goal enable row level security;
