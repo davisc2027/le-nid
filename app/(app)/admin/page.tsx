@@ -27,6 +27,20 @@ function Row({ title, sub, children }: { title: string; sub?: string; children: 
   );
 }
 
+/** Optional per-person assignment for a to-do. Nothing ticked means everyone. */
+const Picker = ({ people, chosen = [] }: { people: Person[]; chosen?: string[] }) => (
+  <details className="rounded-xl border border-border px-3 text-sm">
+    <summary className="min-h-11 cursor-pointer py-2 font-semibold">Assign to {chosen.length ? `${chosen.length} people` : "everyone"} <span className="font-normal text-muted">(tap to choose specific people)</span></summary>
+    <div className="flex flex-col pb-2">
+      {people.map((p) => (
+        <label key={p.id} className="flex min-h-11 items-center gap-2">
+          <input type="checkbox" name="assign" value={p.id} defaultChecked={chosen.includes(p.id)} /> {p.name || p.email}
+        </label>
+      ))}
+      <p className="text-xs text-muted">Leave all unticked to give it to every approved person, including people approved later.</p>
+    </div>
+  </details>
+);
 const Id = ({ id }: { id: string }) => <input type="hidden" name="id" value={id} />;
 
 export default async function Admin() {
@@ -38,7 +52,11 @@ export default async function Admin() {
     { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
   ] = await Promise.all([
     supabase.from("meetings").select("id, title, meeting_date").order("meeting_date", { ascending: false }),
-    supabase.from("todos").select("id, title, description, due_date, requires_upload").order("due_date"),
+    (async () => {
+      const r = await supabase.from("todos").select("id, title, description, due_date, requires_upload, everyone").order("due_date");
+      // before migration 0013 there is no everyone column
+      return r.error ? supabase.from("todos").select("id, title, description, due_date, requires_upload").order("due_date") : r;
+    })() as unknown as Promise<{ data: { id: string; title: string; description: string; due_date: string; requires_upload: boolean; everyone?: boolean }[] | null }>,
     supabase.from("todo_assignments").select("todo_id, user_id, completed_at, upload_path"),
     supabase.rpc("admin_list_people"),
     supabase.from("trip_goal").select("title, target_xp").single(),
@@ -111,7 +129,8 @@ export default async function Admin() {
           <textarea className="input" name="description" placeholder="Details" rows={2} />
           <input className="input" name="due_date" type="date" required />
           <label className="text-sm"><input type="checkbox" name="requires_upload" /> Requires a file upload</label>
-          <p className="text-xs text-muted">Assigned to every approved member, including people approved later. Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
+          <Picker people={people.filter((p) => approved.has(p.id))} />
+          <p className="text-xs text-muted">Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
         </ActionForm>
         {todos?.map((t) => {
           const mine = assignments?.filter((a) => a.todo_id === t.id && approved.has(a.user_id)) ?? [];
@@ -132,6 +151,8 @@ export default async function Admin() {
                 <textarea className="input" name="description" defaultValue={t.description} rows={2} />
                 <input className="input" name="due_date" type="date" defaultValue={t.due_date} required />
                 <label className="text-sm"><input type="checkbox" name="requires_upload" defaultChecked={t.requires_upload} /> Requires a file upload</label>
+                {t.everyone === false && <input type="hidden" name="scoped" value="1" />}
+                <Picker people={people.filter((p) => approved.has(p.id))} chosen={t.everyone === false ? mine.map((a) => a.user_id) : []} />
               </ActionForm>
               <ActionForm action={deleteTodo} label="Delete to-do" buttonClass={del} confirm="Delete this to-do for everyone?"><Id id={t.id} /></ActionForm>
             </Row>

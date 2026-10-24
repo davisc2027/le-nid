@@ -149,28 +149,56 @@ export async function addTodo(_: State, f: FormData) {
     const since = new Date(Date.now() - 120_000).toISOString();
     const { data: dup } = await supabase.from("todos").select("id").eq("title", title).eq("due_date", due_date).gte("created_at", since).limit(1);
     if (dup?.length) return "Already created";
+    const chosen = f.getAll("assign").map(String).filter(Boolean);
     const { data: todo, error } = await supabase.from("todos")
-      .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on" })
+      .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on", ...(chosen.length && { everyone: false }) })
       .select("id").single();
     fail(error);
     const { data: people } = await supabase.from("profiles").select("id").eq("status", "approved");
-    const ids = (people ?? []).map((p) => p.id);
+    const ids = (people ?? []).map((p) => p.id).filter((id) => !chosen.length || chosen.includes(id));
     let note = "";
     if (ids.length) {
       fail((await supabase.from("todo_assignments").insert(ids.map((user_id) => ({ todo_id: todo!.id, user_id })))).error);
       note = await push({ title: "New to-do", body: `${title} (due ${due_date})`, url: "/todos" }, ids);
     }
-    return `Created for ${ids.length} approved ${ids.length === 1 ? "member" : "members"}${note}`;
+    return `Created for ${chosen.length ? "" : "all "}${ids.length} ${ids.length === 1 ? "person" : "people"}${note}`;
   }, ["/todos"]);
 }
 
 export async function updateTodo(_: State, f: FormData) {
   return run(async (supabase) => {
+    const id = text(f, "id");
+    const chosen = f.getAll("assign").map(String).filter(Boolean);
+    const wasScoped = f.get("scoped") === "1";
     fail((await supabase.from("todos").update({
       title: text(f, "title"), description: text(f, "description"), due_date: text(f, "due_date"),
       requires_upload: f.get("requires_upload") === "on",
-    }).eq("id", text(f, "id"))).error);
-    return "Saved";
+      ...(chosen.length ? { everyone: false } : wasScoped ? { everyone: true } : {}),
+    }).eq("id", id)).error);
+    if (!chosen.length) {
+      // Back to everyone: give it to any approved person who is missing it.
+      if (wasScoped) {
+        const [{ data: people }, { data: have }] = await Promise.all([
+          supabase.from("profiles").select("id").eq("status", "approved"),
+          supabase.from("todo_assignments").select("user_id").eq("todo_id", id),
+        ]);
+        const got = new Set(have?.map((a) => a.user_id));
+        const rows = (people ?? []).filter((p) => !got.has(p.id)).map((p) => ({ todo_id: id, user_id: p.id }));
+        if (rows.length) fail((await supabase.from("todo_assignments").insert(rows)).error);
+      }
+      return "Saved";
+    }
+    const { data: have } = await supabase.from("todo_assignments").select("user_id, completed_at").eq("todo_id", id);
+    const got = new Set(have?.map((a) => a.user_id));
+    const add = chosen.filter((u) => !got.has(u));
+    if (add.length) {
+      fail((await supabase.from("todo_assignments").insert(add.map((user_id) => ({ todo_id: id, user_id })))).error);
+      await push({ title: "New to-do", body: `${text(f, "title")} (due ${text(f, "due_date")})`, url: "/todos" }, add);
+    }
+    // People taken off it lose it, unless they already finished it.
+    const drop = (have ?? []).filter((a) => !chosen.includes(a.user_id) && !a.completed_at).map((a) => a.user_id);
+    if (drop.length) fail((await supabase.from("todo_assignments").delete().eq("todo_id", id).in("user_id", drop)).error);
+    return `Saved. Added ${add.length}, removed ${drop.length}`;
   }, ["/todos"]);
 }
 
@@ -185,7 +213,10 @@ export async function deleteTodo(_: State, f: FormData) {
 export async function assignMissing(): Promise<State> {
   return run(async (supabase) => {
     const [{ data: todos }, { data: people }, { data: have }] = await Promise.all([
-      supabase.from("todos").select("id"),
+      (async () => {
+        const r = await supabase.from("todos").select("id").eq("everyone", true);
+        return r.error ? supabase.from("todos").select("id") : r; // before migration 0013 there is no everyone column
+      })(),
       supabase.from("profiles").select("id").eq("status", "approved"),
       supabase.from("todo_assignments").select("todo_id, user_id"),
     ]);
