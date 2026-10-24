@@ -149,7 +149,8 @@ export async function addTodo(_: State, f: FormData) {
     const since = new Date(Date.now() - 120_000).toISOString();
     const { data: dup } = await supabase.from("todos").select("id").eq("title", title).eq("due_date", due_date).gte("created_at", since).limit(1);
     if (dup?.length) return "Already created";
-    const chosen = f.getAll("assign").map(String).filter(Boolean);
+    const chosen = f.get("audience") === "individuals" ? f.getAll("assign").map(String).filter(Boolean) : [];
+    if (f.get("audience") === "individuals" && !chosen.length) throw new Error("Choose at least one person, or switch to Everyone");
     const { data: todo, error } = await supabase.from("todos")
       .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on", ...(chosen.length && { everyone: false }) })
       .select("id").single();
@@ -168,7 +169,8 @@ export async function addTodo(_: State, f: FormData) {
 export async function updateTodo(_: State, f: FormData) {
   return run(async (supabase) => {
     const id = text(f, "id");
-    const chosen = f.getAll("assign").map(String).filter(Boolean);
+    const chosen = f.get("audience") === "individuals" ? f.getAll("assign").map(String).filter(Boolean) : [];
+    if (f.get("audience") === "individuals" && !chosen.length) throw new Error("Choose at least one person, or switch to Everyone");
     const wasScoped = f.get("scoped") === "1";
     fail((await supabase.from("todos").update({
       title: text(f, "title"), description: text(f, "description"), due_date: text(f, "due_date"),

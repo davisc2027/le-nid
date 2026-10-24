@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Star } from "lucide-react";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
+import AssignPicker from "@/components/admin/AssignPicker";
 import ActionForm from "@/components/admin/ActionForm";
 import Section from "@/components/admin/Section";
 import UploadLink from "@/components/admin/UploadLink";
@@ -27,19 +28,8 @@ function Row({ title, sub, children }: { title: string; sub?: string; children: 
   );
 }
 
-/** Optional per-person assignment for a to-do. Nothing ticked means everyone. */
 const Picker = ({ people, chosen = [] }: { people: Person[]; chosen?: string[] }) => (
-  <details className="rounded-xl border border-border px-3 text-sm">
-    <summary className="min-h-11 cursor-pointer py-2 font-semibold">Assign to {chosen.length ? `${chosen.length} people` : "everyone"} <span className="font-normal text-muted">(tap to choose specific people)</span></summary>
-    <div className="flex flex-col pb-2">
-      {people.map((p) => (
-        <label key={p.id} className="flex min-h-11 items-center gap-2">
-          <input type="checkbox" name="assign" value={p.id} defaultChecked={chosen.includes(p.id)} /> {p.name || p.email}
-        </label>
-      ))}
-      <p className="text-xs text-muted">Leave all unticked to give it to every approved person, including people approved later.</p>
-    </div>
-  </details>
+  <AssignPicker people={people.map((p) => ({ id: p.id, label: p.name || p.email || "(no name)" }))} chosen={chosen} />
 );
 const Id = ({ id }: { id: string }) => <input type="hidden" name="id" value={id} />;
 
