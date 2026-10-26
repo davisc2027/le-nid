@@ -6,7 +6,8 @@
     { "id": "homes", "title": "Homes and conversation", "blurb": "Being a guest, table manners and what to talk about." },
     { "id": "faith", "title": "Faith conversations", "blurb": "Laïcité, loaded words, and talking about faith with respect." },
     { "id": "history", "title": "Strasbourg's story", "blurb": "The Reformation, the cathedral, two countries and Europe." },
-    { "id": "alsace", "title": "Alsatian life", "blurb": "Dialect, storks, winstubs, holidays and the Christmas market." }
+    { "id": "alsace", "title": "Alsatian life", "blurb": "Dialect, storks, winstubs, holidays and the Christmas market." },
+    { "id": "neighbours", "title": "Who lives here", "blurb": "Who you may meet in Strasbourg, and how to pray for them.", "credit": "joshua-project" }
   ],
   "cards": [
     {
@@ -648,6 +649,147 @@
         "https://payfit.com/fr/fiches-pratiques/jours-feries-alsace/",
         "https://www.journaldunet.com/management/vie-personnelle/1538103-cd1-2-jours-feries-region/"
       ]
+    },
+    {
+      "id": "jp-who-lives", "type": "fact", "theme": "neighbours",
+      "title": "Who lives around you in Strasbourg",
+      "text": "Strasbourg is a student, European and international city. Alongside families rooted in Alsace, you will meet people with North African, Turkish and sub-Saharan African roots, and many others. Joshua Project, a missions research group, estimates about 114 people groups in France (a 2026 snapshot, not re-checked), but its figures are national. Use them as background, never to guess who someone is.",
+      "unit": "u10",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/countries/FR",
+        "https://joshuaproject.net/data"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Re-check 114 and its date live. Is 'international city' the right wording for a native reader?"
+    },
+    {
+      "id": "jp-alsatian", "type": "alsace", "theme": "neighbours",
+      "title": "Alsatians: Christian roots, few believers",
+      "text": "Joshua Project estimates about 1.6 million Alsatians in France, roughly 65% Christian by background but with very few evangelical believers (a 2026 snapshot, estimates only). Church is often family heritage more than personal faith. Many locals say Je suis catholique or Je suis protestant and mean tradition, not belief, so ask what it means to them.",
+      "phrase": { "fr": "Je suis catholique", "gloss": "I'm Catholic" },
+      "unit": "u16",
+      "odile": "Ask what the word means to them, then listen. Écouter is half the job.",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/people_groups/19632/FR",
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Verify 1.6 million and 65% live. Does an Alsatian pastor recognise this description?"
+    },
+    {
+      "id": "jp-estimates", "type": "faith-context", "theme": "neighbours",
+      "title": "Numbers are estimates, people are not",
+      "text": "Figures from missions research are estimates, often built from older surveys, and they differ between pages and years. Joshua Project itself says its data may contain errors. A percentage describes a group, never the person in front of you. Ask about them and listen.",
+      "unit": "u12",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/data",
+        "https://api.joshuaproject.net/terms_of_use"
+      ],
+      "review": "leader",
+      "reviewNote": "JP cards: pastor/native review. Confirm the 'may contain errors' wording against the live terms page."
+    },
+    {
+      "id": "jp-unreached-meaning", "type": "faith-context", "theme": "neighbours",
+      "title": "What the word 'unreached' means",
+      "text": "Joshua Project uses unreached for a group where few people belong to evangelical churches; its rule of thumb is fewer than about 2% evangelical, a convention rather than a measurement (2026 definition). It describes how many churches are nearby, not the worth or beliefs of the people. Many French people find the word heavy, so keep it out of conversation. Evangelical churches are a small minority in France, so local partners matter.",
+      "unit": "u12",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/data",
+        "https://joshuaproject.net/global/progress"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Confirm the live definition. Does the partner church welcome this vocabulary, or does it read as mission-speak?"
+    },
+    {
+      "id": "jp-north-africa", "type": "faith-context", "theme": "neighbours",
+      "title": "Neighbours with North African roots",
+      "text": "Joshua Project estimates about 730,000 Kabyle (Berber) people in France, mostly Muslim (a 2026 national estimate, not a Strasbourg figure). Families trace roots to Algeria, Morocco or Tunisia, and many were born in France. Start with food, family and hospitality, ask what they would like to share, and never assume belief or practice.",
+      "unit": "u16",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/countries/FR",
+        "https://joshuaproject.net/religions/6"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Verify count live. Ask a native or a Muslim-background believer about the wording; check Ramadan dates against the trip."
+    },
+    {
+      "id": "jp-turkish", "type": "faith-context", "theme": "neighbours",
+      "title": "Turkish families in France",
+      "text": "Joshua Project estimates about 230,000 people of Turkish background in France, mostly Muslim (a 2026 national estimate). Many families have lived here for decades and take hospitality very seriously. Accept tea when it is offered, ask about their family and home town, and let them set the pace on faith.",
+      "unit": "u16",
+      "credit": "joshua-project",
+      "source": [
+        "https://www.joshuaproject.net/index.php/people_groups/18274/FR",
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Verify count live. Confirm the tea custom with a Turkish-background contact; confirm a Strasbourg presence elsewhere."
+    },
+    {
+      "id": "jp-africa-diaspora", "type": "faith-context", "theme": "neighbours",
+      "title": "Africa in Strasbourg: do not assume a faith",
+      "text": "People with roots in West and Central Africa live across France, and no single faith describes them. In its 2026 listings (not re-checked), Joshua Project shows some groups as mostly Muslim, some as mostly Christian and some following traditional religions. Many African-led churches in France are lively partners. Ask where someone worships, or whether they do, before you assume anything.",
+      "unit": "u16",
+      "credit": "joshua-project",
+      "source": [
+        "https://joshuaproject.net/countries/FR",
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. No JP France profiles confirmed for Congolese or Cameroonian groups, so no figures. African-church or native reader: check tone."
+    },
+    {
+      "id": "jp-engage-tips", "type": "etiquette", "theme": "neighbours",
+      "title": "Respectful with every neighbour",
+      "text": "Whoever you meet, greet with Bonjour, use vous, and ask before you talk about faith. Offer to listen to their story and accept hospitality gracefully. Some neighbours avoid pork or alcohol, so ask before you offer food or drink. Say who you are and which local church you are helping, and take no for an answer.",
+      "phrase": { "fr": "Vous avez grandi dans une famille croyante ?", "gloss": "Did you grow up in a believing family?" },
+      "unit": "u12",
+      "odile": "Bonjour, vous, and a real question. That is the whole recipe.",
+      "odileSass": "Ask before you assume. Even storks check the nest first.",
+      "source": [
+        "https://www.savoie.gouv.fr/contenu/telechargement/45505/369317/file/Charte%20de%20la%20laicite.pdf",
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "both",
+      "reviewNote": "JP cards: pastor/native review. Overlaps permission-first and secte; align with the partner church's outreach practice."
+    },
+    {
+      "id": "jp-pray-strasbourg", "type": "faith-context", "theme": "neighbours",
+      "title": "Pray for the partner church",
+      "text": "Pray for the partner church and its pastor, and for the students and families you will meet. Ask for good listening on both sides, patience with the language and kindness when plans change. Pray that new friendships last well after the trip.",
+      "unit": "u18",
+      "source": [
+        "https://www.savoie.gouv.fr/contenu/telechargement/45505/369317/file/Charte%20de%20la%20laicite.pdf"
+      ],
+      "review": "leader",
+      "reviewNote": "JP cards: pastor/native review. Prayer content is the leader's and the partner church's call."
+    },
+    {
+      "id": "jp-pray-heritage", "type": "faith-context", "theme": "neighbours",
+      "title": "Pray for Alsatians and their church heritage",
+      "text": "Pray for Alsatians for whom church is family tradition, and for those who were hurt by it. Ask for honest conversations in which nobody feels pushed. Pray too for Catholic and Lutheran neighbours and their churches, who are fellow Christians, not people to win over.",
+      "unit": "u18",
+      "source": [
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "leader",
+      "reviewNote": "JP cards: pastor/native review. Prayer content is the leader's and the partner church's call."
+    },
+    {
+      "id": "jp-pray-welcome", "type": "faith-context", "theme": "neighbours",
+      "title": "Pray for every family to be welcome",
+      "text": "Pray for Muslim, Turkish, African and many other families in Strasbourg, that they are welcomed and treated with respect. Pray that believers love their neighbours with real friendship, expecting nothing back. Pray for the whole city: its students, its newcomers and its long-time residents.",
+      "unit": "u18",
+      "source": [
+        "https://www.insee.fr/fr/statistiques/6793308"
+      ],
+      "review": "leader",
+      "reviewNote": "JP cards: pastor/native review. Prayer content is the leader's and the partner church's call; wording of 'Muslim, Turkish, African' for a native reader."
     }
   ],
   "questions": [
@@ -1042,6 +1184,37 @@
       "answer": 1,
       "explain": "Many Alsatian dishes, from choucroute to tarte flambée, contain pork or bacon. Ask directly.",
       "fact": "Winstub means wine room: a cosy traditional tavern."
+    },
+    {
+      "id": "q-jp-catholic", "card": "jp-alsatian",
+      "scenario": "A new friend in Strasbourg says, “Je suis catholique.” What does that tell you?",
+      "options": ["That she goes to Mass every week", "Not much yet: ask what it means to her", "That she wants to talk about God"],
+      "answer": 1,
+      "explain": "In Alsace, the word often names family heritage, not practice or belief. Ask a kind question and listen.",
+      "fact": "Je suis catholique can simply mean “I was raised Catholic.”"
+    },
+    {
+      "id": "q-jp-statistic", "card": "jp-estimates",
+      "scenario": "A report says most people in one group are Muslim. You meet a man from that group. What do you assume?",
+      "options": ["That he follows every tradition strictly", "That he would love to talk religion", "Nothing yet: he may practise, or not"],
+      "answer": 2,
+      "explain": "A statistic describes a group and may be out of date. Each person tells you who they are.",
+      "fact": "Even the researchers say their figures may contain errors."
+    },
+    {
+      "id": "q-jp-tea", "card": "jp-turkish",
+      "scenario": "A family of Turkish background offers you tea at their door. What is the best response?",
+      "options": ["Decline politely so you don't impose", "Accept it and ask about their family", "Accept it, then steer to religion"],
+      "answer": 1,
+      "explain": "Hospitality is a gift, so accepting it gladly shows respect. Let them decide when, or whether, faith comes up."
+    },
+    {
+      "id": "q-jp-africa", "card": "jp-africa-diaspora",
+      "scenario": "You meet a woman whose family came from West Africa. Which question respects her most?",
+      "options": ["“Vous êtes musulmane ?”", "“Vous allez à l'église ?”", "“Vous habitez à Strasbourg depuis longtemps ?”"],
+      "answer": 2,
+      "explain": "People from one region follow many faiths, or none. Start with her life and let her bring up faith.",
+      "fact": "Many African-led churches in France are lively and welcoming."
     }
   ],
   "checklist": [
@@ -1064,6 +1237,8 @@
     { "id": "dont-defend", "kind": "dont", "text": "Don't defend the Church when someone tells you it hurt them.", "card": "church-hurt" },
     { "id": "dont-data", "kind": "dont", "text": "Don't collect names, numbers or addresses: first names only, with permission.", "card": "contact-data" },
     { "id": "dont-german", "kind": "dont", "text": "Don't joke that Alsatians are German.", "card": "alsace-history" },
-    { "id": "dont-beachwear", "kind": "dont", "text": "Don't wear beachwear or hats inside churches.", "card": "dress" }
+    { "id": "dont-beachwear", "kind": "dont", "text": "Don't wear beachwear or hats inside churches.", "card": "dress" },
+    { "id": "do-ask-background", "kind": "do", "text": "Ask before assuming someone's faith or background; a statistic is not a person.", "card": "jp-engage-tips" },
+    { "id": "dont-guess-faith", "kind": "dont", "text": "Don't guess someone's faith from their name, look or family background.", "card": "jp-estimates" }
   ]
 }

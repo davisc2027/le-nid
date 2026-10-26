@@ -3,7 +3,12 @@
 import culture from "@/content/french/culture.json";
 
 export type CardType = "fact" | "etiquette" | "history" | "faith-context" | "alsace";
-export type Theme = { id: string; title: string; blurb: string };
+/** Data from Joshua Project (joshuaproject.net) needs a visible credit line wherever it is shown. */
+export type Credit = "joshua-project";
+export const CREDIT_LABEL: Record<Credit, { text: string; href: string }> = {
+  "joshua-project": { text: "Data provided by Joshua Project", href: "https://joshuaproject.net" },
+};
+export type Theme = { id: string; title: string; blurb: string; credit?: Credit };
 export type CultureCard = {
   id: string;
   type: CardType;
@@ -20,6 +25,8 @@ export type CultureCard = {
   /** Odile's line; `odileSass` replaces it unless gentle mode is on. */
   odile?: string;
   odileSass?: string;
+  /** Set on every card that uses third-party data; CardBody then shows the credit link. */
+  credit?: Credit;
   source: string[];
   /** Needs confirmation by a native speaker, a leader, or both before the trip. */
   review?: "native" | "leader" | "both";

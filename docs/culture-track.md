@@ -31,7 +31,7 @@ Principles:
 
 ### What is in it
 
-52 cards, 49 check questions, 20 checklist items.
+63 cards, 53 check questions, 22 checklist items (11 cards, 4 questions and 2 checklist items are the "Who lives here" set, section 7).
 
 | Theme | Cards | Questions |
 |---|---|---|
@@ -42,6 +42,7 @@ Principles:
 | Faith conversations (`faith`) | 11 | 10 |
 | Strasbourg's story (`history`) | 11 | 5 |
 | Alsatian life (`alsace`) | 5 | 5 |
+| Who lives here (`neighbours`) | 11 | 4 |
 
 By type: etiquette 19, faith-context 10, history 9, fact 8, alsace 6. Inside each theme, cards are ordered by usefulness.
 
@@ -281,3 +282,35 @@ length tell of the quiz answers.
 * Speech of the card phrases (same device voice as the lessons).
 * Size: `culture.json` (about 75 KB, roughly 20 KB gzipped) is bundled into the lesson player's client code, as `units.json` already is.
   If that matters, the cards could be passed in as props from the lesson page instead.
+
+## 7. "Who lives here" cards (Joshua Project)
+
+Source and reasoning: `docs/joshua-project-culture.md`. Theme `neighbours`, 11 cards: `jp-who-lives`, `jp-alsatian`,
+`jp-estimates`, `jp-unreached-meaning`, `jp-north-africa`, `jp-turkish`, `jp-africa-diaspora`, `jp-engage-tips` and three
+prayer cards (`jp-pray-strasbourg`, `jp-pray-heritage`, `jp-pray-welcome`); questions `q-jp-*`; checklist `do-ask-background`
+and `dont-guess-faith`. Built static, no API key and no live calls.
+
+**These cards need pastor and native review before the trip.** Every one has `review` and a `reviewNote` that starts with
+"JP cards: pastor/native review", so `grep -n "JP cards" content/french/culture.json` finds them. Learners never see this.
+
+* **No Joshua Project figure was verified live** (the sandbox could not reach joshuaproject.net). Figures came from
+  search excerpts and are worded as "about", as estimates, from a "2026 snapshot". Before the trip someone with open
+  internet must check: 114 groups in France; about 1.6 million Alsatians and 65% Christian by background; about 730,000
+  Kabyle; about 230,000 Turkish background (JP's excerpt said 226,000); the "fewer than about 2% evangelical" definition;
+  the "may contain errors" wording on the terms page. Fix the text and the year if they differ.
+* **Credit.** Terms require "Data provided by Joshua Project" with a link on pages showing its content. Cards that use
+  JP data carry `"credit": "joshua-project"` (shown as a link in the open card) and the theme carries it too (shown under
+  the theme heading on `/culture`). The checker requires a joshuaproject.net source, a credit and "about"/"estimate"
+  wording together. Terms also allow revocation and ask for cached data to be deleted: the facts are few and sit in these
+  cards only, so they can be removed in one commit. Still to do: email JP about a free church-trip app and keep the reply.
+* **National, not local.** JP has no Strasbourg figures; the cards say so and never guess who someone is.
+* **Left out on purpose:** Roma, Manouche and Jewish cards (figures disagree widely or risk echoing pressure on a minority;
+  `other-beliefs` covers the Jewish community). The African card makes no assumption of faith and gives no group figures.
+* **Wording.** No "target" language; "unreached" appears only in the card that explains it, and tells learners to keep it
+  out of conversation. Needs the partner church's view (it may read as mission-speak).
+* **Prayer.** The three `jp-pray-*` cards rotate one a day in a "Pray today" strip on `/culture` (`PrayStrip`, offline, no
+  key). They use the existing `faith-context` type; no new `pray` type. They hold no JP figures. Prayer wording is the
+  leader's and the partner church's call.
+* **Customs to confirm** with a Turkish-background and a Muslim-background contact: tea and hospitality, Ramadan dates
+  against the trip, and the tone of the North African and African cards.
+* Not built: the optional "Unreached of the Day" feed, and any lesson placement (no card has a `lesson`).

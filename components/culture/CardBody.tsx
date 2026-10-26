@@ -6,6 +6,7 @@ import Stork from "@/components/art/Stork";
 import { GENTLE_KEY } from "@/lib/odile";
 import { speak } from "@/lib/french/speech";
 import type { CultureCard } from "./data";
+import Credit from "./Credit";
 
 /** Odile's line for a card: the sassy one unless gentle mode is on. Decided after mount (gentle lives in localStorage). */
 export function useOdileLine(card: CultureCard): string | undefined {
@@ -43,6 +44,7 @@ export default function CardBody({ card, sources = false, odile = true }: { card
           <p className="flex-1 text-sm font-semibold"><span className="sr-only">Odile says: </span>{line}</p>
         </div>
       )}
+      {card.credit && <Credit credit={card.credit} />}
       {sources && (
         <details className="text-xs text-muted">
           <summary className="min-h-11 cursor-pointer content-center font-bold">Sources ({card.source.length})</summary>

@@ -184,6 +184,19 @@ section("culture.json invariants");
     if (!cards.has(it.card)) fail(`culture: checklist ${it.id} names missing card "${it.card}"`);
     text(it.text, 110, `checklist ${it.id}`);
   }
+  // Joshua Project cards: credited, hedged as estimates, flagged for review (docs/culture-track.md section 7).
+  for (const c of culture.cards) {
+    const jp = c.credit === "joshua-project";
+    if (jp && !c.source.some((u) => /joshuaproject\.net/.test(u))) fail(`culture: card ${c.id} has a Joshua Project credit but no joshuaproject.net source`);
+    if (c.source.some((u) => /joshuaproject\.net/.test(u)) && !jp) fail(`culture: card ${c.id} cites Joshua Project but has no "credit": "joshua-project"`);
+    const figures = /\d/.test(c.text.replace(/\b20\d\d\b/g, ""));
+    if (jp && figures && !/\b(about|estimate)/i.test(c.text)) fail(`culture: card ${c.id} shows a Joshua Project figure without "about" or "estimate"`);
+    if (jp && figures && !/estimate|snapshot|2026 definition/i.test(c.text)) fail(`culture: card ${c.id} must say its Joshua Project figures are estimates or a snapshot`);
+    if (c.theme === "neighbours" && !c.review) fail(`culture: neighbours card ${c.id} needs review and reviewNote`);
+    if (/\b(target|mission field)\b/i.test(c.text) && c.theme === "neighbours") fail(`culture: neighbours card ${c.id} uses target language`);
+  }
+  for (const t of culture.themes) if (t.credit !== undefined && t.credit !== "joshua-project") fail(`culture: theme ${t.id} has unknown credit "${t.credit}"`);
+  if (culture.cards.some((c) => c.credit) && !culture.themes.some((t) => t.credit === "joshua-project")) fail("culture: credited cards need a theme-level credit line");
   if (cards.size < 40) fail(`culture: only ${cards.size} cards (at least 40)`);
   if (qIds.size < 30) fail(`culture: only ${qIds.size} questions (at least 30)`);
   // options are shuffled in the app, so position is no tell; length can be, so keep it near chance (1 in 3)

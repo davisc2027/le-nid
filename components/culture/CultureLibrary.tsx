@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { TYPE_LABEL, type CultureCard, type Theme } from "./data";
 import { READ_KEY, readSet, writeSet } from "./storage";
 import CardBody from "./CardBody";
+import Credit from "./Credit";
 
 export type LibraryTheme = Theme & { cards: (CultureCard & { where?: string })[] };
 
@@ -48,6 +49,7 @@ export default function CultureLibrary({ themes }: { themes: LibraryTheme[] }) {
             <div>
               <h2 id={`theme-${t.id}`} className="font-extrabold text-primary">{t.title}</h2>
               <p className="text-sm text-muted">{t.blurb} · {done}/{t.cards.length} read</p>
+              {t.credit && <Credit credit={t.credit} />}
             </div>
             {t.cards.map((c) => {
               const isOpen = open === c.id;

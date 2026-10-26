@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, CircleHelp, ListChecks } from "lucide-react";
 import { UNITS } from "@/lib/french/content";
 import { CARDS, THEMES } from "@/components/culture/data";
+import PrayStrip from "@/components/culture/PrayStrip";
 import CultureLibrary, { type LibraryTheme } from "@/components/culture/CultureLibrary";
 
 // Where each card sits in the course, e.g. "after Hello and goodbye (Bonjour !)" or "before Who we are".
@@ -31,6 +32,7 @@ export default function Culture() {
         <Link href="/culture/quiz" className="btn"><CircleHelp size={18} aria-hidden="true" />Quiz</Link>
         <Link href="/culture/checklist" className="btn ghost"><ListChecks size={18} aria-hidden="true" />Before you go</Link>
       </div>
+      <PrayStrip cards={CARDS.filter((c) => c.id.startsWith("jp-pray-"))} />
       <CultureLibrary themes={themes} />
     </div>
   );
