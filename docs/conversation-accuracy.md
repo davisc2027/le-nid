@@ -96,6 +96,8 @@ translations/hour; code has `STT_PER_HOUR = 120`, `STT_PER_DAY = 120`, translate
 | `channelCount` | 1 | Keep 1. (A WebKit forum report says macOS Safari 26 may still deliver stereo with EC off; harmless.) | Medium. |
 | `sampleRate` | unset | Leave unset; iOS gives 48 kHz (or 44.1). Downsample ourselves to 16 kHz when encoding WAV (3.3). | High. |
 
+**Microphone permission:** `lib/audio/micStream.ts` reuses one stream per screen visit (tracks disabled between listens, released on unmount, after 90 s idle, 30 s hidden or a track ending), but iOS may still ask again after the Home Screen app is relaunched, which the app cannot prevent, and the orange mic indicator may stay on while the stream is warm.
+
 iOS specifics worth knowing (all **unverified on our devices**, from WebKit bug reports):
 
 - With the mic open and echo cancellation on, page audio can crackle on iOS 26.2-27 (WebKit bug 326286, filed this

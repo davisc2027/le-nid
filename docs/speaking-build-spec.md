@@ -73,6 +73,8 @@ Continue is shown after the first analysed attempt, whatever the state. Before t
 
 ### 2.3 Blocked states (replace the mic area)
 
+Microphone reuse: `lib/audio/micStream.ts` keeps one stream warm per screen visit (tracks disabled between takes, fully released on unmount, 90 s idle, 30 s hidden or a track ending); the OS may still prompt after a relaunch of the Home Screen app, which the app cannot prevent, and the orange mic indicator may stay on while the stream is warm.
+
 | State | Title | Body | Buttons |
 |---|---|---|---|
 | `denied` (NotAllowedError, SecurityError) | `Microphone off` | `The microphone is off for Le Nid. To use it, allow it in Settings › Apps › Safari › Microphone (on older iPhones: Settings › Safari › Microphone), then come back. You can keep going without speaking.` | **Try again**, **Continue** |

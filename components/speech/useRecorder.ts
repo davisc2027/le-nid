@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createEndpointer, levelFromRms } from "@/lib/speech/endpoint";
 import type { StopReason } from "@/lib/speech/checks";
+import { acquireMic, pauseMic, releaseMic } from "@/lib/audio/micStream";
 import { boostForPlayback, encodeWav } from "@/lib/speech/wav";
 
 export type RecState = "idle" | "starting" | "recording" | "done" | "denied" | "unsupported" | "error";
@@ -12,7 +13,7 @@ export type Recording = {
 
 type Runtime = {
   ctx: AudioContext; stream: MediaStream | null; nodes: AudioNode[]; buffer: Float32Array; written: number;
-  settings: MediaTrackSettings | null; finished: boolean;
+  settings: MediaTrackSettings | null; finished: boolean; offEnded?: () => void;
 };
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
@@ -43,7 +44,8 @@ export function useRecorder(opts: { capSec: number; onLevel?: (level: number) =>
     if (!r) return;
     r.finished = true;
     for (const n of r.nodes) { try { n.disconnect(); } catch { /* already gone */ } }
-    r.stream?.getTracks().forEach((t) => { try { t.stop(); } catch { /* ignore */ } });
+    r.offEnded?.();
+    pauseMic(r.stream); // warm + disabled between takes; fully released on unmount, idle or hidden
     r.ctx.close().catch(() => {});
     setAudioSession("playback");
   }, []);
@@ -90,18 +92,16 @@ export function useRecorder(opts: { capSec: number; onLevel?: (level: number) =>
     };
     try {
       const wanted = { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false };
-      let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: wanted });
-      } catch (e) {
-        if ((e as { name?: string } | null)?.name !== "OverconstrainedError") throw e;
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      }
+      const stream = await acquireMic({ audio: wanted }, { audio: true });
       run.stream = stream;
-      if (abandoned()) { release(); return; }
+      if (abandoned()) { pauseMic(stream); release(); return; }
       const track = stream.getAudioTracks()[0];
       run.settings = track ? track.getSettings() : null;
-      if (track) track.onended = () => { if (!abandoned() && stateRef.current === "recording") fail(new Error("track ended")); };
+      if (track) {
+        const onEnded = () => { if (!abandoned() && stateRef.current === "recording") fail(new Error("track ended")); };
+        track.addEventListener("ended", onEnded);
+        run.offEnded = () => track.removeEventListener("ended", onEnded);
+      }
       await ctx.resume().catch(() => {});
       if (abandoned()) { release(); return; }
 
@@ -169,6 +169,7 @@ export function useRecorder(opts: { capSec: number; onLevel?: (level: number) =>
       window.removeEventListener("pagehide", discard);
       generation.current++;
       release(); revoke();
+      releaseMic(); // leaving the screen: never keep the mic open elsewhere
     };
   }, [discard, release, revoke]);
 

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { bandRatio, createVad, meterLevel, rmsFromFloats, type VadConfig, type VadEnd } from "@/lib/talk/vad";
 import { extensionFor, pickMimeType } from "@/lib/talk/mime";
 import { canRecord, createWakeLock } from "@/lib/talk/browser";
+import { acquireMic, pauseMic, releaseMic } from "@/lib/audio/micStream";
 import { assembleClip, createRing } from "@/lib/talk/ring";
 import { encodeWav } from "@/lib/talk/wav";
 import type { Side } from "@/lib/talk/lang";
@@ -53,6 +54,8 @@ export function useVoiceCapture({ onClip, onLevel, isMuted, getGate, getTuning }
     watchdog?: ReturnType<typeof setTimeout>;
     node?: AudioWorkletNode;
     recorder?: MediaRecorder;
+    offEnded?: () => void;
+    nodes?: AudioNode[];
   }>({ gen: 0 });
   const wake = useRef<ReturnType<typeof createWakeLock> | null>(null);
 
@@ -63,7 +66,9 @@ export function useVoiceCapture({ onClip, onLevel, isMuted, getGate, getTuning }
     if (l.watchdog) clearTimeout(l.watchdog);
     if (l.recorder && l.recorder.state !== "inactive") { try { l.recorder.stop(); } catch { /* already stopped */ } }
     if (l.node) { l.node.port.onmessage = null; try { l.node.disconnect(); } catch { /* ignore */ } }
-    l.stream?.getTracks().forEach((t) => t.stop());
+    l.offEnded?.();
+    l.nodes?.forEach((n) => { try { n.disconnect(); } catch { /* ignore */ } });
+    pauseMic(l.stream); // keeps the stream warm with tracks disabled; released on unmount, idle or hidden
     void l.ctx?.close().catch(() => {});
     live.current = { gen: l.gen };
     void wake.current?.release();
@@ -89,21 +94,25 @@ export function useVoiceCapture({ onClip, onLevel, isMuted, getGate, getTuning }
 
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: tuning.noiseSuppression, autoGainControl: true, channelCount: 1 } });
+      stream = await acquireMic({ audio: { echoCancellation: true, noiseSuppression: tuning.noiseSuppression, autoGainControl: true, channelCount: 1 } });
     } catch (e) {
       const name = (e as { name?: string }).name;
       if (live.current.gen === gen) stop(name === "NotAllowedError" || name === "SecurityError" ? "denied" : "error");
       return;
     }
-    if (live.current.gen !== gen) { stream.getTracks().forEach((t) => t.stop()); return; }
+    if (live.current.gen !== gen) { pauseMic(stream); return; }
     live.current.stream = stream;
-    stream.getAudioTracks().forEach((t) => t.addEventListener("ended", () => { if (live.current.gen === gen) stop("error"); }));
+    const onEnded = () => { if (live.current.gen === gen) stop("error"); };
+    const tracks = stream.getAudioTracks();
+    tracks.forEach((t) => t.addEventListener("ended", onEnded));
+    live.current.offEnded = () => tracks.forEach((t) => t.removeEventListener("ended", onEnded));
 
     const source = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 1024;
     analyser.smoothingTimeConstant = 0.3;
     source.connect(analyser);
+    live.current.nodes = [source, analyser];
     const tbuf = new Float32Array(analyser.fftSize);
     const fbuf = new Float32Array(analyser.frequencyBinCount);
     const vad = createVad(tuning.vad);
@@ -132,6 +141,7 @@ export function useVoiceCapture({ onClip, onLevel, isMuted, getGate, getTuning }
         source.connect(node);
         node.connect(mute).connect(ctx.destination);
         live.current.node = node;
+        live.current.nodes?.push(mute);
         pcmOn = true;
         // If no audio arrives, give up on PCM and use the recorder instead.
         live.current.watchdog = setTimeout(() => {
@@ -265,6 +275,7 @@ export function useVoiceCapture({ onClip, onLevel, isMuted, getGate, getTuning }
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onPageHide);
       stop("off");
+      releaseMic(); // leaving the screen: never keep the mic open elsewhere
     };
   }, [stop]);
 
