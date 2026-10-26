@@ -11,10 +11,11 @@ import { createClient } from "@/lib/supabase/client";
 import { bibleInstalled, loadVerse } from "@/lib/bible/load";
 import { refLabel } from "@/lib/bible/reference";
 import { pickBlanks } from "@/lib/scripture/drills";
-import { chunksFor, type Chunk } from "@/lib/scripture/chunks";
+import { chunksFor, englishChunks, type Chunk } from "@/lib/scripture/chunks";
 import {
-  advance, CEMENT, fraction, markCement, markLearned, PHASES, planPhase, resolve, restart, RECALL, statusOf,
-  type Progress, type Step,
+  advance, advanceEnglish, CEMENT, englishActive, englishCounts, fraction, inEnglishNow, markCement, markLearned, PHASES,
+  planEnglish, planPhase, resolve, restart, RECALL, skipEnglish, statusOf,
+  type EnStep, type Progress, type Step,
 } from "@/lib/scripture/mastery";
 import { mergeSaved, saveProgress } from "@/lib/scripture/store";
 import { stop as stopSpeech } from "@/lib/scripture/karaoke";
@@ -26,7 +27,8 @@ import OdileTrack from "@/components/art/OdileTrack";
 import { PetalMeter } from "@/components/art/Rosace";
 import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import { Build, Gaps, OrderChunks, Recall, type Done, type Marks } from "./Drills";
-import { PhaseDots, PhaseList } from "./PhasePath";
+import { EnBuild, EnRead, EnVerse } from "./EnglishStage";
+import { PhaseDots, PhaseList, type EnglishState } from "./PhasePath";
 import TapWords, { AudioBar, playGroup, useSlow } from "./TapWords";
 import VerseDiff from "./VerseDiff";
 
@@ -75,6 +77,14 @@ function stepTitle(s: Step, k: number): { title: string; sub?: string } {
     case "gaps": return { title: "Fill the gaps", sub: "Type each missing word." };
     case "recall": return { title: "From memory", sub: "Type the whole verse." };
     case "cement": return { title: "Cement it", sub: "Type the verse from memory once more." };
+  }
+}
+
+function enTitle(s: EnStep, k: number): { title: string; sub?: string } {
+  switch (s.kind) {
+    case "enRead": return { title: "Read it in English", sub: "Meet the verse in English first." };
+    case "enBuild": return { title: "Build it in English", sub: k > 1 ? `Part ${s.chunk + 1} of ${k}` : undefined };
+    case "enVerse": return { title: "Say it in English", sub: "Type the whole verse. Small slips are fine." };
   }
 }
 
@@ -181,6 +191,9 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
 
   const chunks = useMemo(() => (v ? chunksFor(verseKey, v.fr) : []), [v, verseKey]);
   const sizes = useMemo(() => chunks.map((c) => wordCount(c.fr)), [chunks]);
+  // English-first stage: the same verse in the app's English Bible text (none = go straight to French)
+  const enChunks = useMemo(() => (v ? englishChunks(v.en, chunks) : []), [v, chunks]);
+  const [enHint, setEnHint] = useState(false);
 
   const sound = soundPick ?? (v !== undefined && soundOn()); // read after mount (localStorage); the verse loads client-side
   useEffect(() => {
@@ -189,7 +202,10 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
       if (!live) return;
       if (!x) setNoBible(!(await bibleInstalled()));
       // where this learner is on the path: newer of the database copy and this device's copy
-      if (x) setP(resolve(api.loadProgress(verseKey, saved), chunksFor(verseKey, x.fr).map((c) => wordCount(c.fr)), learnedAt));
+      if (x) {
+        const fr = chunksFor(verseKey, x.fr);
+        setP(resolve(api.loadProgress(verseKey, saved), fr.map((c) => wordCount(c.fr)), learnedAt, new Date(), englishChunks(x.en, fr).length));
+      }
       setV(x);
     });
     return () => { live = false; };
@@ -200,7 +216,7 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
     return () => clearInterval(id);
   }, []);
   // move focus to the new step's heading so screen readers announce it (not on first render)
-  const stepKey = p ? `${p.phase}-${p.step}` : "";
+  const stepKey = p ? `${p.enDone ? "" : `en${p.enStep ?? 0}-`}${p.phase}-${p.step}` : "";
   const firstStep = useRef(true);
   useEffect(() => {
     if (!stepKey || screen !== "run") return;
@@ -217,22 +233,37 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
     </div>
   );
 
+  const hasEn = enChunks.length > 0;
+  const inEn = hasEn && englishActive(p, learnedAt);
+  const enPlan = planEnglish(enChunks.length);
+  const enAt = Math.min(p.enStep ?? 0, enPlan.length - 1);
+  const enStep = enPlan[enAt];
+  const enState: EnglishState | undefined = !hasEn ? undefined : inEn ? "active" : p.enDone && !p.enSkip ? "done" : undefined;
   const plan = planPhase(p.phase, sizes);
   const step = plan[Math.min(p.step, plan.length - 1)];
   const status = statusOf(p, learnedAt, now);
-  const frac = fraction(p, sizes);
+  const frac = fraction(p, sizes, hasEn && englishCounts(p, learnedAt) ? enChunks.length : undefined);
   const k = chunks.length;
   const lines = chunks.map((c) => c.fr);
   const update = (np: Progress, flush = false) => { setP(np); api.saveProgress(verseKey, np, flush); };
 
   /** Speaks the first chunk of a listening step, inside the tap that starts it (iOS needs that). */
   const speakFor = (np: Progress) => {
+    if (hasEn && englishActive(np, learnedAt)) return; // the English stage has no French voice
     const s = planPhase(np.phase, sizes)[np.step];
     if (s?.kind === "listen") playGroup(`c${s.chunk}`, verseTokens(chunks[s.chunk].fr), slow);
     else if (s?.kind === "listenAll") playGroup("verse", verseTokens(v.fr), slow);
   };
 
   const done: Done = (ok, marks) => {
+    if (inEn) {
+      // English is a warm-up: no fails counted, no rating, no XP
+      const lastEn = enAt + 1 >= enPlan.length;
+      setFb({ ok, marks, phaseDone: ok && lastEn });
+      if (!ok) { playError(); setOdile(cue(pickReaction("calmWrong"))); return; }
+      if (lastEn) { playDone(); setOdile(cue(pickReaction("finish"))); } else { playSuccess(); setOdile(cue(pickReaction("calmRight"))); }
+      return;
+    }
     const last = p.step + 1 >= plan.length && p.phase < RECALL;
     setFb({ ok, marks, phaseDone: ok && last });
     if (!ok) {
@@ -284,6 +315,13 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
   function next() {
     if (!fb) return;
     const res = fb;
+    if (inEn) {
+      setFb(null);
+      if (!res.ok) return setAttempt(attempt + 1);
+      const np = advanceEnglish(p!, enChunks.length);
+      update(np); setEnHint(false); speakFor(np);
+      return;
+    }
     if (step.kind === "cement") { setFb(null); return finishCement(!res.ok ? "again" : cementHint ? "hard" : "good"); }
     if (!res.ok) { setFb(null); return setAttempt(attempt + 1); }
     if (step.kind === "recall") { setFb(null); return finishRecall(); }
@@ -291,10 +329,16 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
     update(advance(p!, sizes));
   }
 
+  /** "Skip English": never blocks; straight to the French path (the first French chunk is spoken inside this tap). */
+  const skipEn = () => {
+    const np = skipEnglish(p!);
+    update(np); setFb(null); setEnHint(false); setAttempt(attempt + 1); setScreen("run"); speakFor(np);
+  };
+
   const go = (np: Progress) => { update(np); setFb(null); setAttempt(attempt + 1); setScreen("run"); speakFor(np); };
 
   function quit() {
-    if (screen === "run" && (p!.phase > 0 || p!.step > 0 || fb) && p!.phase !== CEMENT
+    if (screen === "run" && (p!.phase > 0 || p!.step > 0 || (inEn && enAt > 0) || fb) && p!.phase !== CEMENT
       && !confirm("Leave now? Your place is saved, so you can pick up right here next time.")) return;
     router.push("/scripture");
   }
@@ -356,7 +400,7 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
           <PetalMeter value={frac} mastered={status.kind === "mastered"} size={52} color={verseKey.length}
             label={status.kind === "mastered" ? "Mastered" : `${Math.round(frac * 100)}% of the way`} />
           <div className="min-w-0">
-            <p className="label">{status.kind === "mastered" ? "Mastered" : status.kind === "new" ? "New verse" : status.kind === "learning" ? `Phase ${p.phase + 1} of ${PHASES.length}` : "Learned"}</p>
+            <p className="label">{status.kind === "mastered" ? "Mastered" : inEnglishNow(p) && inEn ? "English first" : status.kind === "new" ? (inEn ? "New verse · English first" : "New verse") : status.kind === "learning" ? `Phase ${p.phase + 1} of ${PHASES.length}` : "Learned"}</p>
             <h1 ref={heading} tabIndex={-1} className="text-2xl font-extrabold outline-none">{refLabel(verseKey)}</h1>
           </div>
         </div>
@@ -364,10 +408,12 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
         {lastCement && status.kind === "wait" && (
           <p className="card !border-primary text-sm" role="status">{lastCement === "hard" ? "Almost." : "Not quite yet, and that&apos;s normal."} Do it once more without hints after a short break, and it&apos;s mastered.</p>
         )}
-        <div className="card"><PhaseList phase={p.phase} step={p.step} steps={plan.length} mastered={status.kind === "mastered"} /></div>
+        <div className="card"><PhaseList phase={p.phase} step={p.step} steps={plan.length} mastered={status.kind === "mastered"}
+          english={enState} enStep={enAt} enSteps={enPlan.length} /></div>
         {status.kind === "new" && (
           <>
-            <button className="btn" onClick={() => go(p)}>Start</button>
+            <button className="btn" onClick={() => go(p)}>{inEn ? (inEnglishNow(p) ? "Resume: English" : "Start with English") : "Start"}</button>
+            {inEn && <button className="btn ghost" onClick={skipEn}>Skip English</button>}
             <p className="text-center text-xs text-muted">About 10 minutes. You can stop anytime: Le Nid keeps your place.</p>
           </>
         )}
@@ -403,46 +449,57 @@ export default function LearnFlow({ verseKey, state, learnedAt, saved, api = liv
   }
 
   // ---- a step of the path ----------------------------------------------------------------------------------
-  const t = stepTitle(step, k);
+  const t = inEn ? enTitle(enStep, enChunks.length) : stepTitle(step, k);
+  const advanceEnNow = () => { update(advanceEnglish(p, enChunks.length)); };
   const advanceNow = () => { const np = advance(p, sizes); update(np); speakFor(np); };
   return (
     <div className="flex flex-col gap-4">
       {header}
       <div className="flex items-center justify-between gap-2">
-        <PhaseDots phase={p.phase} />
+        <PhaseDots phase={p.phase} english={enState} />
         <PetalMeter value={frac} size={30} color={verseKey.length} label={`${Math.round(frac * 100)}% of the way to mastery`} />
       </div>
       <div>
-        <p className="label">{refLabel(verseKey)} · Phase {p.phase + 1}: {PHASES[p.phase].name}</p>
+        <p className="label">{refLabel(verseKey)} · {inEn ? "English first" : `${enState ? "French · " : ""}Phase ${p.phase + 1}: ${PHASES[p.phase].name}`}</p>
         <h1 ref={heading} tabIndex={-1} className="text-xl font-extrabold outline-none">{t.title}</h1>
         {t.sub && <p className="text-sm text-muted">{t.sub}</p>}
       </div>
-      <div key={`${p.phase}-${p.step}-${attempt}`} className={fb ? "pointer-events-none" : ""}>
-        {step.kind === "listen" && <Listen chunks={chunks} i={step.chunk} en={v.en} next={advanceNow} />}
-        {step.kind === "listenAll" && <ListenAll chunks={chunks} en={v.en} next={advanceNow} />}
-        {step.kind === "cloze" && <Cloze chunk={chunks[step.chunk]} ratio={step.ratio} done={done} />}
-        {step.kind === "order" && <Build lines={[chunks[step.chunk].fr]} cue="blank" bank="all" strict={false} speakOnPlace done={done} />}
-        {step.kind === "chain" && (
+      <div key={`${stepKey}-${attempt}`} className={fb ? "pointer-events-none" : ""}>
+        {inEn && enStep.kind === "enRead" && <EnRead chunks={enChunks} next={advanceEnNow} />}
+        {inEn && enStep.kind === "enBuild" && <EnBuild chunk={enChunks[Math.min(enStep.chunk, enChunks.length - 1)]} done={done} />}
+        {inEn && enStep.kind === "enVerse" && (
+          <EnVerse text={enChunks.join(" ")} chunks={enChunks} hinted={enHint} onHint={() => setEnHint(true)} done={done} />
+        )}
+        {!inEn && step.kind === "listen" && <Listen chunks={chunks} i={step.chunk} en={v.en} next={advanceNow} />}
+        {!inEn && step.kind === "listenAll" && <ListenAll chunks={chunks} en={v.en} next={advanceNow} />}
+        {!inEn && step.kind === "cloze" && <Cloze chunk={chunks[step.chunk]} ratio={step.ratio} done={done} />}
+        {!inEn && step.kind === "order" && <Build lines={[chunks[step.chunk].fr]} cue="blank" bank="all" strict={false} speakOnPlace done={done} />}
+        {!inEn && step.kind === "chain" && (
           <Build lines={lines.slice(0, step.upto + 1)} cue={step.cue === "letters" ? "letters" : "blank"} bank="line" strict={step.cue === "none"} done={done} />
         )}
-        {step.kind === "orderChunks" && <OrderChunks chunks={lines} done={done} />}
-        {step.kind === "gaps" && <Gaps lines={lines} done={done} />}
-        {step.kind === "recall" && (
+        {!inEn && step.kind === "orderChunks" && <OrderChunks chunks={lines} done={done} />}
+        {!inEn && step.kind === "gaps" && <Gaps lines={lines} done={done} />}
+        {!inEn && step.kind === "recall" && (
           <Recall text={v.fr} lines={lines} hinted={!!p.hint} done={done}
             onHint={() => update({ ...p, hint: true, updatedAt: new Date().toISOString() })} />
         )}
-        {step.kind === "cement" && <Recall text={v.fr} lines={lines} hinted={cementHint} done={done} onHint={() => setCementHint(true)} />}
+        {!inEn && step.kind === "cement" && <Recall text={v.fr} lines={lines} hinted={cementHint} done={done} onHint={() => setCementHint(true)} />}
       </div>
       {fb && (
         <div className={`card sticky bottom-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-2 shadow-lg ${fb.ok ? "!border-good" : "!border-primary"}`} role="status" aria-live="polite">
           <p className="font-extrabold">
-            {fb.ok ? (fb.phaseDone ? `Phase ${p.phase + 1} done: ${PHASES[p.phase].name}` : step.kind === "recall" ? "Bien ! You know it by heart." : step.kind === "cement" ? (cementHint ? "Bien ! Next time, try it without the hint." : "Bien ! It stuck.") : "Bien !")
+            {inEn ? (fb.ok ? (fb.phaseDone ? "Good! English done. Now the same verse in French." : "Good!") : "Not quite. Look again and retry.")
+            : fb.ok ? (fb.phaseDone ? `Phase ${p.phase + 1} done: ${PHASES[p.phase].name}` : step.kind === "recall" ? "Bien ! You know it by heart." : step.kind === "cement" ? (cementHint ? "Bien ! Next time, try it without the hint." : "Bien ! It stuck.") : "Bien !")
               : step.kind === "cement" ? "Not quite. It will come back after a short break." : "Pas tout à fait. Look again and retry."}
           </p>
-          {fb.phaseDone && p.phase + 1 < PHASES.length && <p className="text-sm text-muted">Next: {PHASES[p.phase + 1].name}. {PHASES[p.phase + 1].blurb}</p>}
-          {!fb.ok && fb.marks && <div className="max-h-[40vh] overflow-auto"><VerseDiff marks={fb.marks} /></div>}
-          <button className="btn" autoFocus onClick={next}>{fb.ok ? "Continue" : step.kind === "cement" ? "Continue" : "Try again"}</button>
+          {!inEn && fb.phaseDone && p.phase + 1 < PHASES.length && <p className="text-sm text-muted">Next: {PHASES[p.phase + 1].name}. {PHASES[p.phase + 1].blurb}</p>}
+          {!fb.ok && fb.marks && <div className="max-h-[40vh] overflow-auto"><VerseDiff marks={fb.marks} lang={inEn ? "en" : "fr"} /></div>}
+          <button className="btn" autoFocus onClick={next}>{fb.ok ? "Continue" : !inEn && step.kind === "cement" ? "Continue" : "Try again"}</button>
+          {inEn && !fb.ok && <button className="btn ghost" onClick={skipEn}>Skip English, on to French</button>}
         </div>
+      )}
+      {inEn && !fb && (
+        <button type="button" className="btn ghost self-center !border-transparent !bg-transparent underline" onClick={skipEn}>Skip English</button>
       )}
     </div>
   );

@@ -6,7 +6,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { refLabel } from "@/lib/bible/reference";
-import { parseProgress, PHASES, roughFraction, statusOf, type Progress } from "@/lib/scripture/mastery";
+import { inEnglishNow, parseProgress, PHASES, roughFraction, statusOf, type Progress } from "@/lib/scripture/mastery";
 import { mergeSaved } from "@/lib/scripture/store";
 import Rosace, { PetalMeter } from "@/components/art/Rosace";
 
@@ -26,7 +26,7 @@ function useMerged(rows: Row[]) {
 function tag(r: Row, p: Progress | null, now: Date) {
   const due = !!r.learned_at && !!r.due && new Date(r.due) <= now;
   const s = statusOf(p, r.learned_at, now);
-  if (s.kind === "new") return "Learn";
+  if (s.kind === "new") return inEnglishNow(p) ? "English" : "Learn";
   if (s.kind === "learning") return `Phase ${s.phase + 1} of ${PHASES.length}`;
   if (s.kind === "retest") return "Retest";
   if (s.kind === "wait") return due ? "Due" : "Retest soon";

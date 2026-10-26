@@ -28,3 +28,10 @@ export function refLabel(key: string) {
   const b = r && bookByCode(r.code);
   return r && b ? `${b.fr} ${r.chapter}:${r.from}${r.to > r.from ? `-${r.to}` : ""}` : key;
 }
+
+/** English display label, e.g. "John 3:16-17". */
+export function refLabelEn(key: string) {
+  const r = keyToRef(key);
+  const b = r && bookByCode(r.code);
+  return r && b ? `${b.en} ${r.chapter}:${r.from}${r.to > r.from ? `-${r.to}` : ""}` : key;
+}

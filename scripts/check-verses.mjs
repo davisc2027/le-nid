@@ -39,16 +39,17 @@ const section = (t) => console.log("\n" + t);
 
 const root = new URL("../", import.meta.url);
 const books = new Map();
-function book(code) {
-  if (!books.has(code)) {
-    try { books.set(code, JSON.parse(readFileSync(new URL(`public/bible/fr/${code}.json`, root), "utf8"))); } catch { books.set(code, null); }
+function book(code, lang = "fr") {
+  const id = lang + code;
+  if (!books.has(id)) {
+    try { books.set(id, JSON.parse(readFileSync(new URL(`public/bible/${lang}/${code}.json`, root), "utf8"))); } catch { books.set(id, null); }
   }
-  return books.get(code);
+  return books.get(id);
 }
 /** Same rules as lib/bible/load.ts: ranges join with a space; "=" marks a verse merged into the previous one. */
-function verse(key) {
+function verse(key, lang = "fr") {
   const m = /^(\w{3}) (\d+):(\d+)(?:-(\d+))?$/.exec(key);
-  const ch = m && book(m[1])?.[m[2] - 1];
+  const ch = m && book(m[1], lang)?.[m[2] - 1];
   if (!ch) return null;
   const parts = [];
   for (let n = +m[3]; n <= +(m[4] ?? m[3]); n++) {
@@ -84,6 +85,80 @@ for (const key of new Set([...CORE, ...lessonVerses, ...Object.keys(overrides).f
   ok(ch.every((c) => wordsIn(c.fr) >= 2), `${key}: a one-word chunk: ${ch.map((c) => `[${c.fr}]`).join(" ")}`);
   ok(ch.every((c) => c.en), `${key}: every core chunk should have an English meaning`);
   console.log(`  ${key.padEnd(10)} ${ch.map((c) => `[${c.fr}]`).join(" ")}`);
+}
+
+// ---------------------------------------------------------------- English first
+section("English-first stage (English text, English chunks, progress compatibility)");
+{
+  for (const key of new Set([...CORE, ...lessonVerses])) {
+    const fr = verse(key), en = verse(key, "en");
+    if (!fr) continue;
+    ok(!!en, `${key}: no English text in public/bible/en (the English stage would be skipped)`);
+    if (!en) continue;
+    const frChunks = C.chunksFor(key, fr);
+    const ec = C.englishChunks(en, frChunks);
+    ok(ec.join(" ") === en.split(/\s+/).filter(Boolean).join(" "), `${key}: English chunks do not join back to the English verse`);
+    ok(ec.length >= 2 && ec.length <= 5, `${key}: ${ec.length} English chunks (2-5)`);
+    ok(ec.length === frChunks.length, `${key}: ${ec.length} English chunks vs ${frChunks.length} French`);
+    ok(ec.every((c) => wordsIn(c) >= 2), `${key}: a one-word English chunk: ${ec.map((c) => `[${c}]`).join(" ")}`);
+    console.log(`  ${key.padEnd(10)} ${ec.map((c) => `[${c}]`).join(" ")}`);
+    // the English stage is a short path of its own, and saves/loads like the rest
+    const sizes = frChunks.map((c) => wordsIn(c.fr));
+    const now = new Date("2026-10-23T12:00:00Z");
+    let p = M.fresh(sizes, now);
+    ok(M.englishActive(p, null), `${key}: a new verse starts with English`);
+    const plan = M.planEnglish(ec.length);
+    ok(plan.length === ec.length + 2 && plan[0].kind === "enRead" && plan.at(-1).kind === "enVerse", `${key}: English plan shape`);
+    let last = M.fraction(p, sizes, ec.length);
+    for (let n = 0; n < plan.length; n++) {
+      ok(M.englishActive(p, null) && !p.enDone, `${key}: English should be active at step ${n}`);
+      p = M.advanceEnglish(p, ec.length, now);
+      const back = M.parseProgress(JSON.stringify(M.serialize(p)));
+      ok(back && JSON.stringify(back) === JSON.stringify(p), `${key}: English progress does not survive serialization`);
+      ok(JSON.stringify(M.resolve(back, sizes, null, now, ec.length)) === JSON.stringify(p), `${key}: resolve changed English progress`);
+      const f = M.fraction(p, sizes, ec.length);
+      ok(f > last, `${key}: progress bar did not grow in English at step ${n}`);
+      last = f;
+    }
+    ok(p.enDone && p.enStep === undefined && p.phase === 0 && p.step === 0 && !M.englishActive(p, null), `${key}: English finishes into French Phase 1`);
+    ok(!p.learnedAt && !p.masteredAt, `${key}: English never sets learned / mastered`);
+    ok(M.statusOf(p, null, now).kind === "new", `${key}: after English the verse is still new (learned only by French recall)`);
+    ok(M.fraction(p, sizes, ec.length) < 0.2, `${key}: English alone should not fill the bar`);
+    const sk = M.skipEnglish(M.fresh(sizes, now), now);
+    ok(sk.enDone && sk.enSkip && !M.englishActive(sk, null) && !M.englishCounts(sk, null), `${key}: skip English`);
+    ok(M.fraction(sk, sizes) === 0, `${key}: a skipped English stage adds nothing to the bar`);
+  }
+  const sizes = [6, 6, 5, 3, 6], now = new Date("2026-10-23T12:00:00Z");
+  const legacy = { v: 1, phase: 2, step: 3, sig: "6-6-5-3-6", updatedAt: now.toISOString() };
+  const lp = M.parseProgress(legacy);
+  ok(lp && !("enStep" in lp) && !("enDone" in lp), "progress saved before English-first parses unchanged");
+  ok(!M.englishActive(lp, null), "a verse already in progress skips English");
+  ok(M.fraction(lp, sizes) === M.fraction(lp, sizes, undefined), "legacy progress bar unchanged");
+  ok(!M.englishActive(M.resolve(null, sizes, "2026-01-01T00:00:00.000Z", now, 3), "2026-01-01T00:00:00.000Z"), "a learned verse skips English");
+  const lrn = M.markLearned(M.fresh(sizes, now), now);
+  ok(!M.englishActive(M.restart(lrn, sizes, now), lrn.learnedAt) && M.restart(lrn, sizes, now).enSkip, "practising a learned verse again skips English");
+  ok(!M.englishActive(M.restart({ ...legacy }, sizes, now), null), "Start over on a verse in progress skips English");
+  ok(M.englishActive(M.restart(M.fresh(sizes, now), sizes, now), null), "restart of an untouched verse keeps English first");
+  ok(M.parseProgress({ ...legacy, enStep: -1, enDone: "yes" })?.enDone === undefined, "parseProgress ignores junk English fields");
+  ok(M.resolve({ ...M.fresh(sizes, now), enStep: 9 }, sizes, null, now, 3).enStep === undefined, "an English step past the plan restarts English");
+  ok(JSON.stringify(M.serialize({ ...M.markLearned({ ...M.fresh(sizes, now), enDone: true }, now) })).length < 450, "serialized progress with English stays small");
+  ok(C.englishChunks("", [{ fr: "x y z w" }]).length === 0 && C.englishChunks(null, []).length === 0, "no English text: no English chunks");
+  // every English verse of the Bible text: no lost text, 2-5 chunks, no one-word chunk
+  let n = 0, bad = 0, one = 0, dir = [];
+  try { dir = readdirSync(new URL("public/bible/en/", root)).filter((f) => f.endsWith(".json")); } catch {}
+  for (const f of dir) {
+    for (const ch of book(f.replace(".json", ""), "en") ?? []) for (const text of ch) {
+      if (!text || text === "=") continue;
+      n++;
+      const a = C.autoChunksEn(text, 3);
+      if (a.join(" ") !== text.split(/\s+/).filter(Boolean).join(" ")) { bad++; if (bad < 4) fail(`English auto chunks lose text: ${text}`); }
+      const w = wordsIn(text);
+      if (w >= 4 && (a.length < 2 || a.length > 5)) { bad++; if (bad < 8) fail(`${a.length} English chunks for a ${w}-word verse: ${text}`); }
+      if (w >= 4 && a.some((c) => wordsIn(c) < 2)) { one++; if (one < 4) fail(`one-word English chunk: ${a.map((c) => `[${c}]`).join(" ")}`); }
+    }
+  }
+  checks += n;
+  if (n) console.log(`  ${n} English verses chunked`);
 }
 
 // ---------------------------------------------------------------- automatic chunker

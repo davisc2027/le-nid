@@ -21,6 +21,26 @@ export const CEMENT = 5;
 /** Minutes between passing Recall and the Cement retest. FSRS also brings a new card back after about 10 minutes. */
 export const CEMENT_DELAY_MIN = 10;
 
+// ---- English first -----------------------------------------------------------------------------------------
+// Before the six French phases, a new verse gets a short English stage (read it, build it, type it). It is a warm-up
+// only: no XP, no FSRS card, and it never blocks (it can be skipped). It lives beside the French path in the same
+// progress record (`enStep`, `enDone`, `enSkip`), so old records and old clients are unaffected.
+
+export type EnStep =
+  | { kind: "enRead" }
+  | { kind: "enBuild"; chunk: number }
+  | { kind: "enVerse" };
+
+/** English stage for a verse with `k` English chunks: read them all, build each, then type the whole verse. */
+export const planEnglish = (k: number): EnStep[] => [
+  { kind: "enRead" },
+  ...Array.from({ length: Math.max(1, k) }, (_, chunk): EnStep => ({ kind: "enBuild", chunk })),
+  { kind: "enVerse" },
+];
+
+/** Share of the progress bar that belongs to the English stage when it is part of the path. */
+export const EN_WEIGHT = 0.12;
+
 export type Step =
   | { kind: "listen"; chunk: number }
   | { kind: "listenAll" }
@@ -63,6 +83,12 @@ export type Progress = {
   /** Phase 5 (Recall): a hint was used or an attempt failed, so the pass is rated Hard. */
   hint?: boolean;
   fails?: number;
+  /** English stage: index of the current step (absent = the start). Only meaningful while English is not done. */
+  enStep?: number;
+  /** English stage finished or skipped: go on with French. */
+  enDone?: boolean;
+  /** English stage skipped (not completed): the progress bar then ignores it. */
+  enSkip?: boolean;
   /** When Recall was passed (the verse counts as learned). */
   learnedAt?: string;
   /** When the Cement retest opens. */
@@ -90,6 +116,9 @@ export function parseProgress(raw: unknown): Progress | null {
   const p: Progress = { v: 1, phase, step, sig: r.sig, updatedAt: r.updatedAt };
   if (r.hint === true) p.hint = true;
   if (Number.isInteger(r.fails) && (r.fails as number) > 0) p.fails = Math.min(r.fails as number, 99);
+  if (Number.isInteger(r.enStep) && (r.enStep as number) > 0 && (r.enStep as number) <= 50) p.enStep = r.enStep as number;
+  if (r.enDone === true) p.enDone = true;
+  if (r.enSkip === true) p.enSkip = true;
   if (isoOk(r.learnedAt)) p.learnedAt = r.learnedAt;
   if (isoOk(r.cementAt)) p.cementAt = r.cementAt;
   if (isoOk(r.masteredAt)) p.masteredAt = r.masteredAt;
@@ -111,7 +140,7 @@ export function newest(a: Progress | null, b: Progress | null): Progress | null 
  * Where to start: saved progress fitted to the current chunks. A verse learned before this feature (learned_at set,
  * no progress) starts at the Cement retest. If the chunk split changed, the chunk-based phase restarts at its first step.
  */
-export function resolve(saved: Progress | null, sizes: number[], learnedAt: string | null, now = new Date()): Progress {
+export function resolve(saved: Progress | null, sizes: number[], learnedAt: string | null, now = new Date(), enK?: number): Progress {
   const sig = sigOf(sizes);
   if (!saved) {
     if (learnedAt) return { v: 1, phase: CEMENT, step: 0, sig, learnedAt, cementAt: learnedAt, updatedAt: now.toISOString() };
@@ -120,7 +149,35 @@ export function resolve(saved: Progress | null, sizes: number[], learnedAt: stri
   const p = { ...saved };
   if (p.sig !== sig) { p.sig = sig; if (p.phase < RECALL) p.step = 0; }
   if (p.step >= planPhase(p.phase, sizes).length) p.step = 0;
+  if (p.enStep !== undefined && (enK === undefined || p.enStep >= planEnglish(enK).length)) delete p.enStep; // the English split changed
   return p;
+}
+
+/**
+ * True while a verse is still at the very start of the path and English has not been done or skipped. Anyone who has
+ * begun the French phases, learned the verse, or has saved progress beyond Phase 1, goes straight to French.
+ */
+export const englishActive = (p: Progress, learnedAt: string | null) =>
+  !p.enDone && p.phase === 0 && p.step === 0 && !p.learnedAt && !learnedAt && !p.masteredAt;
+
+/** True when the English stage counts toward the progress bar (active, or finished rather than skipped). */
+export const englishCounts = (p: Progress, learnedAt: string | null) =>
+  englishActive(p, learnedAt) || (!!p.enDone && !p.enSkip);
+
+/** After a passed English step: the next one, or the end of the English stage. */
+export function advanceEnglish(p: Progress, k: number, now = new Date()): Progress {
+  const at = p.enStep ?? 0;
+  const rest = { ...p, updatedAt: now.toISOString() };
+  if (at + 1 < planEnglish(k).length) return { ...rest, enStep: at + 1 };
+  delete rest.enStep;
+  return { ...rest, enDone: true };
+}
+
+/** "Skip English": straight to the French path. Never touches learned / mastered dates. */
+export function skipEnglish(p: Progress, now = new Date()): Progress {
+  const rest = { ...p, updatedAt: now.toISOString() };
+  delete rest.enStep;
+  return { ...rest, enDone: true, enSkip: true };
 }
 
 /** After a passed step: the next step, moving to the next phase at the end of one. Never moves past Cement. */
@@ -157,14 +214,26 @@ export function cementFromReview(p: Progress | null, learnedAt: string | null, n
 }
 
 /** Start the path again from Phase 1 (keeps the learned/mastered dates, so practising never loses a status). */
-export const restart = (p: Progress, sizes: number[], now = new Date()): Progress =>
-  ({ ...fresh(sizes, now), learnedAt: p.learnedAt, masteredAt: p.masteredAt });
+export function restart(p: Progress, sizes: number[], now = new Date()): Progress {
+  const out: Progress = { ...fresh(sizes, now), learnedAt: p.learnedAt, masteredAt: p.masteredAt };
+  // anyone who has already been through the path (or started it) goes straight to French; English was done or skipped
+  if (p.enDone || p.phase > 0 || p.step > 0 || p.learnedAt || p.masteredAt) { out.enDone = true; if (p.enSkip || !p.enDone) out.enSkip = true; }
+  return out;
+}
+
+/** True when a not-yet-learned verse is part-way through the English stage (verse list tag, Resume button). */
+export const inEnglishNow = (p: Progress | null) =>
+  !!p && !p.enDone && (p.enStep ?? 0) > 0 && p.phase === 0 && p.step === 0 && !p.learnedAt && !p.masteredAt;
 
 /** 0..1 along the whole path. A mastered verse is 1. */
-export function fraction(p: Progress, sizes: number[]): number {
+export function fraction(p: Progress, sizes: number[], enK?: number): number {
   if (p.masteredAt && p.phase === CEMENT) return 1;
   const len = Math.max(1, planPhase(p.phase, sizes).length);
-  return Math.min(1, (p.phase + p.step / len) / PHASES.length);
+  const fr = Math.min(1, (p.phase + p.step / len) / PHASES.length);
+  if (enK === undefined) return fr;
+  // English counts for the first EN_WEIGHT of the bar; French fills the rest
+  const en = p.enDone ? 1 : (p.enStep ?? 0) / planEnglish(enK).length;
+  return EN_WEIGHT * en + (1 - EN_WEIGHT) * fr;
 }
 
 /** Rough 0..1 progress when the chunk sizes are not known (verse list, Rosace): whole phases plus half a phase once started. */

@@ -5,7 +5,7 @@ import { Flame, X } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { bibleInstalled, loadVerse } from "@/lib/bible/load";
-import { refLabel } from "@/lib/bible/reference";
+import { refLabel, refLabelEn } from "@/lib/bible/reference";
 import { firstLetters, gradeRecall, PASS } from "@/lib/scripture/drills";
 import { cementFromReview } from "@/lib/scripture/mastery";
 import { mergeSaved, saveProgress } from "@/lib/scripture/store";
@@ -30,15 +30,33 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
   const [busy, setBusy] = useState(false);
   const [missing, setMissing] = useState<"bible" | "verse" | null>(null);
   const [odile, setOdile] = useState<Cue | null>(null);
+  // English first: a quick recall in English before the French one. It never rates the card, never counts as a miss, never gives XP.
+  const [stage, setStage] = useState<"en" | "fr">("en");
+  const [en, setEn] = useState<string | null>(null);
+  const [enText, setEnText] = useState("");
+  const [enHint, setEnHint] = useState(false);
+  const [enRes, setEnRes] = useState<{ ok: boolean; marks: { word: string; ok: boolean }[] } | null>(null);
+  const [skipAllEn, setSkipAllEn] = useState(false);
   const card = cards[i];
 
   useEffect(() => {
     if (!card) return;
     loadVerse(card.ref).then(async (v) => {
       setVerse(v?.fr ?? null);
+      setEn(v?.en?.split(/\s+/).filter(Boolean).join(" ") || null);
       setMissing(v ? null : (await bibleInstalled()) ? "verse" : "bible");
     });
   }, [card]);
+
+  const loaded = verse !== null || missing !== null;
+  const inEn = stage === "en" && !skipAllEn && !!verse && !!en && !missing;
+  const toFrench = () => { setStage("fr"); setEnRes(null); setEnHint(false); };
+  function checkEn() {
+    const g = gradeRecall(enText, en!);
+    const ok = g.score >= 0.8;
+    setEnRes({ ok, marks: g.marks });
+    if (ok) setOdile(cue(pickReaction("calmRight")));
+  }
 
   async function check() {
     if (busy) return;
@@ -61,7 +79,7 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
 
   async function next() {
     if (busy) return;
-    if (i + 1 < cards.length) { setRes(null); setText(""); setHint(false); setVerse(null); setMissing(null); return setI(i + 1); }
+    if (i + 1 < cards.length) { setRes(null); setText(""); setHint(false); setVerse(null); setMissing(null); setEn(null); setEnText(""); setEnRes(null); setEnHint(false); setStage("en"); return setI(i + 1); }
     setBusy(true); setErr("");
     const { data, error } = await createClient().rpc("award_xp", { p_source: "review", p_amount: Math.min(passed * 3, 30), p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
     setBusy(false);
@@ -86,9 +104,33 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
         <Link href="/scripture" aria-label="Quit" className="grid size-11 shrink-0 place-items-center text-2xl text-muted"><X size={26} aria-hidden="true" /></Link>
         <OdileTrack progress={i / cards.length} play={odile} />
       </div>
-      <p className="label">{i + 1} of {cards.length}</p>
-      <h1 className="text-xl font-extrabold">{refLabel(card.ref)}</h1>
-      {hint && verse && <p className="verse-text tracking-widest text-muted">{firstLetters(verse)}</p>}
+      <p className="label">{i + 1} of {cards.length}{inEn ? " · English first" : en && !skipAllEn && !missing ? " · Now in French" : ""}</p>
+      <h1 className="text-xl font-extrabold">{inEn ? refLabelEn(card.ref) : refLabel(card.ref)}</h1>
+      {inEn && (
+        <div className="flex flex-col gap-3" lang="en">
+          <p className="card verse-text" aria-label="First words">{en!.split(" ").slice(0, 3).join(" ")}…</p>
+          {enHint && !enRes && <p className="verse-text tracking-widest text-muted" aria-label="First letters hint">{firstLetters(en!)}</p>}
+          <textarea className="input verse-text" rows={4} autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={!!enRes}
+            aria-label="The verse in English, from memory" value={enText} onChange={(e) => setEnText(e.target.value)} placeholder="Type it in English" />
+          {!enRes && (
+            <div className="flex flex-wrap gap-2">
+              <button className="btn" disabled={!enText.trim()} onClick={checkEn}>Check</button>
+              <button className="btn ghost" onClick={() => setEnHint(true)}>First letters</button>
+              <button className="btn ghost" onClick={toFrench}>I know it</button>
+            </div>
+          )}
+          {enRes && (
+            <div className={`card flex flex-col gap-2 ${enRes.ok ? "!border-good" : "!border-primary"}`} role="status">
+              <p className="font-extrabold">{enRes.ok ? "Good!" : "Nearly. Here it is:"}</p>
+              {!enRes.ok && <VerseDiff marks={enRes.marks} lang="en" />}
+              <button className="btn" autoFocus onClick={toFrench}>Now in French</button>
+            </div>
+          )}
+          <p className="text-xs text-muted">Just a warm-up: it does not count for your review.</p>
+          <button type="button" className="min-h-11 self-center text-sm font-bold text-muted underline" onClick={() => { setSkipAllEn(true); toFrench(); }}>Skip English for this session</button>
+        </div>
+      )}
+      {!inEn && hint && verse && <p className="verse-text tracking-widest text-muted">{firstLetters(verse)}</p>}
       {missing && (
         <div className="card gap-2" role="alert">
           <p>{missing === "bible" ? "The Bible text isn't installed yet. Ask a leader to install it." : "I couldn't find this verse's text."}</p>
@@ -96,10 +138,10 @@ export default function ReviewSession({ cards }: { cards: Card[] }) {
           <Link href="/scripture" className="btn ghost">Back to the window</Link>
         </div>
       )}
-      {!missing && <textarea className="input verse-text" rows={5} lang="fr" autoCapitalize="none" autoCorrect="off" disabled={!!res}
+      {!missing && loaded && !inEn && <textarea className="input verse-text" rows={5} lang="fr" autoCapitalize="none" autoCorrect="off" disabled={!!res}
         value={text} onChange={(e) => setText(e.target.value)} placeholder="Écrivez le verset de mémoire" />}
       {err && <p className="text-sm text-primary" role="alert">{err}</p>}
-      {!res && !missing && (
+      {!res && !missing && loaded && !inEn && (
         <div className="flex gap-2">
           <button className="btn" disabled={!text.trim() || !verse || busy} onClick={check}>{busy ? "Saving…" : "Check"}</button>
           <button className="btn ghost" onClick={() => setHint(true)}>First letters</button>

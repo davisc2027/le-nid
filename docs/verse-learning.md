@@ -1,6 +1,6 @@
 # Learning a verse by heart
 
-How the scripture track teaches a verse: chunks, a six-phase mastery path, and tap-to-hear French.
+How the scripture track teaches a verse: an English-first warm-up, chunks, a six-phase mastery path, and tap-to-hear French.
 Code: `lib/scripture/` (pure logic), `components/scripture/` (screens), `content/scripture/chunks.json` (hand-tuned splits).
 
 ## The path
@@ -39,6 +39,65 @@ a repeat, within the existing daily cap. The Cement retest gives no XP.
 - Spacing: N. J. Cepeda et al., "Distributed practice in verbal recall tasks: a review and quantitative synthesis" (Psychological Bulletin, 2006).
 - First-letter cues for memorising text: the common "first letter" technique used by Bible memory apps; Phase 3 and the hints use it.
 
+## English first
+
+Owner request: "memorize or review in English first, then memorize in French." The French path above is unchanged;
+English is a short stage in front of it (learning) and a quick step in front of it (reviewing). **Learned, mastered,
+the FSRS card, XP and the Cement retest all stay tied to the French recall.** English never gives XP, never creates or
+reschedules a card, and never counts as a miss.
+
+### Learning (a new verse)
+
+Code: `components/scripture/EnglishStage.tsx`, `lib/scripture/mastery.ts` (`planEnglish`, `englishActive`, `advanceEnglish`,
+`skipEnglish`), `lib/scripture/chunks.ts` (`englishChunks`, `autoChunksEn`).
+
+1. **Read it**: every English chunk on one screen, each with a Play button (the device's English voice; hidden when the
+   device cannot speak) and a Play whole verse button.
+2. **Build it**: per chunk, fill about half the blanks from a word bank. Errorless like French phase 2: a wrong word
+   bounces back, and after two misses the right tile glows.
+3. **Say it**: type the whole verse once. Lenient grading (80% of words; case, accents, punctuation and one slip in a
+   5+ letter word are free). **First letters** is free. A miss only shows the diff and offers Try again or Skip English.
+
+The English text is the app's English Bible text (`public/bible/en`, loaded by `lib/bible/load.ts`; the same text as the
+"meaning" shown in French phase 1). Chunks: if the hand-tuned English meanings in `chunks.json` happen to add up exactly
+to that text they are used; otherwise `autoChunksEn(text, k)` splits it into as many chunks as the French split has
+(`k`), cutting at English phrase boundaries (end of sentence, `;` `:` comma, before `but`/`for`/`that`/`and`/`who`/...,
+before a preposition, never right after `the`/`of`/`his`/`is`...). The `en` pieces in `chunks.json` are French-side
+glosses, not the English memorisation text, and are not required to match.
+
+**Never blocked.** A clear **Skip English** is on the path screen and under every English step (and after a miss on the
+last step). It saves `enDone` + `enSkip` and goes to French Phase 1; the first French chunk is spoken in the same tap.
+A verse with no English text (file missing, or a versification gap) skips English by itself.
+
+**Who gets it.** Only a verse at the very start of the path: Phase 1, step 0, not learned, English not done or skipped
+(`englishActive`). Anyone with a verse already learned or mastered, or any French progress at all, goes straight to French,
+and **Start over** / **Practice again** never bring English back to a verse that has been through the path.
+
+**Path UI.** The path screen shows two labelled groups: **First, in English** (one "English warm-up" row) and **Then, in
+French** (the six phases as before). During a step, the dots row is one **EN** dot, a divider, and the six French dots; the
+step label reads "English first" and later "French · Phase n: ...". The progress bar gives the English stage the first 12%
+(`EN_WEIGHT`) while English is part of the path; a skipped English stage adds nothing, and a verse without English
+progress shows exactly the old bar. The verse list tags a verse mid-English as **English**.
+
+**Saved progress** (backward compatible; unknown fields were already ignored and old records have none):
+
+```json
+{ "v": 1, "phase": 0, "step": 0, "sig": "3-8", "enStep": 2, "enDone": true, "enSkip": true, "updatedAt": "…" }
+```
+
+`enStep` is the position in the English stage (absent = start), `enDone` marks it finished or skipped, `enSkip` that it was
+skipped. Same storage as the rest (`le-nid-verse:<ref>` and `srs_cards.progress`), same rules without migration 0011.
+If the English split changes and `enStep` falls outside the plan, English restarts at its first step.
+
+### Reviewing
+
+`/scripture/review` (`ReviewSession.tsx`). Each due verse first shows **English first**: the English reference (for
+example "John 3:16") and its first three words as the cue. The learner types the English (80% pass), uses **First
+letters**, or taps **I know it**. Feedback is "Good!" or "Nearly. Here it is:" with the diff, then **Now in French**. The
+French recall that follows is exactly the old one and is the only step that rates the FSRS card (and the Cement retest
+shortcut). **Skip English for this session** is one tap. A verse with no English text goes straight to French. There are
+no verse reviews inside French lessons today, so nothing else needed the English step.
+
 ## Chunks
 
 `lib/scripture/chunks.ts`:
@@ -74,7 +133,7 @@ Use 2 to 5 pieces. Then run:
 node scripts/check-verses.mjs
 ```
 
-It checks every hand-tuned entry and verse lesson (`content/french/units.json` `verse` fields), runs the automatic
+It checks every hand-tuned entry (and that every core and lesson verse has English text, English chunks that join back to it, and an English stage that saves, reloads and advances) and verse lesson (`content/french/units.json` `verse` fields), runs the automatic
 chunker on all ~31,000 verses (no lost text, 2-5 chunks, no one-word chunk), the tokenizer, karaoke timing, the
 phase state machine, progress serialization and grading. Exit code 1 on any failure. Needs Node 22.18+ (or
 `--experimental-strip-types`).
@@ -83,6 +142,8 @@ If you change the split of a verse someone is half-way through, their current ph
 (Recall and Cement are not affected).
 
 ## Saving progress
+
+(English-stage fields, `enStep` / `enDone` / `enSkip`, are described under "English first".)
 
 `lib/scripture/mastery.ts` (type `Progress`), saved after every step by `lib/scripture/store.ts`:
 
@@ -147,6 +208,7 @@ Do this on at least one older and one recent iPhone, Safari and the installed ho
 5. Phase 2: wrong tiles shake and stay; after two misses the right one glows. Placed words are spoken.
 6. Phase 3 no-cue pass: several wrong taps lead to "Pas tout à fait" and a retry of the same step.
 7. Phase 4 gaps: the keyboard does not zoom the page; Return moves to the next gap; "coeur" for "cœur" and missing accents pass.
+7a. English first: a new verse shows "First, in English" above the six phases, with Start with English and Skip English. The English steps (read, build, type) give no XP; Skip English lands on French Phase 1; a verse with French progress shows no English. In review, the English step comes first and only the French step changes the card.
 8. Leave mid-phase with the X: a confirmation appears. Come back: "Resume: <phase>" lands on the same step. Kill the app and reopen: same.
 9. Phase 5 with the hint: passes, verse shows as learned (petal filled), XP shown (15 first time).
 10. Right after: "Retest opens in 10 minutes". After 10 minutes: Start the retest; a clean pass shows "Verset maîtrisé !" and the row says Mastered.

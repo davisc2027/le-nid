@@ -54,6 +54,8 @@ type BuildProps = {
   strict: boolean;
   /** Speak each word as it is placed (building phase). */
   speakOnPlace?: boolean;
+  /** Language of the text (English words are plain text; only French words are tap-to-hear). */
+  lang?: "fr" | "en";
   done: Done;
 };
 
@@ -61,7 +63,7 @@ type BuildProps = {
  * Tap the words in order. The next blank is highlighted; a wrong word bounces back. After two misses on the same
  * blank, the right tile glows, so nobody gets stuck (errorless learning early in the path).
  */
-export function Build({ lines, given, cue, bank, strict, speakOnPlace, done }: BuildProps) {
+export function Build({ lines, given, cue, bank, strict, speakOnPlace, lang = "fr", done }: BuildProps) {
   const toks = useMemo(() => lines.map((l) => verseTokens(l)), [lines]);
   const slots = useMemo(() => toks.flatMap((line, li) => line.map((tok, ti) => ({ tok, li, ti, key: `${li}:${ti}` })).filter((s) => s.tok.word && !given?.has(s.key))), [toks, given]);
   const tiles = useMemo(() => mixed(slots.map((s, id) => ({ id, li: s.li, tok: s.tok }))), [slots]);
@@ -96,14 +98,14 @@ export function Build({ lines, given, cue, bank, strict, speakOnPlace, done }: B
     <div className="flex flex-col gap-4">
       <div className="card flex flex-col gap-1.5">
         {toks.map((line, li) => (
-          <p key={li} lang="fr" className="verse-text">
+          <p key={li} lang={lang} className="verse-text">
             {line.map((tok, ti) => {
               const k = `${li}:${ti}`;
               const show = !tok.word || given?.has(k) || filled.has(k);
               return (
                 <span key={ti}>
                   {ti > 0 && " "}
-                  {show ? <Word tok={tok} slow={slow} /> : <Slot tok={tok} cue={cue} current={cur?.key === k} />}
+                  {show ? (lang === "en" ? <span>{tok.text}</span> : <Word tok={tok} slow={slow} />) : <Slot tok={tok} cue={cue} current={cur?.key === k} />}
                 </span>
               );
             })}
@@ -114,7 +116,7 @@ export function Build({ lines, given, cue, bank, strict, speakOnPlace, done }: B
       {!finished && (
         <div className="flex flex-wrap gap-2" aria-label="Word bank">
           {visible.map((t) => (
-            <button key={t.id} ref={(el) => { refs.current.set(t.id, el); }} type="button" lang="fr" onClick={() => tap(t)}
+            <button key={t.id} ref={(el) => { refs.current.set(t.id, el); }} type="button" lang={lang} onClick={() => tap(t)}
               className={`min-h-11 rounded-xl border-2 bg-surface px-3 text-lg font-bold shadow-[0_2px_0_var(--border)] active:translate-y-px ${t.id === helpId ? "border-accent ring-2 ring-accent/50" : "border-border"}`}>
               {display(t.tok)}
             </button>
@@ -220,8 +222,10 @@ export function Gaps({ lines, done }: { lines: string[]; done: Done }) {
  * Type the whole verse from memory. The hint shows first letters, chunk by chunk; using it is fine, but it
  * costs a level (the pass is rated Hard, so the verse comes back a little sooner).
  */
-export function Recall({ text, lines, hinted, onHint, placeholder = "Écrivez le verset de mémoire", done }: {
-  text: string; lines: string[]; hinted: boolean; onHint: () => void; placeholder?: string; done: Done;
+export function Recall({ text, lines, hinted, onHint, placeholder = "Écrivez le verset de mémoire", lang = "fr", pass = PASS, note = true, done }: {
+  text: string; lines: string[]; hinted: boolean; onHint: () => void; placeholder?: string; lang?: "fr" | "en"; pass?: number;
+  /** Show the small "a hint is fine, it brings the verse back sooner" note (French recall only: it talks about scheduling). */
+  note?: boolean; done: Done;
 }) {
   const [val, setVal] = useState("");
   const [locked, setLocked] = useState(false);
@@ -229,21 +233,21 @@ export function Recall({ text, lines, hinted, onHint, placeholder = "Écrivez le
     <div className="flex flex-col gap-3">
       {hinted && (
         <div className="card flex flex-col gap-1 !py-3" aria-label="First letters hint">
-          {lines.map((l, i) => <p key={i} lang="fr" className="verse-text tracking-[0.2em] text-muted">{firstLetters(l)}</p>)}
+          {lines.map((l, i) => <p key={i} lang={lang} className="verse-text tracking-[0.2em] text-muted">{firstLetters(l)}</p>)}
         </div>
       )}
-      <textarea className="input verse-text" rows={5} lang="fr" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={val}
-        disabled={locked} aria-label="The verse, from memory" onChange={(e) => setVal(e.target.value)} placeholder={placeholder} />
+      <textarea className="input verse-text" rows={5} lang={lang} autoCapitalize="none" autoCorrect="off" spellCheck={false} value={val}
+        disabled={locked} aria-label={lang === "en" ? "The verse in English, from memory" : "The verse, from memory"} onChange={(e) => setVal(e.target.value)} placeholder={placeholder} />
       <p className="text-xs text-muted">Accents, punctuation and small slips are fine.</p>
       <div className="flex gap-2">
-        <button className="btn flex-1" disabled={locked || !val.trim()} onClick={() => { setLocked(true); const g = gradeRecall(val, text); done(g.score >= PASS, g.marks); }}>Check</button>
+        <button className="btn flex-1" disabled={locked || !val.trim()} onClick={() => { setLocked(true); const g = gradeRecall(val, text); done(g.score >= pass, g.marks); }}>Check</button>
         {!hinted && (
           <button type="button" className="btn ghost" disabled={locked} onClick={onHint}>
             <Lightbulb size={18} aria-hidden="true" /> First letters
           </button>
         )}
       </div>
-      {!hinted && <p className="text-xs text-muted">A hint is fine. It just brings the verse back a little sooner.</p>}
+      {!hinted && note && <p className="text-xs text-muted">A hint is fine. It just brings the verse back a little sooner.</p>}
     </div>
   );
 }
