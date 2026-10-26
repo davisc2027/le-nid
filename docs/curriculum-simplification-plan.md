@@ -13,7 +13,7 @@ adverbial) in lesson 5. Beginner courses add about 3 to 6 new words per lesson w
 longer sentences out of pieces already known.
 
 **Decision in one line.** Re-sequence, don't rewrite: no existing `fr` text and no lesson id changes; long phrases
-move later (to new "part 2" units u19, u20 or a later existing lesson), 18 short new phrases fill the gaps, five
+move later (to new "part 2" units u19, u20 or a later existing lesson), 18 short new phrases fill the gaps, 11
 lessons are added (u0-l3, u13-l3, u5-l6, u9-l5, plus u19 ×3 and u20 ×4), 60 → **71 lessons**, 468 → **486 phrases**.
 Every saved card and every finished lesson stays valid without a database migration.
 
@@ -36,66 +36,66 @@ Measured with a scratch script on the real `units.json` (to be rebuilt inside `c
 
 | # | Lesson | Tier | Phrases | New words | Load | Words avg/max | Structures first seen | Verse |
 |---|---|---|---|---|---|---|---|---|
-| 1 | u0-l1 | T0 | 7 | 15 | 7 | 1.9/4 |  |
-| 2 | u0-l2 | T0 | 8 | 10 | 8 | 1.6/3 | vous+verb |
-| 3 | u1-l1 | T0 | 8 | 11 | 9 | 1.6/2 |  |
-| 4 | u1-l2 | T0 | 6 | 10 | 10 | 2.7/4 | je+verb |
-| 5 | u1-l3 | T0 | 7 | 18 | 16 | 3.7/6 | être, depuis |
-| 6 | u1-l4 | T0 | 8 | 14 | 13 | 2.6/4 | imparfait, imperative |
-| 7 | u11-l1 | T1 | 8 | 17 | 16 | 3.9/5 | modal+inf, qu'est-ce que |
-| 8 | u11-l2 | T1 | 8 | 10 | 10 | 3.2/5 | ne…pas, si/que clause |
-| 9 | u12-l1 | T1 | 7 | 15 | 15 | 4.4/6 |  |
-| 10 | u12-l2 | T1 | 7 | 12 | 12 | 4.3/7 |  |
-| 11 | u5-l1 | T1 | 8 | 6 | 6 | 1.0/1 |  |
-| 12 | u5-l2 | T1 | 8 | 8 | 8 | 1.0/1 |  |
-| 13 | u5-l3 | T1 | 8 | 14 | 14 | 4.5/6 |  |
-| 14 | u5-l4 | T1 | 8 | 18 | 18 | 3.6/6 |  |
-| 15 | u5-l5 | T1 | 8 | 12 | 12 | 1.6/4 |  |
-| 16 | u13-l1 | T1 | 8 | 7 | 7 | 1.9/4 |  |
-| 17 | u13-l2 | T1 | 9 | 10 | 10 | 2.3/3 |  |
-| 18 | u2-l1 | T2 | 8 | 12 | 12 | 4.5/7 |  |
-| 19 | u2-l2 | T2 | 8 | 10 | 10 | 3.1/6 |  |
-| 20 | u2-l3 | T2 | 8 | 10 | 10 | 6.2/8 | est-ce que |
-| 21 | u2-l4 | T2 | 8 | 11 | 11 | 5.6/7 |  |
-| 22 | u3-l1 | T2 | 9 | 12 | 12 | 4.4/7 |  |
-| 23 | u3-l2 | T2 | 7 | 5 | 5 | 2.1/4 |  |
-| 24 | u3-l3 | T2 | 8 | 14 | 14 | 5.1/7 | futur proche |
-| 25 | u3-l4 | T2 | 8 | 12 | 12 | 4.8/6 |  |
-| 26 | u9-l1 | T2 | 8 | 10 | 10 | 3.5/5 |  |
-| 27 | u9-l2 | T2 | 7 | 11 | 11 | 3.6/5 |  |
-| 28 | u9-l3 | T2 | 8 | 15 | 15 | 3.8/5 |  |
-| 29 | u9-l4 | T2 | 8 | 9 | 9 | 3.0/5 |  |
-| 30 | u4-l1 | T3 | 8 | 13 | 12 | 5.0/7 |  |
-| 31 | u4-l2 | T3 | 7 | 7 | 6 | 3.9/5 | subjunctive |
-| 32 | u4-l3 | T3 | 7 | 15 | 15 | 6.4/8 |  |
-| 33 | u4-l4 | T3 | 8 | 6 | 6 | 4.1/6 |  |
-| 34 | u14-l1 | T3 | 7 | 15 | 15 | 4.3/7 | passé composé | JHN 3:16
-| 35 | u14-l2 | T3 | 6 | 10 | 10 | 4.2/6 |  | ROM 3:23
-| 36 | u14-l3 | T3 | 8 | 5 | 5 | 4.8/7 |  | ROM 6:23
-| 37 | u14-l4 | T3 | 6 | 9 | 9 | 4.5/6 |  | ROM 5:8
-| 38 | u6-l1 | T3 | 8 | 8 | 8 | 4.1/5 |  |
-| 39 | u6-l2 | T3 | 8 | 9 | 9 | 4.4/7 |  |
-| 40 | u15-l1 | T4 | 8 | 10 | 10 | 5.2/8 |  |
-| 41 | u15-l2 | T4 | 8 | 7 | 7 | 4.9/6 |  |
-| 42 | u15-l3 | T4 | 9 | 9 | 9 | 5.1/8 |  |
-| 43 | u8-l1 | T4 | 8 | 11 | 11 | 3.9/6 |  |
-| 44 | u8-l2 | T4 | 8 | 9 | 9 | 5.2/7 |  |
-| 45 | u8-l3 | T4 | 9 | 9 | 9 | 3.7/6 |  |
-| 46 | u16-l1 | T4 | 8 | 8 | 8 | 4.6/6 |  |
-| 47 | u16-l2 | T4 | 9 | 5 | 5 | 4.1/6 |  |
-| 48 | u16-l3 | T4 | 8 | 11 | 11 | 4.8/6 |  |
-| 49 | u7-l1 | T4 | 8 | 12 | 12 | 6.6/8 |  |
-| 50 | u7-l2 | T4 | 7 | 9 | 9 | 5.6/8 |  |
-| 51 | u17-l1 | T4 | 9 | 11 | 11 | 5.4/8 |  | EPH 2:8-9
-| 52 | u17-l2 | T4 | 7 | 8 | 8 | 4.3/6 | futur simple | ROM 10:9
-| 53 | u17-l3 | T4 | 7 | 4 | 4 | 4.4/9 |  | JHN 14:6
-| 54 | u17-l4 | T4 | 8 | 11 | 11 | 5.1/9 |  | REV 3:20
-| 55 | u10-l1 | T4 | 8 | 12 | 12 | 5.1/8 |  |
-| 56 | u10-l2 | T4 | 8 | 15 | 15 | 5.9/8 |  |
-| 57 | u10-l3 | T4 | 7 | 8 | 8 | 5.3/9 |  |
-| 58 | u18-l1 | T4 | 9 | 6 | 6 | 5.3/8 |  |
-| 59 | u18-l2 | T4 | 8 | 8 | 8 | 4.4/6 |  |
-| 60 | u18-l3 | T4 | 8 | 8 | 8 | 4.6/7 |  |
+| 1 | u0-l1 | T0 | 7 | 15 | 7 | 1.9/4 |  |  |
+| 2 | u0-l2 | T0 | 8 | 10 | 8 | 1.6/3 | vous+verb |  |
+| 3 | u1-l1 | T0 | 8 | 11 | 9 | 1.6/2 |  |  |
+| 4 | u1-l2 | T0 | 6 | 10 | 10 | 2.7/4 | je+verb |  |
+| 5 | u1-l3 | T0 | 7 | 18 | 16 | 3.7/6 | être, depuis |  |
+| 6 | u1-l4 | T0 | 8 | 14 | 13 | 2.6/4 | imparfait, imperative |  |
+| 7 | u11-l1 | T1 | 8 | 17 | 16 | 3.9/5 | modal+inf, qu'est-ce que |  |
+| 8 | u11-l2 | T1 | 8 | 10 | 10 | 3.2/5 | ne…pas, si/que clause |  |
+| 9 | u12-l1 | T1 | 7 | 15 | 15 | 4.4/6 |  |  |
+| 10 | u12-l2 | T1 | 7 | 12 | 12 | 4.3/7 |  |  |
+| 11 | u5-l1 | T1 | 8 | 6 | 6 | 1.0/1 |  |  |
+| 12 | u5-l2 | T1 | 8 | 8 | 8 | 1.0/1 |  |  |
+| 13 | u5-l3 | T1 | 8 | 14 | 14 | 4.5/6 |  |  |
+| 14 | u5-l4 | T1 | 8 | 18 | 18 | 3.6/6 |  |  |
+| 15 | u5-l5 | T1 | 8 | 12 | 12 | 1.6/4 |  |  |
+| 16 | u13-l1 | T1 | 8 | 7 | 7 | 1.9/4 |  |  |
+| 17 | u13-l2 | T1 | 9 | 10 | 10 | 2.3/3 |  |  |
+| 18 | u2-l1 | T2 | 8 | 12 | 12 | 4.5/7 |  |  |
+| 19 | u2-l2 | T2 | 8 | 10 | 10 | 3.1/6 |  |  |
+| 20 | u2-l3 | T2 | 8 | 10 | 10 | 6.2/8 | est-ce que |  |
+| 21 | u2-l4 | T2 | 8 | 11 | 11 | 5.6/7 |  |  |
+| 22 | u3-l1 | T2 | 9 | 12 | 12 | 4.4/7 |  |  |
+| 23 | u3-l2 | T2 | 7 | 5 | 5 | 2.1/4 |  |  |
+| 24 | u3-l3 | T2 | 8 | 14 | 14 | 5.1/7 | futur proche |  |
+| 25 | u3-l4 | T2 | 8 | 12 | 12 | 4.8/6 |  |  |
+| 26 | u9-l1 | T2 | 8 | 10 | 10 | 3.5/5 |  |  |
+| 27 | u9-l2 | T2 | 7 | 11 | 11 | 3.6/5 |  |  |
+| 28 | u9-l3 | T2 | 8 | 15 | 15 | 3.8/5 |  |  |
+| 29 | u9-l4 | T2 | 8 | 9 | 9 | 3.0/5 |  |  |
+| 30 | u4-l1 | T3 | 8 | 13 | 12 | 5.0/7 |  |  |
+| 31 | u4-l2 | T3 | 7 | 7 | 6 | 3.9/5 | subjunctive |  |
+| 32 | u4-l3 | T3 | 7 | 15 | 15 | 6.4/8 |  |  |
+| 33 | u4-l4 | T3 | 8 | 6 | 6 | 4.1/6 |  |  |
+| 34 | u14-l1 | T3 | 7 | 15 | 15 | 4.3/7 | passé composé | JHN 3:16 |
+| 35 | u14-l2 | T3 | 6 | 10 | 10 | 4.2/6 |  | ROM 3:23 |
+| 36 | u14-l3 | T3 | 8 | 5 | 5 | 4.8/7 |  | ROM 6:23 |
+| 37 | u14-l4 | T3 | 6 | 9 | 9 | 4.5/6 |  | ROM 5:8 |
+| 38 | u6-l1 | T3 | 8 | 8 | 8 | 4.1/5 |  |  |
+| 39 | u6-l2 | T3 | 8 | 9 | 9 | 4.4/7 |  |  |
+| 40 | u15-l1 | T4 | 8 | 10 | 10 | 5.2/8 |  |  |
+| 41 | u15-l2 | T4 | 8 | 7 | 7 | 4.9/6 |  |  |
+| 42 | u15-l3 | T4 | 9 | 9 | 9 | 5.1/8 |  |  |
+| 43 | u8-l1 | T4 | 8 | 11 | 11 | 3.9/6 |  |  |
+| 44 | u8-l2 | T4 | 8 | 9 | 9 | 5.2/7 |  |  |
+| 45 | u8-l3 | T4 | 9 | 9 | 9 | 3.7/6 |  |  |
+| 46 | u16-l1 | T4 | 8 | 8 | 8 | 4.6/6 |  |  |
+| 47 | u16-l2 | T4 | 9 | 5 | 5 | 4.1/6 |  |  |
+| 48 | u16-l3 | T4 | 8 | 11 | 11 | 4.8/6 |  |  |
+| 49 | u7-l1 | T4 | 8 | 12 | 12 | 6.6/8 |  |  |
+| 50 | u7-l2 | T4 | 7 | 9 | 9 | 5.6/8 |  |  |
+| 51 | u17-l1 | T4 | 9 | 11 | 11 | 5.4/8 |  | EPH 2:8-9 |
+| 52 | u17-l2 | T4 | 7 | 8 | 8 | 4.3/6 | futur simple | ROM 10:9 |
+| 53 | u17-l3 | T4 | 7 | 4 | 4 | 4.4/9 |  | JHN 14:6 |
+| 54 | u17-l4 | T4 | 8 | 11 | 11 | 5.1/9 |  | REV 3:20 |
+| 55 | u10-l1 | T4 | 8 | 12 | 12 | 5.1/8 |  |  |
+| 56 | u10-l2 | T4 | 8 | 15 | 15 | 5.9/8 |  |  |
+| 57 | u10-l3 | T4 | 7 | 8 | 8 | 5.3/9 |  |  |
+| 58 | u18-l1 | T4 | 9 | 6 | 6 | 5.3/8 |  |  |
+| 59 | u18-l2 | T4 | 8 | 8 | 8 | 4.4/6 |  |  |
+| 60 | u18-l3 | T4 | 8 | 8 | 8 | 4.6/7 |  |  |
 
 | Tier (lessons) | New words mean / max | Load mean / max | Words per phrase mean / max |
 |---|---|---|---|
@@ -298,9 +298,7 @@ où je suis*, *C'est à droite ou à gauche ?*) or chunk-heavy (*Une table pour 
 *étudiantes* for an all-women group), *Il est deux heures*, *Lundi*, *Samedi*, *Dimanche* (note: no capital letter
 mid-sentence), *Aujourd'hui*, *Tournez à droite*, *Un aller simple / Un aller-retour, s'il vous plaît*, *Où est la
 place Kléber ?*, *C'est à cinq minutes*, *Le plat du jour*, *Une tarte aux pommes*, *Un dessert, s'il vous plaît*,
-*Pas de viande, s'il vous plaît*. Moved phrases keep their notes; two notes that point backwards must be reworded:
-*Merci*'s note (fine), *Merci beaucoup* (now taught with *Merci*; fine), and any note in u19/u20 that says "as in
-lesson X".
+*Pas de viande, s'il vous plaît*. Moved phrases keep their notes; reword any note that now refers forward to something taught later.
 
 ## 4. Compatibility with existing progress
 
@@ -346,13 +344,13 @@ verse, so nothing else changes. Verse lessons get the cap exemption in section 2
 
 * **`SAME_MEANING` additions** (pairs a learner could defend): *Où est la place Kléber ?* / *Comment aller à la place
   Kléber ?*; *C'est à cinq minutes* / *C'est à cinq minutes à pied*; *Pas de viande, s'il vous plaît* / *Je ne mange
-  pas de viande*; *Monsieur* / *Bonjour, madame* is not needed. Gloss-subset pairs are already blocked by
+  pas de viande*. Gloss-subset pairs are already blocked by
   `blocked()` (*And you?* in *I'm doing well, and you?*; *We are students*; *A one-way ticket, please*; *Sunday*).
 * **`NEAR_MISS` additions** (good contrasts, with reason): *Il est deux heures* / *Il est deux heures et demie*;
   *Tournez à droite* / *Tournez à gauche au feu*; *Un aller simple, s'il vous plaît* / *Un aller-retour, s'il vous
-  plaît*; *Lundi* / *Samedi*; *Dieu vous aime* / *Vous êtes invité* is not a pair.
-* **`GLOSS`** (`lib/french/lexicon.ts`): add *monsieur* "sir", *bienvenue* "welcome", *étudiants* "students",
-  *aujourd* is not a word after `normalize`, so gloss *aujourd'hui* through a note instead. Families need nothing.
+  plaît*; *Lundi* / *Samedi*.
+* **`GLOSS`** (`lib/french/lexicon.ts`): add *monsieur* "sir", *bienvenue* "welcome", *étudiants* "students"
+  (*aujourd'hui* splits into two tokens after `normalize`, so it gets a note, not a gloss). Families need nothing.
 * **Decoys in T0-T1** must be already taught (`decoysTaught`). Smaller early vocabularies mean fewer family decoys;
   the engine already falls back to recently met phrases. The existing ramp checks cover it; watch the printed
   "wrong options from units not met" rate (should stay ≤ 1%).
