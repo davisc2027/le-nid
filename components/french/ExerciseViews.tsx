@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lightbulb } from "lucide-react";
-import { isCorrect, type Exercise } from "@/lib/french/exercises";
+import { grade, splitTail, type Exercise, type Grade } from "@/lib/french/exercises";
 import { speak, speechUnlocked } from "@/lib/french/speech";
 import { playError, playTick } from "@/lib/sounds";
 import Speaker from "./Speaker";
 
+/** What typed grading adds to the feedback card: the corrected spelling, or the one word to fix. */
+export type Extra = Pick<Grade, "fixed" | "wrong">;
 /** `why` explains a miss: the near miss that was picked, or the grammar point. */
-export type Report = (correct: boolean, answer: string, note?: string, why?: string) => void;
+export type Report = (correct: boolean, answer: string, note?: string, why?: string, extra?: Extra) => void;
 type Of<K extends Exercise["kind"]> = Extract<Exercise, { kind: K }>;
 type ExProps<T extends Exercise> = { ex: T; locked: boolean; report: Report };
 type Skip = { skip: () => void };
+/** "Use tiles instead": swaps a typed item for an easier one, no penalty. `onHint` records that help was opened. */
+type Typed = { swap: () => void; onHint?: () => void };
 
 const subtle = "min-h-11 self-start px-3 text-sm text-muted underline";
 
@@ -123,34 +127,115 @@ export function Register({ ex, locked, report }: ExProps<Of<"register">>) {
   );
 }
 
-/** Type the French for an English prompt. Lenient: accents, punctuation and one typo; the tu form also counts. */
-export function Type({ ex, locked, report }: ExProps<Of<"type">>) {
+const inputProps = { spellCheck: false, autoComplete: "off", enterKeyHint: "done" as const, autoCapitalize: "none", autoCorrect: "off" };
+
+function SwapLink({ locked, swap }: { locked: boolean; swap: () => void }) {
+  return <button className={subtle} disabled={locked} onClick={swap}>Use tiles instead</button>;
+}
+
+/** Type the French for an English prompt. Lenient: accents, small typos, spacing; the tu form also counts. */
+export function Type({ ex, locked, report, swap, onHint }: ExProps<Of<"type">> & Typed) {
   const [text, setText] = useState("");
+  const [gloss, setGloss] = useState(false);
+  const [shapes, setShapes] = useState(!!ex.shapesOpen);
   function submit() {
-    const exact = isCorrect(text, ex.fr);
-    const informal = !exact && !!ex.alt && isCorrect(text, ex.alt);
-    report(exact || informal, ex.fr, informal ? `That is the tu form. With strangers, say ${ex.fr}.` : ex.note);
+    if (!text.trim() || locked) return;
+    let g = grade(text, ex.fr);
+    let informal = false;
+    if (!g.ok && ex.alt) { const a = grade(text, ex.alt); if (a.ok) { g = a; informal = true; } }
+    report(g.ok, ex.fr, informal ? `That is the tu form. With strangers, say ${ex.fr}.` : ex.note, undefined, informal ? undefined : { fixed: g.fixed, wrong: g.wrong });
+  }
+  // two steps: the meaning of the words first, then the shape of each word; shown from the start when shapesOpen
+  const next = !shapes ? (ex.gloss && !gloss ? "gloss" : "shapes") : ex.gloss && !gloss ? "gloss" : null;
+  function more() {
+    onHint?.();
+    if (next === "gloss") setGloss(true); else setShapes(true);
   }
   return (
     <div className="flex flex-col gap-3">
       <p className="label">Translate into French</p>
       <p className="text-2xl font-extrabold">{ex.en}</p>
-      <Hint text={ex.hint} open={ex.hintOpen} />
-      <input className="input" lang="fr" autoCapitalize="none" autoCorrect="off" disabled={locked} value={text}
-        onChange={(e) => setText(e.target.value)} placeholder="Écrivez en français" />
+      {gloss && ex.gloss && <p className="flex gap-1.5 text-sm text-muted"><Lightbulb size={16} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" /><span>{ex.gloss}</span></p>}
+      {shapes && (
+        <div className="flex flex-wrap gap-2" aria-label="Shape of each word">
+          {ex.shapes.map((sh, k) => <span key={k} lang="fr" className="rounded-lg bg-tint px-2.5 py-1 font-mono text-base font-bold tracking-wide text-primary">{sh}</span>)}
+        </div>
+      )}
+      {next && !locked && (
+        <button className={`${subtle} flex items-center gap-1.5`} onClick={more}>
+          <Lightbulb size={16} className="text-accent" aria-hidden="true" /> {!gloss && !shapes ? "Show a hint" : next === "gloss" ? "What do the words mean?" : "More help"}
+        </button>
+      )}
+      <input className="input" lang="fr" {...inputProps} disabled={locked} value={text} onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder="Écrivez en français" />
       <p className="text-xs text-muted">Accents and small typos are fine.</p>
       <button className="btn" disabled={!text.trim() || locked} onClick={submit}>Check</button>
+      <SwapLink locked={locked} swap={swap} />
     </div>
   );
 }
 
-export function Bank({ ex, locked, report }: ExProps<Of<"bank">>) {
-  const [picked, setPicked] = useState<number[]>([]);
-  const answer = picked.map((i) => ex.tokens[i]).join(" ");
+/** Type one or two words inside the French sentence. The placeholder shows the first letter and the length. */
+export function Cloze({ ex, locked, report, swap }: ExProps<Of<"cloze">> & Typed) {
+  const answers = ex.blanks.map((k) => splitTail(ex.tokens[k])[0]);
+  const [vals, setVals] = useState<string[]>(() => ex.blanks.map(() => ""));
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const ready = vals.every((v) => v.trim());
+  function submit() {
+    if (!ready || locked) return;
+    const gs = vals.map((v, b) => grade(v, answers[b]));
+    const bad = gs.find((g) => !g.ok);
+    report(!bad, ex.fr, ex.note, undefined, bad ? { wrong: bad.wrong } : { fixed: gs.some((g) => g.fixed) ? ex.fr : undefined });
+  }
+  function enter(b: number) {
+    const empty = vals.findIndex((v, k) => k !== b && !v.trim());
+    if (empty >= 0 && ready === false) refs.current[empty]?.focus(); else submit();
+  }
   return (
     <div className="flex flex-col gap-3">
-      <p className="label">Translate into French</p>
-      <p className="text-2xl font-extrabold">{ex.en}</p>
+      <p className="label">Type the missing {ex.blanks.length > 1 ? "words" : "word"}</p>
+      <p className="text-muted">“{ex.en}”</p>
+      <p lang="fr" className="flex flex-wrap items-baseline gap-x-2 gap-y-3 text-2xl font-extrabold">
+        {ex.tokens.map((tok, k) => {
+          const b = ex.blanks.indexOf(k);
+          if (b < 0) return <span key={k}>{tok}</span>;
+          const [core, tail] = splitTail(tok);
+          return (
+            <span key={k} className="inline-flex items-baseline">
+              <input ref={(el) => { refs.current[b] = el; }} {...inputProps} lang="fr" disabled={locked} value={vals[b]} size={core.length + 2}
+                aria-label={`Missing word ${b + 1}, ${ex.shapes[b]}`} placeholder={ex.shapes[b]}
+                onChange={(e) => setVals(vals.map((v, n) => (n === b ? e.target.value : v)))}
+                onKeyDown={(e) => { if (e.key === "Enter") enter(b); }}
+                style={{ width: `calc(${core.length + 2}ch + 1.5rem)` }}
+                className="min-h-12 rounded-xl border-2 border-primary bg-surface px-2 py-1 text-center font-mono text-xl font-bold placeholder:text-muted" />
+              {tail}
+            </span>
+          );
+        })}
+      </p>
+      <p className="text-xs text-muted">Accents and small typos are fine.</p>
+      <button className="btn" disabled={!ready || locked} onClick={submit}>Check</button>
+      <SwapLink locked={locked} swap={swap} />
+    </div>
+  );
+}
+
+/** Build the French from tiles. With `audio`, hear it instead of reading the English (the English shows afterwards). */
+export function Bank({ ex, locked, report, skip }: ExProps<Of<"bank">> & Partial<Skip>) {
+  const [picked, setPicked] = useState<number[]>([]);
+  const answer = picked.map((i) => ex.tokens[i]).join(" ");
+  useEffect(() => { if (ex.audio && speechUnlocked()) speak(ex.fr); }, [ex.fr, ex.audio]);
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="label">{ex.audio ? "Listen, then build what you hear" : "Translate into French"}</p>
+      {ex.audio ? (
+        <>
+          <Speaker text={ex.fr} />
+          {locked && <p className="text-muted">“{ex.en}”</p>}
+        </>
+      ) : (
+        <p className="text-2xl font-extrabold">{ex.en}</p>
+      )}
       <div className="flex min-h-14 flex-wrap gap-2 border-b-2 border-border pb-2">
         {picked.map((i, n) => (
           <button key={n} disabled={locked} className="card !px-3 !py-2.5 font-semibold" onClick={() => setPicked(picked.filter((_, k) => k !== n))}>{ex.tokens[i]}</button>
@@ -162,22 +247,29 @@ export function Bank({ ex, locked, report }: ExProps<Of<"bank">>) {
             onClick={() => setPicked([...picked, i])}>{t}</button>
         ))}
       </div>
-      <button className="btn" disabled={!picked.length || locked} onClick={() => report(isCorrect(answer, ex.fr), ex.fr)}>Check</button>
+      <button className="btn" disabled={!picked.length || locked} onClick={() => report(grade(answer, ex.fr).ok, ex.fr)}>Check</button>
+      {ex.audio && skip && <SkipAudio locked={locked} skip={skip} />}
     </div>
   );
 }
 
-export function Listen({ ex, locked, report, skip }: ExProps<Of<"listen">> & Skip) {
+export function Listen({ ex, locked, report, skip, swap }: ExProps<Of<"listen">> & Skip & Typed) {
   const [text, setText] = useState("");
   useEffect(() => { if (speechUnlocked()) speak(ex.fr); }, [ex.fr]);
+  function submit() {
+    if (!text.trim() || locked) return;
+    const g = grade(text, ex.fr);
+    report(g.ok, ex.fr, ex.note, undefined, { fixed: g.fixed, wrong: g.wrong });
+  }
   return (
     <div className="flex flex-col gap-3">
       <p className="label">Type what you hear</p>
       <Speaker text={ex.fr} />
-      <input className="input" lang="fr" autoCapitalize="none" autoCorrect="off" disabled={locked} value={text}
-        onChange={(e) => setText(e.target.value)} placeholder="Écrivez en français" />
+      <input className="input" lang="fr" {...inputProps} disabled={locked} value={text} onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder="Écrivez en français" />
       <p className="text-xs text-muted">Accents and small typos are fine.</p>
-      <button className="btn" disabled={!text.trim() || locked} onClick={() => report(isCorrect(text, ex.fr), ex.fr)}>Check</button>
+      <button className="btn" disabled={!text.trim() || locked} onClick={submit}>Check</button>
+      <SwapLink locked={locked} swap={swap} />
       <SkipAudio locked={locked} skip={skip} />
     </div>
   );

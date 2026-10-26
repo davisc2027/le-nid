@@ -6,16 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  buildLesson, buildPractice, buildReview, noAudioFallback, phraseKey, pickReviewPhrases, PHRASE_BY_KEY,
-  type CardMap, type Exercise,
+  buildLesson, buildPractice, buildReview, frontierFromCards, noAudioFallback, phraseKey, pickReviewPhrases, PHRASE_BY_KEY,
+  stepDown, tierOf, toTiles, type CardMap, type Exercise,
 } from "@/lib/french/exercises";
+import { ALL_LESSONS } from "@/lib/french/content";
 import { Rating, schedule } from "@/lib/srs";
 import type { Lesson } from "@/lib/french/content";
 import OdileTrack from "@/components/art/OdileTrack";
 import { cue, pickReaction, type Cue } from "@/lib/odile-motion";
 import OdileSays from "@/components/art/OdileSays";
 import { playDone, playError, playSuccess, playTick, setSound, soundOn } from "@/lib/sounds";
-import { Bank, Choose, Gap, Hear, Listen, Match, Pick, Register, Type, type Report } from "./ExerciseViews";
+import { Bank, Choose, Cloze, Gap, Hear, Listen, Match, Pick, Register, Type, type Extra, type Report } from "./ExerciseViews";
 import MeetPhrases from "./MeetPhrases";
 import CultureNote from "@/components/culture/CultureNote";
 import SpeakStep from "@/components/speech/SpeakStep";
@@ -23,6 +24,8 @@ import { withSpeakSteps } from "@/lib/speech/select";
 import { speakingOn } from "@/lib/speech/settings";
 
 const NONE: string[] = []; // stable defaults so the queue effect does not re-run every render
+const TYPED = new Set(["type", "cloze", "listen"]);
+const MAX_REQUEUES = 2; // a missed phrase comes back (one rung easier) at most twice per session
 
 type Props = {
   lesson?: Lesson; // omitted in practice mode
@@ -41,7 +44,7 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   const [queue, setQueue] = useState<Exercise[] | null>(null);
   const [i, setI] = useState(0);
   const [total, setTotal] = useState(1);
-  const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string; why?: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; answer: string; note?: string; why?: string; fixed?: string; wrong?: Extra["wrong"]; eased?: boolean } | null>(null);
   const [intro, setIntro] = useState(!practice); // lessons open with the "meet the phrases" cards
   const [odile, setOdile] = useState<Cue | null>(null);
   const [sound, setSoundState] = useState(true);
@@ -52,25 +55,32 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   const [noAudio, setNoAudio] = useState(false);
   const router = useRouter();
   const missed = useRef<Set<string>>(new Set()); // phrase keys missed at least once this session
+  const hinted = useRef<Set<string>>(new Set()); // phrase keys whose hint was opened: recorded only, never a miss or a lower rating
+  const requeued = useRef<Map<string, number>>(new Map());
+  const typedMisses = useRef(0);
+  const eased = useRef(false); // after two typed misses the rest of the session uses tiles (session only, nothing stored)
+  // difficulty tier of this session: the lesson's unit, or the furthest lesson the learner has saved cards for
+  const frontier = lesson ? ALL_LESSONS.findIndex((l) => l.id === lesson.id) : frontierFromCards(cards);
+  const tier = tierOf(frontier);
   const saved = useRef<{ cards: boolean; reward: { xp: number; streak: number } | null }>({ cards: false, reward: null });
 
   useEffect(() => {
     let q: Exercise[];
     if (practice) {
-      q = buildPractice(practiceKeys.flatMap((k) => PHRASE_BY_KEY.get(k) ?? []));
+      q = buildPractice(practiceKeys.flatMap((k) => PHRASE_BY_KEY.get(k) ?? []), { frontier, cards });
     } else {
       q = buildLesson(lesson!); // 12-15 exercises
       if (speakingOn()) q = withSpeakSteps(q, lesson!); // optional "Say it" steps (no key: they never touch XP, cards or missed)
       // earlier-lesson review at the end (up to 3, so a lesson stays at 18 or fewer); skipped when cards are
       // unavailable or nothing else is completed
-      if (cards) q = [...q, ...buildReview(pickReviewPhrases(completed, lesson!.id, cards, 3), q[q.length - 1].kind)];
+      if (cards) q = [...q, ...buildReview(pickReviewPhrases(completed, lesson!.id, cards, 3), q[q.length - 1].kind, { frontier, cards })];
     }
     setQueue(q); setTotal(q.length);
-  }, [lesson, practice, practiceKeys, cards, completed]);
+  }, [lesson, practice, practiceKeys, cards, completed, frontier]);
 
   if (!queue) return <p className="text-muted">Loading…</p>;
   const cur = queue[i];
-  const ex = noAudio ? noAudioFallback(cur) ?? cur : cur;
+  const ex = noAudio ? noAudioFallback(cur, tier) ?? cur : cur;
   // "Can't speak now" (and "Can't listen now"): drop the Say-it steps from here on, for this lesson only
   function dropSpeak() {
     const kept = queue!.filter((e, k) => k < i || e.kind !== "speak");
@@ -81,14 +91,35 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   }
   const skip = () => { setNoAudio(true); dropSpeak(); };
 
-  const report: Report = (ok, answer, note, why) => {
-    setResult({ ok, answer, note, why });
+  const report: Report = (ok, answer, note, why, extra) => {
+    let easedNow = false;
+    if (!ok) {
+      const key = queue![i].key;
+      if (key) missed.current.add(key);
+      const typed = TYPED.has(ex.kind);
+      if (typed && ++typedMisses.current >= 2 && !eased.current) { eased.current = true; easedNow = true; }
+      let out = queue!;
+      // after two typed misses every queued typed item becomes tiles
+      if (eased.current) out = out.map((e, k) => (k > i && TYPED.has(e.kind) ? toTiles(e, tier) : e));
+      const n = key ? requeued.current.get(key) ?? 0 : MAX_REQUEUES;
+      if (key && n < MAX_REQUEUES && out.length < total + 4) {
+        requeued.current.set(key, n + 1);
+        const back = stepDown(queue![i], tier); // missed ones come back at the end, one rung easier
+        out = [...out, eased.current ? toTiles(back, tier) : back];
+      }
+      setQueue(out);
+    }
+    setResult({ ok, answer, note, why, fixed: ok ? extra?.fixed : undefined, wrong: ok ? undefined : extra?.wrong, eased: easedNow });
     if (ok) playSuccess(); else playError();
     setOdile(cue(pickReaction(ok ? "right" : "wrong"))); // starts with the sound; the feedback card is text
-    const key = queue![i].key;
-    if (!ok && key) missed.current.add(key);
-    if (!ok) setQueue((q) => [...q!, q![i]]); // missed ones come back at the end
   };
+
+  // "Use tiles instead": the same phrase as tiles, no miss, no penalty
+  const swap = () => {
+    setQueue((q) => q!.map((e, k) => (k === i ? toTiles(e, tier) : e)));
+    setResult(null);
+  };
+  const onHint = () => { const key = queue![i].key; if (key) hinted.current.add(key); };
 
   async function next() {
     if (saving) return;
@@ -166,9 +197,10 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
             {ex.kind === "pick" && <Pick ex={ex} locked={!!result} report={report} />}
             {ex.kind === "gap" && <Gap ex={ex} locked={!!result} report={report} />}
             {ex.kind === "register" && <Register ex={ex} locked={!!result} report={report} />}
-            {ex.kind === "type" && <Type ex={ex} locked={!!result} report={report} />}
-            {ex.kind === "bank" && <Bank ex={ex} locked={!!result} report={report} />}
-            {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} skip={skip} />}
+            {ex.kind === "type" && <Type ex={ex} locked={!!result} report={report} swap={swap} onHint={onHint} />}
+            {ex.kind === "cloze" && <Cloze ex={ex} locked={!!result} report={report} swap={swap} />}
+            {ex.kind === "bank" && <Bank ex={ex} locked={!!result} report={report} skip={skip} />}
+            {ex.kind === "listen" && <Listen ex={ex} locked={!!result} report={report} skip={skip} swap={swap} />}
             {ex.kind === "speak" && <SpeakStep fr={ex.fr} en={ex.en} note={ex.note} mode="lesson" onDone={() => void next()} onCantSpeak={dropSpeak} onReact={setOdile} />}
             {ex.kind === "match" && <Match ex={ex} locked={!!result} report={report} miss={() => setOdile(cue(pickReaction("miss")))} />}
           </div>
@@ -177,8 +209,11 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
       {result && (
         <div className={`card sticky bottom-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-2 ${result.ok ? "!border-good" : "!border-primary"}`} role="status">
           <p className="font-extrabold">{result.ok ? "Bien !" : "Pas tout à fait"}</p>
-          {!result.ok && result.answer && <p className="text-sm">Answer: <b>{result.answer}</b></p>}
+          {result.ok && result.fixed && <p className="text-sm">Watch the spelling: <b lang="fr">{result.fixed}</b></p>}
+          {!result.ok && result.wrong && <p className="text-sm">Almost. One word to fix: you wrote <i>{result.wrong.given}</i>, it&apos;s <b lang="fr">{result.wrong.expected}</b>.</p>}
+          {!result.ok && result.answer && <p className="text-sm">Answer: <b lang="fr">{result.answer}</b></p>}
           {!result.ok && result.why && <p className="text-sm">{result.why}</p>}
+          {result.eased && <p className="text-sm font-bold text-primary">Let&apos;s use tiles for the rest of this lesson.</p>}
           {result.note && <p className="flex gap-1.5 text-sm text-muted"><Lightbulb size={16} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" /><span>{result.note}</span></p>}
           {saveErr && <p className="text-sm font-bold text-primary">Couldn&apos;t save. Check your connection and try again.</p>}
           <button className="btn" disabled={saving} onClick={next}>{saving ? "Saving…" : saveErr ? "Retry" : "Continue"}</button>

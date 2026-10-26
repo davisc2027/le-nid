@@ -1,4 +1,4 @@
-import { ALL_LESSONS, ALL_PHRASES, type Lesson, type Phrase } from "./content";
+import { ALL_LESSONS, ALL_PHRASES, UNITS, type Lesson, type Phrase } from "./content";
 import { FAMILY_NOTE, familyOf, GLOSS, siblings, SUBJECTS, TU_WORDS } from "./lexicon";
 
 /** Wrong option -> one short reason, shown in the feedback card after a miss. */
@@ -9,8 +9,9 @@ type Base = { key?: string; review?: boolean; note?: string };
  * `key` is the phrase key (see phraseKey); `review` marks an exercise drawn from an earlier lesson.
  * choose: read (or with audioOnly, hear) French, pick the meaning. hear: hear French, pick the written phrase.
  * pick: read English, pick the French. gap: pick the missing word. register: pick tu or vous for a situation.
- * bank: build the French from tiles. type: type the French for an English prompt. listen: type what you hear.
- * `hint` is revealed by a tap, or shown from the start when `hintOpen`.
+ * bank: build the French from tiles (with `audio`, hear it instead of reading the English). type: type the French for an
+ * English prompt. cloze: type one or two words inside the French sentence. listen: type what you hear.
+ * type has two-step help: `gloss` first, then `shapes` (shown from the start when `shapesOpen`).
  */
 export type Exercise =
   | (Base & { kind: "choose"; fr: string; choices: string[]; answer: string; why?: Why; hint?: string; audioOnly?: boolean })
@@ -18,8 +19,10 @@ export type Exercise =
   | (Base & { kind: "pick"; en: string; fr: string; choices: string[]; answer: string; why?: Why })
   | (Base & { kind: "gap"; en: string; fr: string; before: string; after: string; choices: string[]; answer: string; why?: Why })
   | (Base & { kind: "register"; en: string; fr: string; situation: string; choices: string[]; answer: string; why?: Why })
-  | (Base & { kind: "bank"; en: string; fr: string; tokens: string[] })
-  | (Base & { kind: "type"; en: string; fr: string; alt?: string; hint?: string; hintOpen?: boolean })
+  | (Base & { kind: "bank"; en: string; fr: string; tokens: string[]; audio?: boolean })
+  | (Base & { kind: "type"; en: string; fr: string; alt?: string; gloss?: string; shapes: string[]; shapesOpen?: boolean })
+  /** `tokens = tokenize(fr)`; `blanks` are token indexes; `shapes[k]` is the placeholder of blank `blanks[k]`. */
+  | (Base & { kind: "cloze"; en: string; fr: string; tokens: string[]; blanks: number[]; shapes: string[] })
   | (Base & { kind: "listen"; fr: string })
   | { kind: "match"; pairs: Phrase[]; key?: undefined; review?: undefined; note?: undefined }
   /** Optional spoken step, inserted by lib/speech/select.ts. No key on purpose: it never reaches missed, cards or XP. */
@@ -42,6 +45,11 @@ const shuffle = <T,>(a: T[]): T[] => {
 /** French words as tiles; a space before ? ! : ; is kept attached to the previous word. */
 export const tokenize = (fr: string) => fr.replace(/ ([?!:;])/g, " $1").split(" ");
 
+/** Splits a token into its word and trailing punctuation (with the space kept before ? ! : ;). */
+const TAIL = /^(.*?)([\s ]*[?!:;,.]+)?$/u;
+/** Word and trailing punctuation of a token ("longtemps ?" -> ["longtemps", " ?"]). */
+export const splitTail = (tok: string): [string, string] => { const m = tok.match(TAIL); return [m?.[1] ?? tok, m?.[2] ?? ""]; };
+
 /** Lenient comparison: ignores case, accents, punctuation, and one typo. */
 export const normalize = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, " ")
@@ -56,10 +64,67 @@ function distance(a: string, b: string) {
   return d[a.length][b.length];
 }
 
-export function isCorrect(given: string, expected: string) {
-  const g = normalize(given), e = normalize(expected);
-  return g === e || (e.length > 6 && distance(g, e) <= 1);
+/** Grading-only normalisation: ligatures become letters. `normalize` itself must not change (phraseKey is built on it). */
+const answerCache = new Map<string, string>();
+export const normalizeAnswer = (s: string) => {
+  let r = answerCache.get(s);
+  if (r === undefined) {
+    r = normalize(s.replace(/œ/gi, "oe").replace(/æ/gi, "ae"));
+    if (answerCache.size > 4000) answerCache.clear();
+    answerCache.set(s, r);
+  }
+  return r;
+};
+
+export type Grade = { ok: boolean; fixed?: string; wrong?: { given: string; expected: string; why?: string } };
+
+/** Families whose members mean different things (nous / vous, lundi / mardi): swapping one is never a typo. */
+export const MEANING_FAMILIES = ["subject", "number", "day", "time", "direction", "weather", "family", "body", "question"] as const;
+
+/** Case, accents kept, punctuation gone: used to tell "exact" from "right after forgiving spelling". */
+const plain = (s: string) => s.toLowerCase().replace(/[’']/g, " ").replace(/[^\p{L}\p{N} ]/gu, " ").replace(/\s+/g, " ").trim();
+/** Same words as normalizeAnswer would see, but with their accents (for "it's vous" / "première"). */
+const rawWords = (s: string) => plain(s).split(" ").filter(Boolean);
+
+function grade(given: string, expected: string): Grade {
+  const g = normalizeAnswer(given), e = normalizeAnswer(expected);
+  if (!g || !e) return { ok: false };
+  const spelled = plain(given) === plain(expected);
+  if (g === e) return spelled ? { ok: true } : { ok: true, fixed: expected };
+  // another course phrase is never "close enough" (Dieu nous aime for Dieu vous aime)
+  const other = NORM_FR.get(g);
+  if (other) {
+    const gw = g.split(" "), ew = e.split(" ");
+    const k = gw.length === ew.length ? gw.findIndex((w, i) => w !== ew[i]) : -1;
+    return { ok: false, wrong: k >= 0 ? { given: gw[k], expected: rawWords(expected)[k] ?? ew[k], why: whyDiffer(other, expected, gw[k], ew[k]) } : undefined };
+  }
+  if (g.replace(/ /g, "") === e.replace(/ /g, "")) return { ok: true, fixed: expected };
+  const gw = g.split(" "), ew = e.split(" ");
+  if (gw.length === ew.length) {
+    const raw = rawWords(expected);
+    const budget = Math.max(1, Math.floor(e.length / 12));
+    let total = 0, first = -1;
+    for (let i = 0; i < ew.length; i++) {
+      if (gw[i] === ew[i]) continue;
+      const fa = FAMILY_BY_WORD.get(gw[i]), fb = FAMILY_BY_WORD.get(ew[i]);
+      const meaning = !!fa && fa === fb && (MEANING_FAMILIES as readonly string[]).includes(fa);
+      const d = distance(gw[i], ew[i]);
+      const allowed = ew[i].length >= 5 ? 1 : 0;
+      if (meaning || d > allowed) {
+        return { ok: false, wrong: { given: gw[i], expected: raw.length === ew.length ? raw[i] : ew[i], why: whyDiffer(undefined, expected, gw[i], ew[i], meaning ? fa : undefined) } };
+      }
+      total += d;
+      if (first < 0) first = i;
+    }
+    if (total > budget) return { ok: false, wrong: { given: gw[first], expected: raw.length === ew.length ? raw[first] : ew[first] } };
+    return { ok: true, fixed: expected };
+  }
+  // a lost or extra space
+  return e.length > 6 && distance(g, e) <= 1 ? { ok: true, fixed: expected } : { ok: false };
 }
+export { grade };
+
+export const isCorrect = (given: string, expected: string) => grade(given, expected).ok;
 
 /** Stable key for a phrase in vocab_cards: the normalized French, max 120 characters. */
 export const phraseKey = (fr: string) => normalize(fr).slice(0, 120).trim();
@@ -161,6 +226,28 @@ const pairKey = (a: string, b: string) => (a < b ? a + "\u0000" + b : b + "\u000
 const SAME = new Set(SAME_MEANING.map(([a, b]) => pairKey(a, b)));
 const NEAR = new Map(NEAR_MISS.map(([a, b, why]) => [pairKey(a, b), why]));
 
+/** normalizeAnswer(fr) -> phrase, for "never accept another course phrase". */
+const NORM_FR = new Map(ALL_PHRASES.map((p) => [normalizeAnswer(p.fr), p]));
+/** normalized word -> family name, for every course word and its family mates (so nous / vous are known to be rivals). */
+const FAMILY_BY_WORD = new Map<string, string>();
+for (const p of ALL_PHRASES) {
+  for (const t of tokenize(p.fr)) {
+    const low = (t.match(TAIL)?.[1] ?? "").toLowerCase();
+    const fam = familyOf(low);
+    if (!fam) continue;
+    for (const w of [low, ...siblings(low)]) {
+      const f = familyOf(w);
+      if (f && !FAMILY_BY_WORD.has(normalizeAnswer(w))) FAMILY_BY_WORD.set(normalizeAnswer(w), f.name);
+    }
+  }
+}
+/** The reason shown under "One word to fix": the listed near miss for two phrases, else the family's note. */
+function whyDiffer(given: Phrase | undefined, expected: string, gWord: string, eWord: string, fam = FAMILY_BY_WORD.get(gWord) === FAMILY_BY_WORD.get(eWord) ? FAMILY_BY_WORD.get(gWord) : undefined) {
+  const exp = NORM_FR.get(normalizeAnswer(expected));
+  const near = given && exp ? NEAR.get(pairKey(given.fr, exp.fr)) : undefined;
+  return near ?? (fam && fam in FAMILY_NOTE ? FAMILY_NOTE[fam as keyof typeof FAMILY_NOTE] : undefined);
+}
+
 const enWords = new Map(ALL_PHRASES.map((p) => [p, new Set(normalize(p.en).split(" ").filter(Boolean))]));
 const frWords = new Map(ALL_PHRASES.map((p) => [p, new Set(normalize(p.fr).split(" ").filter(Boolean))]));
 const subset = (a: Set<string>, b: Set<string>) => [...a].every((w) => b.has(w));
@@ -189,11 +276,50 @@ const canon = (p: Phrase): Phrase => BY_FR.get(p.fr) ?? p;
 const BY_EN = new Map(ALL_PHRASES.map((p) => [p.en, p]));
 const unitOf = (i: number) => ALL_LESSONS[i].id.split("-")[0];
 
-/** 0 early (recognition-heavy), 1 middle, 2 late (production-heavy), by position in the course. */
-export const stageOf = (lessonIndex: number): 0 | 1 | 2 => {
-  const t = lessonIndex / Math.max(1, ALL_LESSONS.length - 1);
-  return t < 0.3 ? 0 : t < 0.65 ? 1 : 2;
+export type Tier = 0 | 1 | 2 | 3 | 4;
+
+/** Difficulty tier by unit (docs/difficulty-plan.md 3.1): 0 recognise, 1 build, 2 short recall, 3 supported sentences, 4 free recall. */
+export const UNIT_TIER: Record<string, Tier> = {
+  u0: 0, u1: 0, u11: 1, u12: 1, u5: 1, u13: 1, u2: 2, u3: 2, u9: 2,
+  u4: 3, u14: 3, u6: 3, u15: 4, u8: 4, u16: 4, u7: 4, u17: 4, u10: 4, u18: 4,
 };
+const TIER_OF_LESSON: Tier[] = (() => {
+  let last: Tier = 0; // a unit missing from the map takes the tier of the unit before it
+  const byUnit = new Map(UNITS.map((u) => [u.id, (last = UNIT_TIER[u.id] ?? last)]));
+  return ALL_LESSONS.map((l) => byUnit.get(l.id.split("-")[0]) ?? 0);
+})();
+/** The tier of the unit a lesson (by course index) belongs to. */
+export const tierOf = (lessonIndex: number): Tier => TIER_OF_LESSON[Math.max(0, Math.min(lessonIndex, TIER_OF_LESSON.length - 1))];
+
+/** Typed-production limits per tier (docs/difficulty-plan.md 3.2). `null` means that kind is never typed in the tier. */
+type Cap = { words: number; chars: number } | null;
+export const RULES = {
+  typedLesson: [0, 2, 3, 4, 5],
+  typedReview: [0, 1, 1, 1, 2],
+  typedPractice: [0, 2, 3, 3, 4],
+  type: [null, { words: 1, chars: 12 }, { words: 3, chars: 18 }, { words: 4, chars: 24 }, { words: 6, chars: 32 }] as Cap[],
+  listen: [null, null, { words: 3, chars: 18 }, { words: 4, chars: 24 }, { words: 5, chars: 28 }] as Cap[],
+  bankAudioWords: [4, 6, 8, 99, 99],
+  bankTiles: [6, 8, 99, 99, 99],
+  bankDecoys: [1, 2, 2, 2, 2],
+  options: [2, 3, 3, 3, 3],
+  audioOnly: [0, 0, 0.25, 0.35, 0.5],
+  decoysTaught: [true, true, false, false, false],
+};
+const typedBudget = (c: Ctx) => (c.budget === "lesson" ? RULES.typedLesson : c.budget === "review" ? RULES.typedReview : RULES.typedPractice)[c.tier];
+const fitsCap = (p: Phrase, cap: Cap) => !!cap && nWords(p.fr) <= cap.words && normalizeAnswer(p.fr).length <= cap.chars;
+
+/** Words (normalized) taught in lessons 0..anchor, for tiers whose decoys must be familiar. */
+const TAUGHT: Set<string>[] = [];
+function taughtThrough(anchor: number): Set<string> {
+  for (let i = TAUGHT.length; i <= Math.min(anchor, ALL_LESSONS.length - 1); i++) {
+    const set = new Set(TAUGHT[i - 1] ?? []);
+    for (const p of ALL_LESSONS[i].phrases) for (const w of normalizeAnswer(p.fr).split(" ")) set.add(w);
+    TAUGHT.push(set);
+  }
+  return TAUGHT[Math.max(0, Math.min(anchor, TAUGHT.length - 1))];
+}
+const isTaught = (w: string, taught: Set<string>) => normalizeAnswer(w).split(" ").every((x) => !x || taught.has(x));
 
 /** How familiar a phrase from lesson ci is when practicing lesson `anchor`: this lesson > this unit > recent > old > unseen. */
 function locality(anchor: number, ci: number) {
@@ -299,7 +425,6 @@ function mc(t: Phrase, side: Side, count: number, anchor: number, o: PickOpts = 
 // Gap-fill and word-bank words
 
 type Slot = { k: number; core: string; tail: string; sibs: string[]; note: string };
-const TAIL = /^(.*?)([\s ]*[?!:;,.]+)?$/u;
 const DISJ_BEFORE = new Set(["pour", "avec", "à", "et", "de", "chez", "sans"]);
 const DISJ = ["moi", "nous", "lui", "elle", "eux"];
 const matchCase = (model: string, w: string) => (model[0] !== model[0].toLowerCase() ? w[0].toUpperCase() + w.slice(1) : w);
@@ -309,7 +434,7 @@ const matchCase = (model: string, w: string) => (model[0] !== model[0].toLowerCa
  * given the English: no elided or hyphenated words, no proper nouns, no sentence-initial verbs (a tu imperative could
  * be right), no object pronouns (Je le prends / Je la prends), no tu forms.
  */
-function gapSlots(p: Phrase): Slot[] {
+function gapSlots(p: Phrase, taught?: Set<string>): Slot[] {
   const toks = tokenize(p.fr);
   if (toks.length < 2) return [];
   const inPhrase = new Set(toks.map((t) => normalize(t)));
@@ -325,7 +450,7 @@ function gapSlots(p: Phrase): Slot[] {
       if (!DISJ_BEFORE.has(toks[k - 1].toLowerCase()) || !DISJ.includes(low)) return [];
       pool = shuffle(DISJ.filter((w) => w !== low));
     }
-    const sibs = pool.filter((s) => normalize(s) !== normalize(low) && !inPhrase.has(normalize(s)) && !TU_WORDS.has(s));
+    const sibs = pool.filter((s) => normalize(s) !== normalize(low) && !inPhrase.has(normalize(s)) && !TU_WORDS.has(s) && (!taught || isTaught(s, taught)));
     // two options only for a true pair (gauche / droite); everything else needs at least two wrong words
     return sibs.length >= (fam.name === "direction" ? 1 : 2) ? [{ k, core, tail, sibs, note: FAMILY_NOTE[fam.name] }] : [];
   });
@@ -333,8 +458,8 @@ function gapSlots(p: Phrase): Slot[] {
 
 const glossOf = (w: string) => GLOSS[w.toLowerCase()];
 
-function mkGap(p: Phrase, count: number, base: Base): Exercise | null {
-  const slots = gapSlots(p);
+function mkGap(p: Phrase, count: number, base: Base, taught?: Set<string>): Exercise | null {
+  const slots = gapSlots(p, taught);
   if (!slots.length) return null;
   // Prefer slots whose family has words both no longer and no shorter than the answer (otherwise the answer is
   // always the shortest option, as with à or parle), then meaning words (numbers, days, directions) over articles.
@@ -358,19 +483,22 @@ function mkGap(p: Phrase, count: number, base: Base): Exercise | null {
 
 const FILLERS = new Set(["bien", "très", "beaucoup", "aussi", "ici", "vraiment", "merci", "s'il", "plaît", "oui", "non", "vous", "nous"]);
 
-/** Word bank: the phrase's tiles plus two decoys, preferably same-family words (une for un, droite for gauche). */
-function mkBank(p: Phrase, anchor: number, base: Base): Exercise {
+/**
+ * Word bank: the phrase's tiles plus decoys (two, or one in tier 0), preferably same-family words (une for un, droite
+ * for gauche). With `taught` the decoys are words already met; null when no decoy is left.
+ */
+function mkBank(p: Phrase, anchor: number, base: Base, decoys = 2, taught?: Set<string>): Extract<Exercise, { kind: "bank" }> | null {
   const words = tokenize(p.fr);
   const inPhrase = new Set(words.map((w) => normalize(w)));
   const extras: string[] = [];
   const take = (w: string) => {
     const n = normalize(w);
-    if (extras.length < 2 && n && !inPhrase.has(n) && !extras.some((e) => normalize(e) === n) && !TU_WORDS.has(w.toLowerCase())) extras.push(w);
+    if (extras.length < decoys && n && !inPhrase.has(n) && !extras.some((e) => normalize(e) === n) && !TU_WORDS.has(w.toLowerCase()) && (!taught || isTaught(w, taught))) extras.push(w);
   };
-  for (const s of shuffle(gapSlots(p))) take(matchCase(s.core, s.sibs[0]));
-  if (extras.length < 2) {
+  for (const s of shuffle(gapSlots(p, taught))) take(matchCase(s.core, s.sibs[0]));
+  if (extras.length < decoys) {
     // fall back to words from phrases the learner met most recently, never random leftovers from the whole course
-    const near = ALL_PHRASES.filter((q) => q !== p)
+    const near = ALL_PHRASES.filter((q) => q !== p && (!taught || (HOME.get(q) ?? Infinity) <= anchor))
       .map((q) => ({ q, s: locality(anchor, HOME.get(q) ?? anchor + 1) + Math.random() * 2 }))
       .sort((a, b) => b.s - a.s).slice(0, 12);
     for (const { q } of near) {
@@ -383,12 +511,58 @@ function mkBank(p: Phrase, anchor: number, base: Base): Exercise {
       }
     }
   }
+  if (taught && !extras.length) return null;
   return { kind: "bank", en: p.en, fr: p.fr, tokens: shuffle([...words, ...extras]), ...base };
 }
 
-/** "Je m'appelle Marie" -> "J_ m'a_____ M____": first letters and word lengths. */
-export const letterHint = (fr: string) =>
-  tokenize(fr).map((t) => t.replace(/(^|['’-])(\p{L})|\p{L}/gu, (_m, sep, first) => (first !== undefined ? sep + first : "_"))).join(" ");
+/** "habitez" -> "h······": the first letter, then a dot per letter; ' and - stay, and the letter after them restarts. */
+export const shapeOf = (word: string) =>
+  word.replace(/(^|['’-])(\p{L})|\p{L}/gu, (_m, sep, first) => (first !== undefined ? sep + first : "·"));
+
+/** "Je m'appelle Marie" -> "J· m'a······ M····": first letters and word lengths (kept for callers outside this file). */
+export const letterHint = (fr: string) => tokenize(fr).map(shapeOf).join(" ");
+
+const CLOZE_STOP = new Set("le la les un une des de du et en ou je il on ce se ne pas que qui me vous nous est ai au aux y a à".split(" "));
+
+/** Token indexes that can be blanked (docs/difficulty-plan.md 3.3), each with a preference flag. */
+function clozeCandidates(p: Phrase) {
+  const toks = tokenize(p.fr);
+  return toks.flatMap((tok, k) => {
+    const core = tok.match(TAIL)?.[1] ?? "";
+    const low = core.toLowerCase();
+    if (!/^\p{L}{2,12}$/u.test(core) || (k > 0 && core !== low) || TU_WORDS.has(low) || CLOZE_STOP.has(low)) return [];
+    return [{ k, core, pref: !!GLOSS[low] || !!familyOf(low)?.verb }];
+  });
+}
+
+/** Chooses up to n non-adjacent blanks (token indexes, ascending) for a cloze, or null when the phrase has no usable word. */
+export function clozeBlanks(p: Phrase, n: number): number[] | null {
+  let pool = clozeCandidates(p);
+  if (!pool.length) return null;
+  const picked: number[] = [];
+  while (picked.length < n && pool.length) {
+    const pref = pool.filter((x) => x.pref);
+    const c = pref.length && Math.random() < 0.7 ? shuffle(pref)[0] : [...pool].sort((a, b) => b.core.length - a.core.length || Math.random() - 0.5)[0];
+    picked.push(c.k);
+    pool = pool.filter((x) => Math.abs(x.k - c.k) > 1);
+  }
+  return picked.sort((a, b) => a - b);
+}
+
+/** Blanks wanted for a phrase in a tier: 1 in tier 1, 2 only for longer phrases after that. */
+function blankCount(tier: Tier, p: Phrase) {
+  const w = nWords(p.fr);
+  if (tier <= 1) return 1;
+  if (tier === 2) return w >= 5 && Math.random() < 0.5 ? 2 : 1;
+  return w >= 4 && Math.random() < 0.5 ? 2 : 1;
+}
+
+function mkCloze(p: Phrase, n: number, base: Base): Exercise | null {
+  const blanks = clozeBlanks(p, n);
+  if (!blanks) return null;
+  const tokens = tokenize(p.fr);
+  return { kind: "cloze", en: p.en, fr: p.fr, tokens, blanks, shapes: blanks.map((k) => shapeOf(tokens[k].match(TAIL)?.[1] ?? tokens[k])), ...base };
+}
 
 function glossHint(p: Phrase) {
   if (nWords(p.fr) < 2) return undefined;
@@ -423,41 +597,74 @@ function mkRegister(p: Phrase, base: Base): Exercise | null {
 // ---------------------------------------------------------------------------------------------------------------
 // Exercise mix
 
-type K = Exclude<Kind, "match" | "speak">;
+type K = Exclude<Kind, "match" | "speak"> | "bankAudio";
 type Weights = Partial<Record<K, number>>;
-type Ctx = { stage: 0 | 1 | 2; anchor?: number; review?: boolean };
+type Budget = "lesson" | "review" | "practice";
+type Ctx = { tier: Tier; anchor?: number; review?: boolean; budget: Budget; cards?: CardMap | null };
+const TYPED = new Set<Kind>(["type", "cloze", "listen"]);
+const exKind = (k: K): Kind => (k === "bankAudio" ? "bank" : k);
 
 /** First pass: every phrase once, right after the introduction. Recognition early in the course, production later. */
 const FIRST: Weights[] = [
   { choose: 4, hear: 3, pick: 3 },
-  { choose: 3, hear: 2.5, pick: 3, gap: 2.5, bank: 1.5 },
-  { choose: 1.5, hear: 1.5, pick: 2, gap: 3, bank: 2.5, type: 2.5 },
+  { choose: 3.5, hear: 3, pick: 3, gap: 1.5 },
+  { choose: 3, pick: 3, hear: 2.5, gap: 2.5, bank: 1.5 },
+  { choose: 2.5, pick: 2.5, gap: 3, hear: 2, bank: 2 },
+  { gap: 3, bank: 2.5, pick: 2, choose: 1.5, hear: 1.5, cloze: 1.5, type: 1.5 },
 ];
-/** Second pass: production. Typing takes over in the later units. */
+/** Second pass: production. Tiles first, a typed blank next, typed answers only late. */
 const SECOND: Weights[] = [
-  { pick: 1.5, gap: 2.5, bank: 3.5, listen: 1.5, type: 1, register: 3 },
-  { gap: 2, bank: 3, type: 2.5, listen: 2, register: 3, choose: 0.7 },
-  { gap: 1.5, bank: 3, type: 4, listen: 2, register: 3, choose: 0.7 },
+  { bank: 3.5, gap: 2.5, bankAudio: 2, pick: 2, register: 2 },
+  { bank: 3.5, gap: 2.5, cloze: 2, bankAudio: 2, register: 2, pick: 1 },
+  { bank: 3, cloze: 2.5, gap: 2, register: 2, type: 1.5, listen: 1, bankAudio: 1 },
+  { bank: 3, type: 2.5, cloze: 2, gap: 1.5, listen: 1.5, register: 2, choose: 0.7 },
+  { type: 3.5, bank: 3, listen: 2, register: 2, gap: 1.5, cloze: 1.5, choose: 0.7 },
 ];
-const REVIEW: Weights = { pick: 2, gap: 2, type: 2, bank: 2, hear: 1, listen: 1, choose: 1, register: 1.5 };
-const CAP: Partial<Record<K, number>> = { listen: 2, hear: 3, register: 1, choose: 4 };
-const TYPE_MAX = [4, 6, 8], LISTEN_MAX = [5, 7, 8];
+/** Review tail and practice: follows the learner's tier, never a fixed stage. */
+const REVIEW: Weights[] = [
+  { pick: 3, choose: 2, hear: 2, bank: 2, gap: 1.5, register: 1 },
+  { pick: 2, bank: 2.5, gap: 2, cloze: 1.5, bankAudio: 1, hear: 1, choose: 1, register: 1 },
+  { pick: 2, gap: 2, bank: 2, cloze: 2, type: 1, listen: 0.5, hear: 1, choose: 1, register: 1.5 },
+  { pick: 2, gap: 2, bank: 2, cloze: 2, type: 1.5, listen: 1, hear: 1, choose: 1, register: 1.5 },
+  { pick: 2, gap: 2, type: 2, bank: 2, cloze: 1.5, hear: 1, listen: 1, choose: 1, register: 1.5 },
+];
+const CAP: Partial<Record<Kind, number>> = { listen: 2, hear: 3, register: 1, choose: 4 };
+
+/** Review and practice: full typing only for phrases whose card is steady (2+ reviews, under 2 lapses). */
+function steady(p: Phrase, c: Ctx): boolean {
+  if (c.budget === "lesson" || !c.cards) return true;
+  const st = c.cards[phraseKey(p.fr)]?.state;
+  return Number(st?.reps ?? 0) >= 2 && Number(st?.lapses ?? 0) < 2;
+}
+
+const tilesOk = (p: Phrase, c: Ctx) => tokenize(p.fr).length >= 2 && tokenize(p.fr).length <= RULES.bankTiles[c.tier];
+const taughtFor = (c: Ctx, p: Phrase) => (RULES.decoysTaught[c.tier] ? taughtThrough(c.anchor ?? HOME.get(p) ?? 0) : undefined);
+
+/** In the early tiers a word bank needs at least one decoy the learner has already met. */
+const hasDecoy = (p: Phrase, c: Ctx) => !RULES.decoysTaught[c.tier] || !!mkBank(p, c.anchor ?? HOME.get(p) ?? 0, {}, 1, taughtFor(c, p));
 
 function eligible(kind: K, p: Phrase, c: Ctx): boolean {
   switch (kind) {
-    case "gap": return gapSlots(p).length > 0;
-    case "bank": return tokenize(p.fr).length >= 2;
-    case "type": return nWords(p.fr) <= TYPE_MAX[c.stage];
-    case "listen": return nWords(p.fr) <= LISTEN_MAX[c.stage];
+    case "gap": return gapSlots(p, taughtFor(c, p)).length > 0;
+    case "bank": return tilesOk(p, c) && hasDecoy(p, c);
+    case "bankAudio": return tilesOk(p, c) && nWords(p.fr) <= RULES.bankAudioWords[c.tier] && hasDecoy(p, c);
+    case "type": return fitsCap(p, RULES.type[c.tier]) && steady(p, c);
+    case "listen": return fitsCap(p, RULES.listen[c.tier]) && steady(p, c);
+    case "cloze": return c.tier >= 1 && nWords(p.fr) >= 2 && clozeCandidates(p).length > 0;
     case "register": return !!p.tu;
     default: return true;
   }
 }
 
 function pickKind(w: Weights, p: Phrase, c: Ctx, prev: Kind | undefined, counts: Partial<Record<Kind, number>>): K {
-  const opts = (Object.entries(w) as [K, number][])
-    .filter(([k, wt]) => wt > 0 && k !== prev && (counts[k] ?? 0) < (CAP[k] ?? 99) && eligible(k, p, c));
-  if (!opts.length) return (["pick", "choose", "type"] as K[]).find((k) => k !== prev && eligible(k, p, c)) ?? "pick";
+  const typed = [...TYPED].reduce((a, k) => a + (counts[k] ?? 0), 0);
+  const open = (k: K) => exKind(k) !== prev && (counts[exKind(k)] ?? 0) < (CAP[exKind(k)] ?? 99) && !(TYPED.has(exKind(k)) && typed >= typedBudget(c)) && eligible(k, p, c);
+  const opts = (Object.entries(w) as [K, number][]).filter(([k, wt]) => wt > 0 && open(k));
+  if (!opts.length) {
+    // a kind outside the tier's weights is a last resort, and never a typed one
+    const fallback: K[] = ["pick", "choose", "bank"];
+    return fallback.find((k) => (w[k] ?? 0) > 0 && exKind(k) !== prev && eligible(k, p, c)) ?? fallback.find((k) => exKind(k) !== prev && eligible(k, p, c)) ?? "pick";
+  }
   let r = Math.random() * opts.reduce((a, [, wt]) => a + wt, 0);
   for (const [k, wt] of opts) if ((r -= wt) <= 0) return k;
   return opts[opts.length - 1][0];
@@ -466,24 +673,30 @@ function pickKind(w: Weights, p: Phrase, c: Ctx, prev: Kind | undefined, counts:
 function make(kind: K, p: Phrase, c: Ctx, warm = false): Exercise {
   const anchor = c.anchor ?? HOME.get(p) ?? 0;
   const base: Base = { key: phraseKey(p.fr), note: p.note, ...(c.review ? { review: true } : {}) };
-  const n = c.stage === 0 ? 2 : 3; // wrong options per question
+  const n = RULES.options[c.tier]; // wrong options per question
   switch (kind) {
     case "choose": {
-      const audioOnly = !warm && c.stage > 0 && Math.random() < (c.stage === 1 ? 0.35 : 0.5);
-      return { kind, fr: p.fr, answer: p.en, ...mc(p, "en", warm ? 2 : 3, anchor, { easy: warm }), hint: warm ? glossHint(p) : undefined, audioOnly, ...base };
+      const audioOnly = !warm && Math.random() < RULES.audioOnly[c.tier];
+      return { kind, fr: p.fr, answer: p.en, ...mc(p, "en", warm ? 2 : n, anchor, { easy: warm }), hint: warm ? glossHint(p) : undefined, audioOnly, ...base };
     }
     case "hear":
-      return { kind, fr: p.fr, en: p.en, answer: p.fr, ...mc(p, "fr", warm ? 2 : 3, anchor, { sound: true, easy: warm }), hint: warm ? `It means “${p.en}”.` : undefined, ...base };
+      return { kind, fr: p.fr, en: p.en, answer: p.fr, ...mc(p, "fr", warm ? 2 : n, anchor, { sound: true, easy: warm }), hint: warm ? `It means “${p.en}”.` : undefined, ...base };
     case "pick":
-      return { kind, en: p.en, fr: p.fr, answer: p.fr, ...mc(p, "fr", 3, anchor), ...base };
+      return { kind, en: p.en, fr: p.fr, answer: p.fr, ...mc(p, "fr", n, anchor), ...base };
     case "gap":
-      return mkGap(p, n, base) ?? make("pick", p, c);
+      return mkGap(p, n, base, taughtFor(c, p)) ?? make("pick", p, c);
     case "register":
       return mkRegister(p, base) ?? make("pick", p, c);
     case "bank":
-      return mkBank(p, anchor, base);
+      return mkBank(p, anchor, base, RULES.bankDecoys[c.tier], taughtFor(c, p)) ?? make("pick", p, c);
+    case "bankAudio": {
+      const b = mkBank(p, anchor, base, RULES.bankDecoys[c.tier], taughtFor(c, p));
+      return b ? { ...b, audio: true } : make("pick", p, c);
+    }
+    case "cloze":
+      return mkCloze(p, blankCount(c.tier, p), base) ?? make("bank", p, c);
     case "type":
-      return { kind, en: p.en, fr: p.fr, alt: p.tu, hint: c.stage < 2 || c.review ? letterHint(p.fr) : undefined, hintOpen: c.stage === 0, ...base };
+      return { kind, en: p.en, fr: p.fr, alt: p.tu, gloss: glossHint(p), shapes: tokenize(p.fr).map(shapeOf), shapesOpen: c.tier === 1 || c.tier === 2, ...base };
     case "listen":
       return { kind, fr: p.fr, ...base };
   }
@@ -504,19 +717,23 @@ const lessonSize = (n: number) => Math.max(12, Math.min(15, n + 6));
  * Builds one lesson (shown after the "meet the phrases" cards):
  * 1. a matching round on the phrases just introduced;
  * 2. every phrase once: two warm-ups (fewer options, a hint), then recognition-leaning kinds;
- * 3. production on the phrases first seen by recognition: word bank, gap-fill, typing, listening, tu/vous.
- * Kinds are weighted by course stage and never repeat back to back.
+ * 3. production on the phrases first seen by recognition: tiles, gap-fill, then typed blanks and answers in later tiers.
+ * Kinds are weighted by the unit's tier (tierOf), capped in typed items, and never repeat back to back.
  */
 export function buildLesson(input: Lesson): Exercise[] {
   const lesson = { ...input, phrases: input.phrases.map(canon) };
   const li = Math.max(0, ALL_LESSONS.findIndex((l) => l.id === lesson.id));
-  const c: Ctx = { stage: stageOf(li), anchor: li };
+  const c: Ctx = { tier: tierOf(li), anchor: li, budget: "lesson" };
   const out: Exercise[] = [mkMatch(lesson.phrases)];
   const counts: Partial<Record<Kind, number>> = {};
-  const push = (e: Exercise) => { out.push(e); counts[e.kind] = (counts[e.kind] ?? 0) + 1; };
+  const push = (e: Exercise) => {
+    // tier 3: the first typed answer of a lesson shows the shapes of its words
+    if (e.kind === "type" && c.tier === 3 && !counts.type) e.shapesOpen = true;
+    out.push(e); counts[e.kind] = (counts[e.kind] ?? 0) + 1;
+  };
   const first = shuffle(lesson.phrases);
   first.forEach((p, k) => {
-    const kind: K = k === 0 ? "choose" : k === 1 ? "hear" : pickKind(FIRST[c.stage], p, c, out[out.length - 1].kind, counts);
+    const kind: K = k === 0 ? "choose" : k === 1 ? "hear" : pickKind(FIRST[c.tier], p, c, out[out.length - 1].kind, counts);
     push(make(kind, p, c, k < 2));
   });
   const recognised = new Set(out.filter((e) => e.kind === "choose" || e.kind === "hear").map((e) => e.key));
@@ -524,7 +741,7 @@ export function buildLesson(input: Lesson): Exercise[] {
   const second = shuffle(lesson.phrases).sort((a, b) => Number(!recognised.has(phraseKey(a.fr))) - Number(!recognised.has(phraseKey(b.fr)))).slice(0, rest);
   const ordered = shuffle(second);
   if (ordered.length > 1 && ordered[0] === first[first.length - 1]) ordered.push(ordered.shift()!); // no phrase twice in a row
-  for (const p of ordered) push(make(pickKind(SECOND[c.stage], p, c, out[out.length - 1].kind, counts), p, c));
+  for (const p of ordered) push(make(pickKind(SECOND[c.tier], p, c, out[out.length - 1].kind, counts), p, c));
   return out;
 }
 
@@ -563,29 +780,92 @@ function sequence(phrases: Phrase[], c: Ctx, prev?: Kind): Exercise[] {
   const out: Exercise[] = [];
   const counts: Partial<Record<Kind, number>> = {};
   for (const p of phrases) {
-    const e = make(pickKind(REVIEW, p, c, out[out.length - 1]?.kind ?? prev, counts), p, c);
+    const e = make(pickKind(REVIEW[c.tier], p, c, out[out.length - 1]?.kind ?? prev, counts), p, c);
     out.push(e);
     counts[e.kind] = (counts[e.kind] ?? 0) + 1;
   }
   return out;
 }
 
-/** Review exercises for phrases from earlier lessons, flagged `review`. `prev` is the kind just before them. */
-export function buildReview(phrases: Phrase[], prev?: Kind): Exercise[] {
-  return sequence(shuffle(phrases.map(canon)), { stage: 1, review: true }, prev);
+type BuildOpts = { frontier?: number; cards?: CardMap | null };
+
+/** The furthest lesson (by course index) any saved card belongs to, or 0. */
+export function frontierFromCards(cards: CardMap | null | undefined): number {
+  let best = 0;
+  for (const key of Object.keys(cards ?? {})) {
+    const p = PHRASE_BY_KEY.get(key);
+    if (p) best = Math.max(best, HOME.get(p) ?? 0);
+  }
+  return best;
+}
+
+/**
+ * Review exercises for phrases from earlier lessons, flagged `review`. `prev` is the kind just before them.
+ * `frontier` is the index of the lesson being played; without it the review uses tier 1, never tier 4.
+ */
+export function buildReview(phrases: Phrase[], prev?: Kind, opts: BuildOpts = {}): Exercise[] {
+  const tier: Tier = opts.frontier === undefined ? 1 : tierOf(opts.frontier);
+  return sequence(shuffle(phrases.map(canon)), { tier, review: true, budget: "review", cards: opts.cards }, prev);
 }
 
 /** A practice session: one exercise per phrase, in the order given, mixed kinds. */
-export function buildPractice(phrases: Phrase[]): Exercise[] {
-  return sequence(phrases.map(canon), { stage: 1 });
+export function buildPractice(phrases: Phrase[], opts: BuildOpts = {}): Exercise[] {
+  const frontier = opts.frontier ?? (opts.cards ? frontierFromCards(opts.cards) : undefined);
+  const tier: Tier = frontier === undefined ? 1 : tierOf(frontier);
+  return sequence(phrases.map(canon), { tier, budget: "practice", cards: opts.cards });
 }
 
-/** Version of an exercise that needs no audio, for "Can't listen now" (null when it already needs none). */
-export function noAudioFallback(ex: Exercise): Exercise | null {
+const isTyped = (e: Exercise) => TYPED.has(e.kind);
+const ctxFor = (ex: Exercise, tier: Tier): Ctx => ({ tier, review: !!ex.review, budget: ex.review ? "review" : "lesson" });
+
+/**
+ * The same phrase one rung down (docs/difficulty-plan.md 5.4): type -> cloze (or tiles), listen -> audio tiles (or
+ * hear), cloze -> tiles, audio tiles -> hear, tiles -> pick, gap -> pick. Anything else comes back unchanged.
+ */
+export function stepDown(ex: Exercise, tier: Tier): Exercise {
+  if (ex.kind === "match" || ex.kind === "speak") return ex;
+  const p = BY_FR.get(ex.fr);
+  if (!p) return ex;
+  const c = ctxFor(ex, tier);
+  const base: Base = { key: ex.key, note: ex.note, ...(ex.review ? { review: true } : {}) };
+  const bank = (audio = false) => {
+    const b = mkBank(p, HOME.get(p) ?? 0, base, RULES.bankDecoys[tier], taughtFor(c, p));
+    return b ? (audio ? { ...b, audio: true } : b) : null;
+  };
+  switch (ex.kind) {
+    case "type": return (tier >= 1 ? mkCloze(p, 1, base) : null) ?? bank() ?? make("pick", p, c);
+    case "listen": return (nWords(p.fr) <= RULES.bankAudioWords[tier] ? bank(true) : null) ?? make("hear", p, c);
+    case "cloze": return bank() ?? make("pick", p, c);
+    case "bank": return ex.audio ? make("hear", p, c) : make("pick", p, c);
+    case "gap": return make("pick", p, c);
+    default: return ex;
+  }
+}
+
+/** Step down until nothing is typed: what "Use tiles instead" and a eased lesson show. */
+export function toTiles(ex: Exercise, tier: Tier): Exercise {
+  let e = ex;
+  for (let k = 0; k < 3 && isTyped(e); k++) e = stepDown(e, tier);
+  return e;
+}
+
+/**
+ * Version of an exercise that needs no audio, for "Can't listen now" (null when it already needs none).
+ * A typed dictation becomes a typed blank (tier 2), a typed sentence with its shapes open (tier 3 and 4) when the
+ * phrase fits the tier's typing cap, otherwise a blank.
+ */
+export function noAudioFallback(ex: Exercise, tier: Tier = 4): Exercise | null {
   if (ex.kind === "listen") {
     const p = BY_FR.get(ex.fr);
-    return p ? { kind: "type", en: p.en, fr: p.fr, alt: p.tu, hint: letterHint(p.fr), key: ex.key, review: ex.review, note: ex.note } : null;
+    if (!p) return null;
+    const base: Base = { key: ex.key, note: ex.note, ...(ex.review ? { review: true } : {}) };
+    if (tier >= 3 && fitsCap(p, RULES.type[tier])) {
+      return { kind: "type", en: p.en, fr: p.fr, alt: p.tu, gloss: glossHint(p), shapes: tokenize(p.fr).map(shapeOf), shapesOpen: true, ...base };
+    }
+    const c = ctxFor(ex, tier);
+    return (tier >= 1 ? mkCloze(p, 1, base) : null) ?? mkBank(p, HOME.get(p) ?? 0, base, RULES.bankDecoys[tier], taughtFor(c, p)) ?? make("pick", p, c);
   }
+  if (ex.kind === "bank" && ex.audio) return { ...ex, audio: false };
   if (ex.kind === "hear") {
     return { kind: "pick", en: ex.en, fr: ex.fr, choices: ex.choices, answer: ex.answer, why: ex.why, key: ex.key, review: ex.review, note: ex.note };
   }

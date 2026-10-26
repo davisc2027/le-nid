@@ -91,9 +91,12 @@ not required. A learner who had finished only u1 now meets numbers (u5) before d
 3. **First pass**, every phrase once. The first two are warm-ups with 3 options instead of 4, wrong options from
    the lesson that *contrast* with the answer, and a tap-to-reveal hint (word glosses such as "où = where",
    or "It means ..." for listening).
-4. **Second pass** on production: the phrases first seen through recognition come back as word bank, gap-fill,
-   typing, listening or tu/vous.
-5. **Review**: up to 3 phrases from earlier lessons, continuing the sequence.
+4. **Second pass** on production: the phrases first seen through recognition come back as word bank, audio word bank,
+   gap-fill, tu/vous and, by tier, a typed blank (cloze), typing or dictation.
+5. **Review**: up to 3 phrases from earlier lessons, continuing the sequence, at the tier of the lesson being played.
+
+How much the learner types, and how much help they get, follows the difficulty tier of the unit
+(see [difficulty-plan.md](difficulty-plan.md) for the reasoning and the audit behind it).
 
 Size: 12 to 15 exercises plus up to 3 review, so **18 at most** (missed items still come back at the end). The same
 kind never appears twice in a row, and the same phrase never appears twice in a row.
@@ -102,39 +105,102 @@ kind never appears twice in a row, and the same phrase never appears twice in a 
 
 | Kind | Task | Grading |
 |---|---|---|
-| choose | Read French, pick the meaning. Some are audio-only (hear it, pick the meaning) from the middle of the course on | exact |
+| choose | Read French, pick the meaning. Some are audio-only (hear it, pick the meaning) from tier 2 on | exact |
 | hear | Hear French, pick the written phrase among sound-alikes | exact |
 | pick | Read English, pick the French among near misses | exact |
 | gap | Pick the missing word; options from the same family (articles, verb endings, numbers, days...) | exact |
 | register | A situation ("To a shopkeeper", "To a French student your age"): pick the tu or vous version | exact |
-| bank | Build the French from tiles, including 2 same-family decoys | lenient |
-| type | Type the French for an English prompt; letter-shape hint (`J_ m'a_____ M____`) | lenient, tu form accepted |
+| bank | Build the French from tiles, including same-family decoys (1 in tier 0, 2 after) | exact (through `grade`) |
+| bank, `audio` | "Tap what you hear": the French is spoken and the English is hidden until the feedback card | exact |
+| cloze | The French sentence with one or two words to type (inline inputs; the placeholder shows the first letter and length, `h······`) | lenient |
+| type | Type the French for an English prompt; two-step help (word glosses, then letter shapes) | lenient, tu form accepted |
 | listen | Type what you hear | lenient |
 | match | Tap pairs | - |
 
-"Lenient" means accents, case, punctuation and one typo (on words over 6 letters) are forgiven, as before.
+"Use tiles instead" is offered under every type, cloze and listen item in every tier, with no penalty: it swaps the
+item for tiles. Opening a hint is recorded but never lowers the review rating or counts as a miss.
 
-### Mix per stage
+### Lenient grading
 
-Stage comes from position in the course: early is the first 30% of lessons, middle up to 65%, then late.
-These are the weights; the measured mix is below.
+`grade(given, expected)` returns `{ ok, fixed?, wrong? }`; `isCorrect` is `grade(...).ok`. `normalize` and `phraseKey`
+are unchanged (saved cards depend on them); grading uses `normalizeAnswer`, which also turns `œ`/`æ` into `oe`/`ae`.
 
-| Pass | Early | Middle | Late |
+1. Same after normalizing: right. If the raw text differed beyond case and punctuation (a missing accent, a typo),
+   the card adds "Watch the spelling: ...".
+2. Same once spaces are ignored (*mappelle*, *sil vous plait*): right, with the spelling shown.
+3. Same number of words: compared word by word. Swapping two words of the same **meaning family** (subject, number,
+   day, time, direction, weather, family, body, question: *nous* for *vous*, *lundi* for *mardi*) is wrong, and the
+   card names the word and why. Otherwise a word of 5 or more letters may be off by one edit, shorter words by none,
+   and the whole answer by at most `max(1, floor(length / 12))` edits (*habites* for *habitez*).
+4. A different number of words keeps the old rule: over 6 letters and one edit (a lost or extra space).
+5. Another course phrase is never accepted for this one. The tu form is still accepted, with its reminder.
+6. Cloze grades each blank as a word; all blanks must pass.
+
+### Difficulty tiers
+
+`tierOf(lessonIndex)` returns the tier of the lesson's unit (`UNIT_TIER` in `lib/french/exercises.ts`; a missing unit
+takes the tier of the one before it, and the check script fails on a missing unit).
+
+| Tier | Name | Units | Lessons |
 |---|---|---|---|
-| First | choose 4, hear 3, pick 3 | choose 3, pick 3, hear 2.5, gap 2.5, bank 1.5 | gap 3, bank 2.5, type 2.5, pick 2, choose 1.5, hear 1.5 |
-| Second | bank 3.5, register 3, gap 2.5, pick 1.5, listen 1.5, type 1 | bank 3, register 3, type 2.5, gap 2, listen 2, choose 0.7 | type 4, bank 3, register 3, listen 2, gap 1.5, choose 0.7 |
-| Review and practice | pick, gap, type, bank 2; register 1.5; hear, listen, choose 1 | | |
+| 0 | Recognise | u0, u1 | 1-6 |
+| 1 | Build | u11, u12, u5, u13 | 7-17 |
+| 2 | Short recall | u2, u3, u9 | 18-29 |
+| 3 | Supported sentences | u4, u14, u6 | 30-39 |
+| 4 | Free recall | u15, u8, u16, u7, u17, u10, u18 | 40-60 |
 
-Caps per lesson: listen 2, hear 3, choose 4, register 1. Typing is limited to phrases of at most 4, 6 or 8 words by
-stage, and listening to at most 5, 7 or 8 words.
+Caps (`RULES` in the engine). "Typed" means type, cloze and listen together.
 
-Measured mix (80 generations per lesson):
+| Rule | T0 | T1 | T2 | T3 | T4 |
+|---|---|---|---|---|---|
+| Typed items per core lesson (max) | 0 | 2 | 3 | 4 | 5 |
+| Typed items in the review tail (max) | 0 | 1 | 1 | 1 | 2 |
+| Typed items per 10 practice items (max) | 0 | 2 | 3 | 3 | 4 |
+| Cloze blanks | - | 1 | 1 (2 if 5+ words) | 1-2 | 1-2 |
+| Full typing: words / characters | none | 1 / 12 | 3 / 18 | 4 / 24 | 6 / 32 |
+| Typed dictation: words / characters | none | none | 3 / 18 | 4 / 24 | 5 / 28 |
+| Audio bank: max words | 4 | 6 | 8 | any | any |
+| Bank: max answer tiles / decoys | 6 / 1 | 8 / 2 | any / 2 | any / 2 | any / 2 |
+| Wrong options per choose, hear, pick, gap | 2 | 3 | 3 | 3 | 3 |
+| Audio-only choose | 0% | 0% | 25% | 35% | 50% |
+| Bank and gap decoys already taught | yes | yes | no | no | no |
 
-* **Early**: choose 23%, pick 21%, hear 18%, bank 9%, listen 8%, match 7%, type 7%, gap 6%, register 1%. Recognition
-  is about 62%.
-* **Middle**: choose 20%, bank 16%, hear 14%, gap 13%, pick 10%, type 9%, listen 8%, match 7%, register 2%.
-* **Late**: type 20%, bank 18%, choose 15%, gap 14%, hear 12%, match 7%, pick 7%, listen 7%, register 1%. Production
-  (type, bank, gap, listen) is about 60%.
+Phrases above a cap are never typed (they use tiles, or a cloze from tier 1). Help on a `type` item: tiers 1 and 2
+show the word shapes at once, tier 3 shows them on the first typed answer of a lesson, tier 4 hides them behind two
+taps (the gloss first, then the shapes). A cloze blank is a 2 to 12 letter word, not a stop word, never next to another
+blank, preferring words with a gloss or a verb form.
+
+### Mix per tier
+
+| Pass | T0 | T1 | T2 | T3 | T4 |
+|---|---|---|---|---|---|
+| First | choose 4, hear 3, pick 3 | choose 3.5, hear 3, pick 3, gap 1.5 | choose 3, pick 3, hear 2.5, gap 2.5, bank 1.5 | choose 2.5, pick 2.5, gap 3, hear 2, bank 2 | gap 3, bank 2.5, pick 2, choose 1.5, hear 1.5, cloze 1.5, type 1.5 |
+| Second | bank 3.5, gap 2.5, audio bank 2, pick 2, register 2 | bank 3.5, gap 2.5, cloze 2, audio bank 2, register 2, pick 1 | bank 3, cloze 2.5, gap 2, register 2, type 1.5, listen 1, audio bank 1 | bank 3, type 2.5, cloze 2, gap 1.5, listen 1.5, register 2, choose 0.7 | type 3.5, bank 3, listen 2, register 2, gap 1.5, cloze 1.5, choose 0.7 |
+| Review and practice | pick 3, choose 2, hear 2, bank 2, gap 1.5, register 1 | pick 2, bank 2.5, gap 2, cloze 1.5, audio bank 1, hear 1, choose 1, register 1 | pick 2, gap 2, bank 2, cloze 2, type 1, listen 0.5, hear 1, choose 1, register 1.5 | pick 2, gap 2, bank 2, cloze 2, type 1.5, listen 1, hear 1, choose 1, register 1.5 | pick 2, gap 2, type 2, bank 2, cloze 1.5, hear 1, listen 1, choose 1, register 1.5 |
+
+Caps per lesson: listen 2, hear 3, choose 4, register 1. A kind outside a tier's weights is only a last resort (never a
+typed one). `type` is allowed by the tier 1 caps (single words) but has no weight there, so tier 1 types through
+cloze only.
+
+Typed answers per lesson, as measured by `scripts/check-curriculum.mjs` (core lesson + review tail, 40 generations):
+
+| Unit (lessons) | Tier | Core | Review | Typed words mean / max |
+|---|---|---|---|---|
+| u0, u1 (1-6) | 0 | 0.0 | 0.0 | - |
+| u11, u12, u5, u13 (7-17) | 1 | 0.5-1.3 | 0.3-0.4 | 1.0 / 1 |
+| u2, u3, u9 (18-29) | 2 | 1.8-2.1 | 0.6-0.7 | 1.3-1.6 / 3 |
+| u4, u14, u6 (30-39) | 3 | 1.8-2.1 | 0.7 | 1.8-1.9 / 4 |
+| u15-u18 (40-60) | 4 | 3.2-3.8 | 0.9-1.1 | 2.6-3.0 / 6 |
+
+### Adaptation inside a session
+
+* A miss comes back at the end one rung easier (`stepDown`: type to cloze, cloze to tiles, listen to audio tiles, tiles
+  and gap to pick), at most twice per phrase, and the queue never grows by more than 4.
+* After two misses on typed items, every remaining typed item in the session becomes tiles, with one line saying so.
+  Nothing is stored.
+* Review and practice type a whole phrase only when its saved card has at least 2 reviews and fewer than 2 lapses;
+  otherwise at most a cloze. Practice takes its tier from the furthest lesson the learner has cards for.
+* Nothing steps up automatically: the tier is the step-up.
 
 ## 4. Distractor rules
 
@@ -194,11 +260,14 @@ The phrase note (lightbulb) still shows as before. After checking, the correct o
 
 ## 6. Review, practice and no audio
 
-`buildReview(phrases, prevKind)` and `buildPractice(phrases)` use the same kinds and the same distractor engine. Each
+`buildReview(phrases, prevKind, { frontier, cards })` and `buildPractice(phrases, { frontier, cards })` use the same
+kinds and distractor engine, with the weights, caps and lapse rule of the learner's tier (a missing `frontier` means
+tier 1, never tier 4). Each
 phrase is anchored to its own lesson, so wrong options come from what the learner had already met. `phraseKey`,
 `pickReviewPhrases`, `pickPracticeKeys` and the card saving are unchanged. "Can't listen now" turns the rest of the
-session audio-free (`noAudioFallback`): listen becomes typing from English, hear becomes pick with the same options,
-and audio-only choose shows the French text.
+session audio-free (`noAudioFallback(ex, tier)`): listen becomes a cloze (tier 2) or a typed sentence with its shapes
+open (tiers 3 and 4, when it fits the typing cap), audio tiles become plain tiles, hear becomes pick with the same
+options, and audio-only choose shows the French text.
 
 ## 7. Checks
 
@@ -230,7 +299,19 @@ through small loader hooks, so nothing is copied. It exits 1 when a check fails.
 * no two same-kind exercises in a row;
 * 12 to 18 exercises per lesson, and at most 18 with review.
 
-It prints the length and punctuation tell rates, where wrong options come from, and the exercise mix per stage.
+It prints the length and punctuation tell rates, where wrong options come from, and the exercise mix per tier.
+
+**Difficulty ramp** (section "Difficulty ramp" of the script):
+
+* every unit has a tier, tiers never drop, and tier 4 starts at u15-l1;
+* typed counts, word and character caps, cloze blanks, bank tiles and decoys, and "already taught" decoys hold in core
+  lessons, in the review tail at every course position and in practice at every position;
+* lapsed cards never get full typing; the 5-word sentence from the owner's complaint is never typed before tier 4;
+* no-audio fallbacks never need audio; step-downs follow the ladder and tier 0 never steps down to typing;
+* the grading table (accents, ligatures, spacing, small typos accepted; meaning swaps rejected; no two course phrases
+  accept each other) and unchanged `phraseKey` values for the two `œ` phrases.
+
+It prints the typed answers per lesson for every unit, so the ramp stays visible.
 
 Not covered by the script: the UI on a phone (the intro cards, audio autoplay after the first tap, layout of long
 options). Check those by hand.

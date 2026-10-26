@@ -278,6 +278,10 @@ function checkSequence(exs, where) {
       for (const w of words) { const i = pool.indexOf(w); if (i < 0) fail(`${where}: bank missing tile ${w}`); else pool.splice(i, 1); }
       if (E.ambiguousTiles && E.ambiguousTiles(e)) fail(`${where}: bank tiles allow another correct sentence for "${e.fr}"`);
     }
+    if (e.kind === "cloze") {
+      if (isMC(e)) fail(`${where}: cloze has choices`);
+      if (E.tokenize(e.fr).join(" ") !== e.tokens.join(" ")) fail(`${where}: cloze tokens differ from "${e.fr}"`);
+    }
     if (e.kind === "match") {
       const ens = e.pairs.map((p) => p.en);
       if (new Set(ens).size !== ens.length) fail(`${where}: match duplicate`);
@@ -287,10 +291,105 @@ function checkSequence(exs, where) {
   }
 }
 
+
+// ---------------------------------------------------------------- difficulty ramp helpers (docs/difficulty-plan.md)
+const TYPED = new Set(["type", "cloze", "listen"]);
+const nw = (fr) => E.tokenize(fr).filter((t) => /\p{L}/u.test(t)).length;
+// the plan's limits, written out here on purpose so the engine is tested against the plan and not against itself
+const LIM = {
+  typedLesson: [0, 2, 3, 4, 5], typedReview: [0, 1, 1, 1, 2], typedPractice: [0, 2, 3, 3, 4],
+  type: [null, [1, 12], [3, 18], [4, 24], [6, 32]], listen: [null, null, [3, 18], [4, 24], [5, 28]],
+  audioWords: [4, 6, 8, 99, 99], tiles: [6, 8, 99, 99, 99], decoys: [1, 2, 2, 2, 2], options: [2, 3, 3, 3, 3],
+};
+const taughtCache = [];
+const taught = (i) => {
+  for (let k = taughtCache.length; k <= i; k++) {
+    const set = new Set(taughtCache[k - 1] ?? []);
+    for (const p of ALL_LESSONS[k].phrases) for (const w of E.normalizeAnswer(p.fr).split(" ")) set.add(w);
+    taughtCache.push(set);
+  }
+  return taughtCache[i];
+};
+const knownWord = (w, i) => E.normalizeAnswer(w).split(" ").every((x) => !x || taught(i).has(x));
+const STOP = new Set("le la les un une des de du et en ou je il on ce se ne pas que qui me vous nous est ai au aux y a à".split(" "));
+const TUW = new Set(["tu", "te", "toi", "t'", "ton", "ta", "tes", "es", "as"]);
+const coreOf = (tok) => (tok.match(/^(.*?)([\s ]*[?!:;,.]+)?$/u) ?? [])[1] ?? tok;
+const homeOf = (fr) => lessonOf.get(fr);
+
+function ramp0() {
+  return { core: new Map(), review: new Map(), words: new Map() }; // lesson index -> counts / word lists
+}
+const add = (m, k, v) => { if (!m.has(k)) m.set(k, []); m.get(k).push(v); };
+
+/** Caps that hold for any typed item in tier t. */
+function checkTypedItem(e, t, where) {
+  if (e.kind === "type") {
+    const c = LIM.type[t];
+    if (!c) fail(`${where}: type item in tier ${t}`);
+    else {
+      if (nw(e.fr) > c[0] || E.normalizeAnswer(e.fr).length > c[1]) fail(`${where}: type "${e.fr}" is over the tier ${t} cap`);
+      if (t === 1 && (nw(e.fr) !== 1)) fail(`${where}: tier 1 type "${e.fr}" is not a single word`);
+    }
+    if (!Array.isArray(e.shapes) || e.shapes.length !== E.tokenize(e.fr).length) fail(`${where}: type shapes do not match "${e.fr}"`);
+  }
+  if (e.kind === "listen") {
+    const c = LIM.listen[t];
+    if (!c) fail(`${where}: listen item in tier ${t}`);
+    else if (nw(e.fr) > c[0] || E.normalizeAnswer(e.fr).length > c[1]) fail(`${where}: listen "${e.fr}" is over the tier ${t} cap`);
+  }
+  if (e.kind === "cloze") {
+    if (t === 0) fail(`${where}: cloze in tier 0`);
+    const n = e.blanks.length, w = nw(e.fr);
+    if (e.shapes.length !== n || n < 1 || n > 2) fail(`${where}: cloze "${e.fr}" has ${n} blanks / ${e.shapes.length} shapes`);
+    if (t <= 1 && n !== 1) fail(`${where}: tier ${t} cloze has ${n} blanks`);
+    if (t === 2 && n === 2 && w < 5) fail(`${where}: tier 2 cloze with two blanks on a ${w}-word phrase`);
+    const toks = e.tokens;
+    e.blanks.forEach((k, b) => {
+      const core = coreOf(toks[k]), low = core.toLowerCase();
+      if (!/^\p{L}{2,12}$/u.test(core)) fail(`${where}: cloze blank "${core}" is not 2-12 letters`);
+      if (k > 0 && core !== low) fail(`${where}: cloze blank "${core}" is capitalised`);
+      if (TUW.has(low) || STOP.has(low)) fail(`${where}: cloze blank "${core}" is a stop word`);
+      if (b > 0 && k - e.blanks[b - 1] < 2) fail(`${where}: cloze blanks are adjacent in "${e.fr}"`);
+      if (e.shapes[b] !== E.shapeOf(core)) fail(`${where}: cloze shape ${e.shapes[b]} for "${core}"`);
+    });
+    const filled = toks.map((tok, k) => (e.blanks.includes(k) ? coreOf(tok) + tok.slice(coreOf(tok).length) : tok)).join(" ");
+    if (E.tokenize(filled).join(" ") !== e.fr) fail(`${where}: cloze tokens do not rebuild "${e.fr}"`);
+  }
+  if (e.kind === "bank") {
+    const words = E.tokenize(e.fr);
+    if (words.length > LIM.tiles[t]) fail(`${where}: tier ${t} bank has ${words.length} answer tiles (max ${LIM.tiles[t]})`);
+    const extra = e.tokens.length - words.length;
+    if (extra > LIM.decoys[t] || extra < 1) fail(`${where}: tier ${t} bank has ${extra} decoys (1-${LIM.decoys[t]})`);
+    if (e.audio && nw(e.fr) > LIM.audioWords[t]) fail(`${where}: tier ${t} audio bank "${e.fr}" has ${nw(e.fr)} words (max ${LIM.audioWords[t]})`);
+    if (t <= 1) {
+      const pool = [...e.tokens];
+      for (const w of words) pool.splice(pool.indexOf(w), 1);
+      const home = homeOf(e.fr);
+      for (const d of pool) if (!knownWord(d, home)) fail(`${where}: tier ${t} bank decoy "${d}" is not taught by lesson ${home + 1}`);
+    }
+  }
+  if (e.kind === "gap" && t <= 1) {
+    const home = homeOf(e.fr);
+    for (const c of e.choices) if (!knownWord(c, home)) fail(`${where}: tier ${t} gap option "${c}" is not taught by lesson ${home + 1}`);
+  }
+  if (isMC(e) && e.choices.length - 1 > LIM.options[t]) fail(`${where}: tier ${t} item has ${e.choices.length - 1} wrong options (max ${LIM.options[t]})`);
+  if (e.kind === "choose" && e.audioOnly && t < 2) fail(`${where}: audio-only choose in tier ${t}`);
+}
+
+function rampCore(li, exs) {
+  const t = E.tierOf(li), where = `ramp ${ALL_LESSONS[li].id}`;
+  const typed = exs.filter((e) => TYPED.has(e.kind));
+  if (typed.length > LIM.typedLesson[t]) fail(`${where}: ${typed.length} typed items in tier ${t} (max ${LIM.typedLesson[t]})`);
+  for (const e of exs) checkTypedItem(e, t, where);
+  add(ramp.core, li, typed.length);
+  for (const e of typed) add(ramp.words, li, e.kind === "cloze" ? e.blanks.length : nw(e.fr));
+}
+
 section(`Generated lessons (${N} per lesson)`);
 const allMC = [];
 const kindCount = {};
-const stageMix = {};
+const ramp = ramp0();
+const tierMix = {};
 for (const [li, lesson] of ALL_LESSONS.entries()) {
   for (let r = 0; r < N; r++) {
     const exs = E.buildLesson(lesson);
@@ -300,16 +399,17 @@ for (const [li, lesson] of ALL_LESSONS.entries()) {
     for (const e of exs) {
       if (isMC(e)) allMC.push(e);
       kindCount[e.kind] = (kindCount[e.kind] ?? 0) + 1;
-      const band = li < ALL_LESSONS.length / 3 ? "early" : li < (2 * ALL_LESSONS.length) / 3 ? "middle" : "late";
-      stageMix[band] ??= {};
-      stageMix[band][e.kind] = (stageMix[band][e.kind] ?? 0) + 1;
+      const band = `tier ${E.tierOf(li)}`;
+      tierMix[band] ??= {};
+      tierMix[band][e.kind] = (tierMix[band][e.kind] ?? 0) + 1;
     }
+    rampCore(li, exs);
   }
 }
 mcStats(allMC, "lesson exercises");
 for (const kind of [...new Set(allMC.map((e) => e.kind))]) mcStats(allMC.filter((e) => e.kind === kind), `  kind ${kind}`);
-console.log("  exercise mix by course third:");
-for (const [band, m] of Object.entries(stageMix)) {
+console.log("  exercise mix by tier:");
+for (const [band, m] of Object.entries(tierMix).sort()) {
   const tot = Object.values(m).reduce((a, b) => a + b, 0);
   console.log(`    ${band.padEnd(6)} ` + Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${((100 * v) / tot).toFixed(0)}%`).join(", "));
 }
@@ -320,21 +420,21 @@ section("Review and practice");
   const reviewMC = [];
   for (let r = 0; r < N * 4; r++) {
     const ps = E.pickReviewPhrases(done, ALL_LESSONS[12].id, {}, 4);
-    const exs = E.buildReview(ps);
+    const exs = E.buildReview(ps, undefined, { frontier: 12 });
     checkSequence(exs, "review");
     if (exs.some((e) => e.kind !== "match" && !e.review)) fail("review exercise without the review flag");
     reviewMC.push(...exs.filter(isMC));
     // a full lesson as the player assembles it: core lesson, then up to 3 review items continuing the sequence
     const core = E.buildLesson(ALL_LESSONS[12]);
-    const full = [...core, ...E.buildReview(E.pickReviewPhrases(done, ALL_LESSONS[12].id, {}, 3), core[core.length - 1].kind)];
+    const full = [...core, ...E.buildReview(E.pickReviewPhrases(done, ALL_LESSONS[12].id, {}, 3), core[core.length - 1].kind, { frontier: 12 })];
     if (full.length > 18) fail(`lesson with review has ${full.length} exercises (max 18)`);
     checkSequence(full, "lesson + review");
-    const practice = E.buildPractice([...ALL_PHRASES].sort(() => Math.random() - 0.5).slice(0, 10));
+    const practice = E.buildPractice([...ALL_PHRASES].sort(() => Math.random() - 0.5).slice(0, 10), { frontier: 12 });
     checkSequence(practice, "practice");
     if (practice.length !== 10) fail("practice should give one exercise per phrase");
     reviewMC.push(...practice.filter(isMC));
     if (E.noAudioFallback) for (const e of [...exs, ...practice]) {
-      const f = E.noAudioFallback(e);
+      const f = E.noAudioFallback(e, E.tierOf(12));
       if (f && (f.kind === "listen" || f.kind === "hear")) fail("no-audio fallback still needs audio");
       if (f && isMC(f)) checkSequence([f], "no-audio fallback");
     }
@@ -350,13 +450,190 @@ section("Review and practice");
     try {
       const exs = E.buildLesson(copy(l));
       if (!exs.length) fail(`copied lesson ${l.id} built no exercises`);
-      const rv = E.buildReview(copy(ALL_PHRASES.slice(0, 4)));
-      const pr = E.buildPractice(copy(ALL_PHRASES.slice(5, 15)));
+      const rv = E.buildReview(copy(ALL_PHRASES.slice(0, 4)), undefined, { frontier: 30 });
+      const pr = E.buildPractice(copy(ALL_PHRASES.slice(5, 15)), { frontier: 30 });
       if (rv.length !== 4 || pr.length !== 10) fail("copied review/practice phrases built the wrong number of exercises");
       for (const e of [...exs, ...rv, ...pr]) if (e.kind === "choose" && e.choices.includes(e.answer) === false) fail(`copied lesson ${l.id}: answer missing from choices`);
     } catch (err) {
       fail(`copied lesson ${l.id} threw: ${err.message}`);
     }
+  }
+}
+
+
+// ---------------------------------------------------------------- difficulty ramp (docs/difficulty-plan.md section 7)
+section("Difficulty ramp");
+{
+  // 1. tier map
+  let prev = -1;
+  for (const u of UNITS) {
+    if (!(u.id in E.UNIT_TIER)) fail(`ramp: unit ${u.id} has no UNIT_TIER entry`);
+  }
+  ALL_LESSONS.forEach((l, i) => {
+    const t = E.tierOf(i);
+    if (t < prev) fail(`ramp: tier drops at ${l.id} (${prev} -> ${t})`);
+    prev = t;
+  });
+  if (E.tierOf(0) !== 0) fail("ramp: the first unit is not tier 0");
+  const first4 = ALL_LESSONS.findIndex((_, i) => E.tierOf(i) === 4);
+  if (first4 !== 39 || ALL_LESSONS[39].id !== "u15-l1") fail(`ramp: tier 4 starts at lesson index ${first4} (${ALL_LESSONS[first4]?.id}), expected 39 (u15-l1)`);
+  console.log(`  tiers by lesson: ${[0, 1, 2, 3, 4].map((t) => `T${t} ${ALL_LESSONS.map((_, i) => i).filter((i) => E.tierOf(i) === t).length}`).join(", ")}; tier 4 starts at ${ALL_LESSONS[first4]?.id}`);
+
+  // 3 and 4. review and practice at every position
+  const ids = (n) => ALL_LESSONS.slice(0, n).map((l) => l.id);
+  const typedWords = new Map(); // li -> typed word counts (review + practice)
+  for (let li = 0; li < ALL_LESSONS.length; li++) {
+    const t = E.tierOf(li);
+    for (let r = 0; r < N; r++) {
+      if (li >= 1) {
+        const ps = E.pickReviewPhrases(ids(li), ALL_LESSONS[li].id, null, 3);
+        const rv = E.buildReview(ps, undefined, { frontier: li });
+        const where = `ramp review at ${ALL_LESSONS[li].id}`;
+        checkSequence(rv, where);
+        const typed = rv.filter((e) => TYPED.has(e.kind));
+        if (typed.length > LIM.typedReview[t]) fail(`${where}: ${typed.length} typed items (max ${LIM.typedReview[t]})`);
+        for (const e of rv) { checkTypedItem(e, t, where); if (!e.review) fail(`${where}: item without the review flag`); }
+        add(ramp.review, li, typed.length);
+        for (const e of typed) add(typedWords, li, e.kind === "cloze" ? e.blanks.length : nw(e.fr));
+      }
+      const pool = ALL_LESSONS.slice(0, li + 1).flatMap((l) => l.phrases);
+      const ps = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+      const pr = E.buildPractice(ps, { frontier: li });
+      const where = `ramp practice at ${ALL_LESSONS[li].id}`;
+      checkSequence(pr, where);
+      if (pr.length !== ps.length) fail(`${where}: ${pr.length} items for ${ps.length} phrases`);
+      const typed = pr.filter((e) => TYPED.has(e.kind));
+      if (typed.length > LIM.typedPractice[t]) fail(`${where}: ${typed.length} typed items (max ${LIM.typedPractice[t]})`);
+      for (const e of pr) checkTypedItem(e, t, where);
+    }
+  }
+
+  // 5. lapse rule
+  {
+    const cards = Object.fromEntries(ALL_PHRASES.map((p) => [E.phraseKey(p.fr), { state: { lapses: 2, reps: 5 }, due: new Date(0).toISOString() }]));
+    const steady = Object.fromEntries(ALL_PHRASES.map((p) => [E.phraseKey(p.fr), { state: { lapses: 0, reps: 3 }, due: new Date(0).toISOString() }]));
+    let sawFull = false;
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < N; r++) {
+      const ps = [...ALL_LESSONS.slice(0, li + 1).flatMap((l) => l.phrases)].sort(() => Math.random() - 0.5).slice(0, 10);
+      const all = [...E.buildPractice(ps, { frontier: li, cards }), ...E.buildReview(ps.slice(0, 3), undefined, { frontier: li, cards })];
+      if (all.some((e) => e.kind === "type" || e.kind === "listen")) fail(`ramp: lapsed cards still got full typing at ${ALL_LESSONS[li].id}`);
+      if (li >= 39 && [...E.buildPractice(ps, { frontier: li, cards: steady })].some((e) => e.kind === "type" || e.kind === "listen")) sawFull = true;
+    }
+    if (!sawFull) fail("ramp: steady cards never get full typing in tier 4 practice");
+  }
+
+  // 6. owner regression: the 5-word sentence from the complaint
+  {
+    const target = ALL_PHRASES.find((p) => p.fr === "Vous habitez ici depuis longtemps ?");
+    if (!target) fail("ramp: owner example phrase is missing");
+    else {
+      const others = ALL_PHRASES.filter((p) => p !== target);
+      for (let li = 0; li < 39; li++) for (let r = 0; r < N; r++) {
+        const ps = [target, ...[...others].sort(() => Math.random() - 0.5).slice(0, 9)];
+        const items = [...E.buildPractice(ps, { frontier: li }), ...E.buildReview([target], undefined, { frontier: li })].filter((e) => e.fr === target.fr);
+        for (const e of items) {
+          if (e.kind === "type" || e.kind === "listen") fail(`ramp: owner example is a ${e.kind} item with frontier ${li}`);
+          if (li < 6 && TYPED.has(e.kind)) fail(`ramp: owner example is typed (${e.kind}) with frontier ${li}`);
+        }
+      }
+      for (let r = 0; r < N; r++) for (const e of E.buildLesson(ALL_LESSONS.find((l) => l.phrases.includes(target)))) {
+        if (e.fr === target.fr && (e.kind === "type" || e.kind === "listen")) fail("ramp: owner example is typed inside its own lesson");
+      }
+    }
+  }
+
+  // 7 and 8. no-audio fallback and step-down
+  {
+    const samples = [];
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < Math.max(3, N / 4); r++) {
+      for (const e of E.buildLesson(ALL_LESSONS[li])) samples.push([li, e]);
+    }
+    const needsAudio = (f) => f.kind === "listen" || f.kind === "hear" || (f.kind === "bank" && f.audio) || (f.kind === "choose" && f.audioOnly);
+    for (const [li, e] of samples) {
+      const t = E.tierOf(li);
+      const f = E.noAudioFallback(e, t);
+      if (f) {
+        if (needsAudio(f)) fail("ramp: no-audio fallback still needs audio");
+        checkTypedItem(f, t, `ramp no-audio at ${ALL_LESSONS[li].id}`);
+        if (f.kind !== "type" || e.kind !== "listen") continue;
+        if (!f.shapesOpen) fail("ramp: a listen -> type fallback must open the shapes");
+      }
+      if (e.kind === "listen" && !f) fail("ramp: listen has no no-audio fallback");
+    }
+    // synthetic items so that every rung is exercised at every tier, including ones a tier never builds
+    const phrases = [...ALL_PHRASES].sort(() => Math.random() - 0.5).slice(0, 120);
+    for (let t = 0; t <= 4; t++) for (const p of phrases) {
+      const key = E.phraseKey(p.fr), li = homeOf(p.fr), where = `ramp stepDown tier ${t}`;
+      const clozable = E.clozeBlanks(p, 1) !== null;
+      const check = (from, allowed, extra) => {
+        const d = E.stepDown(from, t);
+        if (d.key !== key) fail(`${where}: ${from.kind} step-down lost its key`);
+        if (!allowed.includes(d.kind)) fail(`${where}: ${from.kind} stepped down to ${d.kind} (expected ${allowed.join(" or ")})`);
+        if (t === 0 && TYPED.has(d.kind)) fail(`${where}: tier 0 step-down is typed`);
+        if (extra) extra(d);
+        return d;
+      };
+      check({ kind: "type", en: p.en, fr: p.fr, shapes: [], key }, t >= 1 && clozable ? ["cloze"] : ["bank", "pick"]);
+      check({ kind: "listen", fr: p.fr, key }, ["bank", "hear"], (d) => {
+        if (nw(p.fr) > LIM.audioWords[t] && d.kind !== "hear") fail(`${where}: listen stepped down to audio tiles on a ${nw(p.fr)}-word phrase`);
+        if (d.kind === "bank" && !d.audio) fail(`${where}: listen should step down to AUDIO tiles`);
+      });
+      const cl = E.clozeBlanks(p, 1) && check({ kind: "cloze", en: p.en, fr: p.fr, tokens: E.tokenize(p.fr), blanks: E.clozeBlanks(p, 1), shapes: [], key }, ["bank", "pick"], (d) => { if (d.audio) fail(`${where}: cloze stepped down to audio tiles`); });
+      if (E.tokenize(p.fr).length >= 2) {
+        check({ kind: "bank", en: p.en, fr: p.fr, tokens: E.tokenize(p.fr), audio: true, key }, ["hear"]);
+        check({ kind: "bank", en: p.en, fr: p.fr, tokens: E.tokenize(p.fr), key }, ["pick"]);
+      }
+      void cl; void li;
+    }
+    const same = E.buildLesson(ALL_LESSONS[5]).filter((e) => ["choose", "hear", "pick", "register", "match"].includes(e.kind));
+    for (const e of same) if (E.stepDown(e, 0) !== e) fail(`ramp: stepDown changed a ${e.kind} item`);
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (const e of E.buildLesson(ALL_LESSONS[li])) {
+      if (e.kind === "gap" && E.stepDown(e, E.tierOf(li)).kind !== "pick") fail("ramp: gap did not step down to pick");
+    }
+  }
+
+  // 9. grading table
+  {
+    const ok = [
+      ["coeur", "cœur"], ["si vous croyez dans votre coeur", "Si vous croyez dans votre cœur"], ["je mappelle marie", "Je m'appelle Marie"],
+      ["vous habites ici depuis longtemp", "Vous habitez ici depuis longtemps ?"], ["un cafe sil vous plait", "Un café, s'il vous plaît"],
+      ["ca va", "Ça va ?"], ["Bonjour !", "Bonjour"], ["oeuvres", "œuvres"],
+    ];
+    for (const [g, x] of ok) if (!E.grade(g, x).ok) fail(`grade: "${g}" should be accepted for "${x}"`);
+    if (E.grade("première", "première").fixed) fail("grade: an exact answer should not carry a correction");
+    if (E.grade("premiere", "première").fixed !== "première") fail("grade: a missing accent should show the spelling");
+    if (E.isCorrect("coeur", "cœur") !== true) fail("grade: isCorrect wrapper");
+    const wrong = [["dieu nous aime", "Dieu vous aime"], ["cinq", "Cent"], ["bonjour", "Bonsoir"], ["a gauche", "À droite"]];
+    const mardi = ALL_PHRASES.find((p) => /^Mardi /.test(p.fr));
+    wrong.push(mardi ? [mardi.fr.replace(/^Mardi/, "lundi").toLowerCase(), mardi.fr] : ["lundi matin", "Mardi matin"]);
+    for (const [g, x] of wrong) if (E.grade(g, x).ok) fail(`grade: "${g}" must be wrong for "${x}"`);
+    const nous = E.grade("dieu nous aime", "Dieu vous aime");
+    if (nous.wrong?.given !== "nous" || nous.wrong?.expected !== "vous" || !nous.wrong?.why) fail(`grade: "nous" for "vous" should name the word and why (${JSON.stringify(nous)})`);
+    let bad = 0;
+    for (const a of ALL_PHRASES) for (const b of ALL_PHRASES) if (a !== b && E.grade(a.fr, b.fr).ok) { bad++; if (bad < 4) console.log(`  accepted "${a.fr}" for "${b.fr}"`); }
+    if (bad) fail(`grade: ${bad} course phrase pairs accept each other`);
+    // grading never changes saved-card keys
+    const keyOf = (re) => ALL_PHRASES.find((p) => re.test(p.fr));
+    const oe = [[keyOf(/des œuvres/), "cela ne vient pas des uvres"], [keyOf(/dans votre cœur/), "si vous croyez dans votre c ur"]];
+    for (const [p, k] of oe) if (!p || E.phraseKey(p.fr) !== k) fail(`grade: phraseKey changed for the œ phrase (${p?.fr}: "${p && E.phraseKey(p.fr)}")`);
+    console.log(`  grading table: ${ok.length} accepted, ${wrong.length} rejected, ${ALL_PHRASES.length ** 2 - ALL_PHRASES.length} phrase pairs never accept each other`);
+  }
+
+  // 10. the ramp, per unit
+  {
+    const rows = [];
+    for (const u of UNITS) {
+      const idx = ALL_LESSONS.map((l, i) => [l, i]).filter(([l]) => l.id.startsWith(u.id + "-")).map(([, i]) => i);
+      const mean = (m) => { const xs = idx.flatMap((i) => (m.get(i) ?? []).length ? [(m.get(i).reduce((a, b) => a + b, 0)) / N] : []); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; };
+      const core = idx.reduce((a, i) => a + (ramp.core.get(i) ?? []).reduce((x, y) => x + y, 0) / N, 0) / idx.length;
+      const rev = idx.reduce((a, i) => a + (ramp.review.get(i) ?? []).reduce((x, y) => x + y, 0) / N, 0) / idx.length;
+      const ws = idx.flatMap((i) => [...(ramp.words.get(i) ?? []), ...(typedWords.get(i) ?? [])]);
+      rows.push({ u: u.id, lessons: `${idx[0] + 1}-${idx[idx.length - 1] + 1}`, tier: E.tierOf(idx[0]), core, rev, wm: ws.length ? ws.reduce((a, b) => a + b, 0) / ws.length : 0, wx: ws.length ? Math.max(...ws) : 0 });
+      void mean;
+    }
+    console.log("  typed answers per lesson (type + cloze + listen); words = words typed per answer (a cloze counts its blanks):");
+    console.log("    unit  lessons  tier  core  review  words mean/max");
+    for (const r of rows) console.log(`    ${r.u.padEnd(5)} ${r.lessons.padEnd(8)} T${r.tier}    ${r.core.toFixed(1).padStart(4)}  ${r.rev.toFixed(1).padStart(5)}   ${r.wm.toFixed(1)} / ${r.wx}   ${"#".repeat(Math.round((r.core + r.rev) * 4))}`);
   }
 }
 

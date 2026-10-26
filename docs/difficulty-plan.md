@@ -1,6 +1,6 @@
 # Difficulty plan: limiting typed production
 
-Status: plan only, nothing built yet. Builder: follow section 8 in order. Scope: `lib/french/exercises.ts`,
+Status: built (see docs/curriculum.md section 3 for the shipped rules). Original build order: section 8. Scope: `lib/french/exercises.ts`,
 `lib/french/lexicon.ts` (read only), `components/french/ExerciseViews.tsx`, `components/french/LessonPlayer.tsx`,
 `app/(app)/french/practice/page.tsx`, `scripts/check-curriculum.mjs`, `docs/curriculum.md`.
 
