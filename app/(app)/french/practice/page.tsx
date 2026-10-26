@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { pickPracticeKeys, type CardMap } from "@/lib/french/exercises";
+import { pickPracticeKeys, practiceFrontier, type CardMap } from "@/lib/french/exercises";
 import LessonPlayer from "@/components/french/LessonPlayer";
 
 export default async function PracticePage() {
   let rows: { key: string; state: Record<string, unknown>; due: string; last_review: string | null }[] | null = null;
+  let completed: string[] | null = null; // finished lessons: they, not the saved cards, set the practice tier
   try {
-    const { data, error } = await (await createClient()).from("vocab_cards").select("key, state, due, last_review");
+    const supabase = await createClient();
+    const [{ data, error }, progress] = await Promise.all([
+      supabase.from("vocab_cards").select("key, state, due, last_review"),
+      supabase.from("lesson_progress").select("lesson_id"),
+    ]);
     if (!error && data) rows = data;
+    if (!progress.error && progress.data) completed = progress.data.map((d) => d.lesson_id as string);
   } catch {
     rows = null;
   }
@@ -25,5 +31,5 @@ export default async function PracticePage() {
     );
 
   const cards: CardMap = Object.fromEntries(rows.map((r) => [r.key, { state: r.state, due: r.due, last_review: r.last_review }]));
-  return <LessonPlayer mode="practice" nextHref="/french" cards={cards} practiceKeys={keys} />;
+  return <LessonPlayer mode="practice" nextHref="/french" cards={cards} practiceKeys={keys} frontier={practiceFrontier(completed, cards)} />;
 }

@@ -2,6 +2,8 @@
 
 Scope: `content/french/units.json`, the exercise engine in `lib/french/exercises.ts` (with the word families in
 `lib/french/lexicon.ts`), and the lesson player in `components/french/`. Checks: `node scripts/check-curriculum.mjs`.
+The course order and the language load per lesson were reworked in the simplification pass (section 2.1); the current
+course is 22 units, 72 lessons and 488 phrases.
 
 ## 1. Evaluation (before this change)
 
@@ -82,6 +84,39 @@ before it was finished. Inserting u0 (and moving u5) would therefore have locked
 the same as before. Existing learners keep everything up to where they were, and u0 shows as open for them, but it is
 not required. A learner who had finished only u1 now meets numbers (u5) before directions (u2).
 
+### 2.1 Simplification pass: less complex French early on
+
+Plan, reasoning and measurements: [curriculum-simplification-plan.md](curriculum-simplification-plan.md). The 35 learners
+met 10 to 19 new words per lesson from lesson 1 and a 5-word sentence with *depuis* in lesson 5, so the course was
+**re-sequenced, not rewritten**:
+
+* No existing `fr` or `en` text and no lesson id changed. The 468 shipped phrase keys and 60 lesson ids are frozen in
+  `content/french/shipped.json`; the check fails if one disappears, so saved cards and finished lessons stay valid and no
+  database migration was needed.
+* Long phrases moved later (96 moves, listed in [curriculum-review-list.md](curriculum-review-list.md)), to a later lesson
+  or to two new part-2 units: **u19 Bavarder** (longer small talk, tier 3, after u9) and **u20 En ville, la suite** (longer
+  sentences for trams, time and food, tier 4, after u15). 20 short new phrases fill the gaps and four lessons were
+  added to existing units (u0-l3, u13-l3, u5-l6, u9-l5).
+* **u13 (faith words) now comes before u12 and u5**: Jésus, the Bible, prayer and *Vous êtes invité* are lessons 10 to 12,
+  *Dieu vous aime* and *Puis-je prier pour vous ?* are lessons 13 and 14, testimony (*Jésus a changé ma vie*) is lesson 39.
+  *Je peux vous parler de ma foi ?* stays early (u12-l2, lesson 14) as a fixed formula and is exempt from the length cap.
+* The Christmas-market lines moved to **u21 Marché de Noël (optional)**, the last unit; it is seasonal and not needed for
+  the March trip. u10-l2 is now "Alsatian food".
+* Basic politeness (*Merci*, *Pardon*, *Excusez-moi*, *De rien*, *Merci beaucoup*) is lesson 3.
+* Loads, measured by the check (new words per lesson, a formulaic chunk counting once): T0 mean 6.4 / max 7, T1 7.7 / 9,
+  T2 8.8 / 11, T3 9.1 / 13, T4 8.4 / 14 (was 10.5 / 16, 11.6 / 18, 10.9 / 15, 9.5 / 15, 9.1 / 15).
+* A lesson of 5 phrases now gets a second turn on its least-recognised phrases, so it still has 12 to 15 exercises.
+* **Unlocking** is unchanged ("one past the furthest finished lesson"): lessons inserted before a learner's frontier show
+  as open and unfinished, never locked. **Practice** takes its tier from the furthest finished lesson
+  (`practiceFrontier`, from `lesson_progress`), not from the cards, because a moved phrase keeps its card and its far-away
+  home lesson; **review** draws only phrases that have a saved card.
+* The Say-it selection counts the u0 lessons (`U0_COUNT` in `lib/speech/select.ts`) instead of assuming two.
+
+### 2.2 Optional end unit
+
+u21 (id fits the database pattern `u0`-`u30`) is the one unit nobody has to finish. It sits at the very end, is labelled
+optional in its title and blurb, and its tier is 4. Its culture card (`christmas-market`) points at u21-l1.
+
 ## 3. Lesson flow
 
 1. **Meet the phrases** (`components/french/MeetPhrases.tsx`): one card per phrase with the French, Listen and Slow
@@ -143,11 +178,11 @@ takes the tier of the one before it, and the check script fails on a missing uni
 
 | Tier | Name | Units | Lessons |
 |---|---|---|---|
-| 0 | Recognise | u0, u1 | 1-6 |
-| 1 | Build | u11, u12, u5, u13 | 7-17 |
-| 2 | Short recall | u2, u3, u9 | 18-29 |
-| 3 | Supported sentences | u4, u14, u6 | 30-39 |
-| 4 | Free recall | u15, u8, u16, u7, u17, u10, u18 | 40-60 |
+| 0 | Recognise | u0, u1 | 1-7 |
+| 1 | Build | u11, u13, u12, u5 | 8-20 |
+| 2 | Short recall | u2, u3, u9 | 21-33 |
+| 3 | Supported sentences | u19, u4, u14, u6 | 34-46 |
+| 4 | Free recall | u15, u20, u8, u16, u7, u17, u10, u18, u21 | 47-72 |
 
 Caps (`RULES` in the engine). "Typed" means type, cloze and listen together.
 
@@ -186,11 +221,11 @@ Typed answers per lesson, as measured by `scripts/check-curriculum.mjs` (core le
 
 | Unit (lessons) | Tier | Core | Review | Typed words mean / max |
 |---|---|---|---|---|
-| u0, u1 (1-6) | 0 | 0.0 | 0.0 | - |
-| u11, u12, u5, u13 (7-17) | 1 | 0.5-1.3 | 0.3-0.4 | 1.0 / 1 |
-| u2, u3, u9 (18-29) | 2 | 1.8-2.1 | 0.6-0.7 | 1.3-1.6 / 3 |
-| u4, u14, u6 (30-39) | 3 | 1.8-2.1 | 0.7 | 1.8-1.9 / 4 |
-| u15-u18 (40-60) | 4 | 3.2-3.8 | 0.9-1.1 | 2.6-3.0 / 6 |
+| u0, u1 (1-7) | 0 | 0.0 | 0.0 | - |
+| u11, u13, u12, u5 (8-20) | 1 | 0.4-1.2 | 0.2-0.3 | 1.0 / 1 |
+| u2, u3, u9 (21-33) | 2 | 1.9-2.1 | 0.6-0.7 | 1.3-1.7 / 3 |
+| u19, u4, u14, u6 (34-46) | 3 | 1.7-2.2 | 0.7-0.8 | 1.9-2.0 / 4 |
+| u15-u18, u20, u21 (47-72) | 4 | 2.9-3.9 | 0.9-1.1 | 2.7-3.3 / 6 |
 
 ### Adaptation inside a session
 
@@ -199,7 +234,7 @@ Typed answers per lesson, as measured by `scripts/check-curriculum.mjs` (core le
 * After two misses on typed items, every remaining typed item in the session becomes tiles, with one line saying so.
   Nothing is stored.
 * Review and practice type a whole phrase only when its saved card has at least 2 reviews and fewer than 2 lapses;
-  otherwise at most a cloze. Practice takes its tier from the furthest lesson the learner has cards for.
+  otherwise at most a cloze. Practice takes its tier from the furthest lesson the learner has finished.
 * Nothing steps up automatically: the tier is the step-up.
 
 ## 4. Distractor rules
@@ -284,7 +319,8 @@ through small loader hooks, so nothing is copied. It exits 1 when a check fails.
 * ids `^u[0-9]+$` and `^u([0-9]|[12][0-9]|30)-l([0-9]|1[0-9]|20)$` (the pattern `complete_lesson()` accepts in the
   database), numbered l1, l2... with no gaps;
 * a lesson's optional `verse` names a key (`JHN 3:16`, `EPH 2:8-9`) that exists in `public/bible/fr`;
-* 5 to 10 phrases per lesson;
+* 5 to 10 phrases per lesson (with `CURRICULUM_WIP=1`, for the middle of a restructure, fewer than 5 is a warning and the
+  generated-lesson checks skip that lesson);
 * `fr` and `en` unique across the file (case-insensitive) and phrase keys unique;
 * no stray whitespace, and a space before ? ! : ;
 * no tu forms in main phrases, and every tu variant valid;
@@ -312,6 +348,28 @@ It prints the length and punctuation tell rates, where wrong options come from, 
   accept each other) and unchanged `phraseKey` values for the two `œ` phrases.
 
 It prints the typed answers per lesson for every unit, so the ramp stays visible.
+
+**Language load** (section "Language load", `docs/curriculum-simplification-plan.md` sections 1, 2 and 6):
+
+* every lesson id and phrase key in `content/french/shipped.json` still exists (it may grow, never shrink);
+* per lesson: things to remember (new words, a formulaic chunk counting once) at most 7, 9, 11, 13, 15 for tiers 0-4
+  (+4 in verse lessons); phrase length in units at most 3, 4, 5, 6, 8 (+1 in verse lessons, +2 when every word is
+  already known); mean words per phrase per tier at most 2.5, 3.0, 4.2, 5.0, 6.0; 5-7 phrases in tier 0 and 5-8 in tier 1;
+* structure gates by tier (imperative and *est-ce que* from tier 2; *depuis*, *aller* + infinitive, the subjunctive and
+  the passé composé from tier 3; the future, the imperfect and *si* clauses from tier 4), with an allow-list of set
+  phrases (*C'était un plaisir*, *Jésus a changé ma vie*...), and at most 1 newly introduced structure per lesson in
+  tiers 0-1 and 2 in tiers 2-3;
+* evangelism milestones: *Jésus-Christ*, *La Bible*, *La prière* by lesson 12; *Dieu vous aime*, *Puis-je prier pour
+  vous ?*, *Vous êtes invité*, *Vous pouvez dire non*, *Je peux vous parler de ma foi ?* by 15; *Jésus a changé ma vie* by 40;
+* Practice for someone through u1-l3 stays tier 0 although cards of moved phrases belong to far-away lessons, and review
+  never picks a phrase without a saved card;
+* it prints the load table (lesson, tier, new words, load, words per phrase, units, new structures) and an advisory list of
+  culture cards that quote a phrase taught after their lesson. `CAPS_ENFORCING` at the top of the script turns the caps
+  into report-only notes while restructuring.
+
+The formulaic chunks that count once are listed in the script (*s'il vous plaît*, *je ne sais pas*, *je ne comprends
+pas*, *il y a*, *est-ce que*, *qu'est-ce que*, *ça va*, *c'est*...). *Je peux vous parler de ma foi* is one of them on
+purpose: it is taught early as a fixed formula, so its 7 words cost one slot.
 
 Not covered by the script: the UI on a phone (the intro cards, audio autoplay after the first tap, layout of long
 options). Check those by hand.
@@ -370,7 +428,7 @@ grows with the learner's French:
    and active listening (*Ah bon ?*, *Je vois*, *Je suis d'accord*, *Qu'est-ce que vous en pensez ?*).
 2. **u12 Qui sommes-nous ?** Who we are (Christians, Protestants, a student group helping a Strasbourg church, not
    selling anything) and asking first (I don't want to bother you, just two minutes, only if you want, you can say no).
-3. **u13 Les mots de la foi**, right after numbers: God, Jesus Christ, the Holy Spirit, the Bible, the Gospel, the
+3. **u13 Les mots de la foi**, now right after the understanding phrases and before who we are and the numbers: God, Jesus Christ, the Holy Spirit, the Bible, the Gospel, the
    Lord, the cross; church life (culte versus messe, pasteur, prière / prier, étude biblique, le dimanche matin).
 4. **After small talk and family (u9)**, the existing **u4** conversation unit: opening a chat (now with weather and
    neighborhood openers that recycle u9), offering kindness, asking about faith, prayer and encouragement.
@@ -379,90 +437,107 @@ grows with the learner's French:
    sentences), and the good news simply.
 7. **u16 Écouter d'abord**: when the answer is no, other beliefs, and when church has hurt.
 8. **u17 Sauvés par la grâce**: verse lessons for Éphésiens 2:8-9, Romains 10:9, Jean 14:6 and Apocalypse 3:20.
-9. After u10 Strasbourg, **u18 Invitations et prière** closes the course: invitations, praying together, prayer
+9. After u10 Strasbourg, **u18 Invitations et prière** closes the course (only the optional Christmas-market unit u21 follows): invitations, praying together, prayer
    requests and follow-up.
 
 Practical units (market, emergencies, hotel, Strasbourg) sit between the faith units, so the thread never runs more
-than four lessons in a row except u4 + u14 (eight), where the verses directly continue the conversation unit.
+than four lessons in a row except u4 + u14 (eight), where the verses directly continue the conversation unit. The opening
+faith lessons (u13, u12) now come as one block of five (lessons 10 to 14), a deliberate choice: faith words first.
 
-**Where a learner can have a respectful faith conversation.** By lesson 10 of 60 (17%) a learner can greet, ask
-someone to slow down, say who they are, ask permission and accept a no. By lesson 17 they have the core words. A full
-conversation (opening, asking about faith, offering prayer) is complete at lesson 33 (55%; it was lesson 23 of 37,
-62%, and without any small talk before it), and testimony, the gospel and kind responses follow by lesson 48 (80%).
+**Where a learner can have a respectful faith conversation** (after the simplification pass, 72 lessons). By lesson 14 of 72
+(19%) a learner can greet, thank, apologise, ask for slower speech, name God, Jesus, the Bible and prayer, say who the team
+is, say *Dieu vous aime*, offer prayer, invite and accept a no (it was lesson 58 of 60). A full conversation (opening,
+asking about faith, testimony, offering prayer) is complete at lesson 40 (56%; it was lesson 23 of 37, 62%, and without any
+small talk before it), the gospel in short sentences is lesson 49 and kind responses to a no follow by lesson 59 (82%).
 
 ### 8.3 Course order
 
-Faith-thread lessons: 25 of 60 (u4, u12 to u18). Faith-thread units hold 194 of the 468 phrases.
+Faith-thread lessons: 26 of 72 (u4, u12 to u18). Faith-thread units hold 189 of the 488 phrases.
 
 | # | Unit | Lesson | Title | Phrases | Thread |
 |---|---|---|---|---|---|
 | 1 | u0 Premiers pas | u0-l1 | Survival words | 7 | basics |
-| 2 | u0 Premiers pas | u0-l2 | Sounds and accents | 8 | basics |
-| 3 | u1 Bonjour ! | u1-l1 | Hello and goodbye | 8 | basics |
-| 4 | u1 Bonjour ! | u1-l2 | Meeting someone | 6 | basics |
-| 5 | u1 Bonjour ! | u1-l3 | Small talk | 7 | basics |
-| 6 | u1 Bonjour ! | u1-l4 | Thanks and goodbyes | 8 | basics |
-| 7 | u11 Pardon ? (new) | u11-l1 | Slower, please | 8 | basics |
-| 8 | u11 Pardon ? (new) | u11-l2 | Listening well | 8 | basics |
-| 9 | u12 Qui sommes-nous ? (new) | u12-l1 | Who we are | 7 | **faith** |
-| 10 | u12 Qui sommes-nous ? (new) | u12-l2 | Asking first | 7 | **faith** |
-| 11 | u5 Les nombres | u5-l1 | One to eight | 8 | basics |
-| 12 | u5 Les nombres | u5-l2 | Bigger numbers | 8 | basics |
-| 13 | u5 Les nombres | u5-l3 | Telling time | 8 | basics |
-| 14 | u5 Les nombres | u5-l4 | Days of the week | 8 | basics |
-| 15 | u5 Les nombres | u5-l5 | Numbers in real life | 8 | basics |
-| 16 | u13 Les mots de la foi (new) | u13-l1 | God, Jesus and the Bible | 8 | **faith** |
-| 17 | u13 Les mots de la foi (new) | u13-l2 | Church life | 9 | **faith** |
-| 18 | u2 En route | u2-l1 | Getting around | 8 | basics |
-| 19 | u2 En route | u2-l2 | Directions | 8 | basics |
-| 20 | u2 En route | u2-l3 | Tickets and trains | 8 | basics |
-| 21 | u2 En route | u2-l4 | Finding your way | 8 | basics |
-| 22 | u3 Au café | u3-l1 | Ordering | 9 | basics |
-| 23 | u3 Au café | u3-l2 | Being polite | 7 | basics |
-| 24 | u3 Au café | u3-l3 | A full meal | 8 | basics |
-| 25 | u3 Au café | u3-l4 | Dietary needs | 8 | basics |
-| 26 | u9 Moi et vous | u9-l1 | About me | 8 | basics |
-| 27 | u9 Moi et vous | u9-l2 | Family | 7 | basics |
-| 28 | u9 Moi et vous | u9-l3 | Hobbies | 8 | basics |
-| 29 | u9 Moi et vous | u9-l4 | The weather | 8 | basics |
-| 30 | u4 Dans la rue | u4-l1 | Starting a conversation | 8 | basics + faith (opening a conversation) |
-| 31 | u4 Dans la rue | u4-l2 | Offering kindness | 7 | **faith** |
-| 32 | u4 Dans la rue | u4-l3 | Talking about faith | 7 | **faith** |
-| 33 | u4 Dans la rue | u4-l4 | Prayer and encouragement | 8 | **faith** |
-| 34 | u14 La Bonne Nouvelle (new) | u14-l1 | Jean 3:16 | 7 | **faith** · verse `JHN 3:16` |
-| 35 | u14 La Bonne Nouvelle (new) | u14-l2 | Romains 3:23 | 6 | **faith** · verse `ROM 3:23` |
-| 36 | u14 La Bonne Nouvelle (new) | u14-l3 | Romains 6:23 | 8 | **faith** · verse `ROM 6:23` |
-| 37 | u14 La Bonne Nouvelle (new) | u14-l4 | Romains 5:8 | 6 | **faith** · verse `ROM 5:8` |
-| 38 | u6 Au marché | u6-l1 | Prices and paying | 8 | basics |
-| 39 | u6 Au marché | u6-l2 | Shopping | 8 | basics |
-| 40 | u15 Mon histoire (new) | u15-l1 | What do you believe? | 8 | **faith** |
-| 41 | u15 Mon histoire (new) | u15-l2 | My story | 8 | **faith** |
-| 42 | u15 Mon histoire (new) | u15-l3 | The good news, simply | 9 | **faith** |
-| 43 | u8 Au secours ! | u8-l1 | Asking for help | 8 | basics |
-| 44 | u8 Au secours ! | u8-l2 | Feeling unwell | 8 | basics |
-| 45 | u8 Au secours ! | u8-l3 | Emergencies | 9 | basics |
-| 46 | u16 Écouter d'abord (new) | u16-l1 | When the answer is no | 8 | **faith** |
-| 47 | u16 Écouter d'abord (new) | u16-l2 | Other beliefs | 9 | **faith** |
-| 48 | u16 Écouter d'abord (new) | u16-l3 | When church has hurt | 8 | **faith** |
-| 49 | u7 À l'hôtel | u7-l1 | Checking in | 8 | basics |
-| 50 | u7 À l'hôtel | u7-l2 | Everyday needs | 7 | basics |
-| 51 | u17 Sauvés par la grâce (new) | u17-l1 | Éphésiens 2:8-9 | 9 | **faith** · verse `EPH 2:8-9` |
-| 52 | u17 Sauvés par la grâce (new) | u17-l2 | Romains 10:9 | 7 | **faith** · verse `ROM 10:9` |
-| 53 | u17 Sauvés par la grâce (new) | u17-l3 | Jean 14:6 | 7 | **faith** · verse `JHN 14:6` |
-| 54 | u17 Sauvés par la grâce (new) | u17-l4 | Apocalypse 3:20 | 8 | **faith** · verse `REV 3:20` |
-| 55 | u10 Strasbourg | u10-l1 | Sightseeing | 8 | basics |
-| 56 | u10 Strasbourg | u10-l2 | Alsatian food and the Christmas market | 8 | basics |
-| 57 | u10 Strasbourg | u10-l3 | Alsace and its people | 7 | basics |
-| 58 | u18 Invitations et prière (new) | u18-l1 | Invitations | 9 | **faith** |
-| 59 | u18 Invitations et prière (new) | u18-l2 | Praying together | 8 | **faith** |
-| 60 | u18 Invitations et prière (new) | u18-l3 | Prayer requests | 8 | **faith** |
+| 2 | u0 Premiers pas | u0-l2 | Sounds and accents | 7 | basics |
+| 3 | u0 Premiers pas | u0-l3 | Thank you, sorry | 7 | basics |
+| 4 | u1 Bonjour ! | u1-l1 | Hello and goodbye | 6 | basics |
+| 5 | u1 Bonjour ! | u1-l2 | Meeting someone | 6 | basics |
+| 6 | u1 Bonjour ! | u1-l3 | Small talk | 5 | basics |
+| 7 | u1 Bonjour ! | u1-l4 | Goodbyes | 5 | basics |
+| 8 | u11 Pardon ? (new) | u11-l1 | Slower, please | 6 | basics |
+| 9 | u11 Pardon ? (new) | u11-l2 | Listening well | 5 | basics |
+| 10 | u13 Les mots de la foi (new) | u13-l1 | God, Jesus and the Bible | 5 | **faith** |
+| 11 | u13 Les mots de la foi (new) | u13-l2 | Church life | 6 | **faith** |
+| 12 | u13 Les mots de la foi (new) | u13-l3 | More faith words | 6 | **faith** |
+| 13 | u12 Qui sommes-nous ? (new) | u12-l1 | Who we are | 6 | **faith** |
+| 14 | u12 Qui sommes-nous ? (new) | u12-l2 | Asking first | 6 | **faith** |
+| 15 | u5 Les nombres | u5-l1 | One to eight | 8 | basics |
+| 16 | u5 Les nombres | u5-l2 | Bigger numbers | 8 | basics |
+| 17 | u5 Les nombres | u5-l3 | Telling time | 5 | basics |
+| 18 | u5 Les nombres | u5-l4 | Days of the week | 5 | basics |
+| 19 | u5 Les nombres | u5-l5 | Numbers in real life | 7 | basics |
+| 20 | u5 Les nombres | u5-l6 | Today and tomorrow | 6 | basics |
+| 21 | u2 En route | u2-l1 | Getting around | 7 | basics |
+| 22 | u2 En route | u2-l2 | Directions | 6 | basics |
+| 23 | u2 En route | u2-l3 | Tickets and trains | 5 | basics |
+| 24 | u2 En route | u2-l4 | Finding your way | 7 | basics |
+| 25 | u3 Au café | u3-l1 | Ordering | 8 | basics |
+| 26 | u3 Au café | u3-l2 | At the table | 5 | basics |
+| 27 | u3 Au café | u3-l3 | A full meal | 5 | basics |
+| 28 | u3 Au café | u3-l4 | Dietary needs | 7 | basics |
+| 29 | u9 Moi et vous | u9-l1 | About me | 6 | basics |
+| 30 | u9 Moi et vous | u9-l2 | Family | 6 | basics |
+| 31 | u9 Moi et vous | u9-l3 | Hobbies | 5 | basics |
+| 32 | u9 Moi et vous | u9-l4 | The weather | 8 | basics |
+| 33 | u9 Moi et vous | u9-l5 | Studies and work | 6 | basics |
+| 34 | u19 Bavarder (new) | u19-l1 | More small talk | 6 | basics |
+| 35 | u19 Bavarder (new) | u19-l2 | Our group | 6 | basics |
+| 36 | u19 Bavarder (new) | u19-l3 | Opinions | 7 | basics |
+| 37 | u4 Dans la rue | u4-l1 | Starting a conversation | 8 | basics + faith (opening a conversation) |
+| 38 | u4 Dans la rue | u4-l2 | Offering kindness | 7 | **faith** |
+| 39 | u4 Dans la rue | u4-l3 | Talking about faith | 5 | **faith** |
+| 40 | u4 Dans la rue | u4-l4 | Prayer and encouragement | 8 | **faith** |
+| 41 | u14 La Bonne Nouvelle (new) | u14-l1 | Jean 3:16 | 7 | **faith** · verse `JHN 3:16` |
+| 42 | u14 La Bonne Nouvelle (new) | u14-l2 | Romains 3:23 | 6 | **faith** · verse `ROM 3:23` |
+| 43 | u14 La Bonne Nouvelle (new) | u14-l3 | Romains 6:23 | 8 | **faith** · verse `ROM 6:23` |
+| 44 | u14 La Bonne Nouvelle (new) | u14-l4 | Romains 5:8 | 6 | **faith** · verse `ROM 5:8` |
+| 45 | u6 Au marché | u6-l1 | Prices and paying | 8 | basics |
+| 46 | u6 Au marché | u6-l2 | Shopping | 7 | basics |
+| 47 | u15 Mon histoire (new) | u15-l1 | What do you believe? | 9 | **faith** |
+| 48 | u15 Mon histoire (new) | u15-l2 | My story | 7 | **faith** |
+| 49 | u15 Mon histoire (new) | u15-l3 | The good news, simply | 9 | **faith** |
+| 50 | u20 En ville, la suite (new) | u20-l1 | Trams and trains, part 2 | 8 | basics |
+| 51 | u20 En ville, la suite (new) | u20-l2 | Finding your way, part 2 | 5 | basics |
+| 52 | u20 En ville, la suite (new) | u20-l3 | Times and plans | 7 | basics |
+| 53 | u20 En ville, la suite (new) | u20-l4 | Food, part 2 | 6 | basics |
+| 54 | u8 Au secours ! | u8-l1 | Asking for help | 8 | basics |
+| 55 | u8 Au secours ! | u8-l2 | Feeling unwell | 8 | basics |
+| 56 | u8 Au secours ! | u8-l3 | Emergencies | 9 | basics |
+| 57 | u16 Écouter d'abord (new) | u16-l1 | When the answer is no | 8 | **faith** |
+| 58 | u16 Écouter d'abord (new) | u16-l2 | Other beliefs | 9 | **faith** |
+| 59 | u16 Écouter d'abord (new) | u16-l3 | When church has hurt | 8 | **faith** |
+| 60 | u7 À l'hôtel | u7-l1 | Checking in | 8 | basics |
+| 61 | u7 À l'hôtel | u7-l2 | Everyday needs | 7 | basics |
+| 62 | u17 Sauvés par la grâce (new) | u17-l1 | Éphésiens 2:8-9 | 9 | **faith** · verse `EPH 2:8-9` |
+| 63 | u17 Sauvés par la grâce (new) | u17-l2 | Romains 10:9 | 7 | **faith** · verse `ROM 10:9` |
+| 64 | u17 Sauvés par la grâce (new) | u17-l3 | Jean 14:6 | 7 | **faith** · verse `JHN 14:6` |
+| 65 | u17 Sauvés par la grâce (new) | u17-l4 | Apocalypse 3:20 | 8 | **faith** · verse `REV 3:20` |
+| 66 | u10 Strasbourg | u10-l1 | Sightseeing | 8 | basics |
+| 67 | u10 Strasbourg | u10-l2 | Alsatian food | 5 | basics |
+| 68 | u10 Strasbourg | u10-l3 | Alsace and its people | 7 | basics |
+| 69 | u18 Invitations et prière (new) | u18-l1 | Invitations | 8 | **faith** |
+| 70 | u18 Invitations et prière (new) | u18-l2 | Praying together | 8 | **faith** |
+| 71 | u18 Invitations et prière (new) | u18-l3 | Prayer requests | 8 | **faith** |
+| 72 | u21 Marché de Noël (optional, new) | u21-l1 | Christmas market (optional) | 5 | basics (optional, seasonal) |
 
-Totals: 19 units, 60 lessons, 468 phrases (was 11, 37 and 288). New: units u11 to u18 (23 lessons, 180 phrases,
-76 with a note, 41 with a `tu` form) and 4 phrases added to u4-l1.
+Totals: 22 units, 72 lessons, 488 phrases (the simplification pass added units u19, u20 and u21 with 8 lessons, four lessons in
+existing units (u0-l3, u13-l3, u5-l6, u9-l5) and 20 phrases; before it 19 units, 60 lessons, 468 phrases, and before u11 to u18
+11, 37 and 288).
+200 phrases carry a note and 82 a `tu` form.
 
-**Moved phrases** (text and key unchanged): *Je parle un peu français*, *Pouvez-vous parler plus lentement ?* and
+**Moved phrases, first pass** (text and key unchanged): *Je parle un peu français*, *Pouvez-vous parler plus lentement ?* and
 *Pouvez-vous répéter, s'il vous plaît ?* from u4-l1 to u11-l1; *Nous sommes ici avec notre église* from u4-l3 to
-u12-l1. u4-l1 got four small-talk openers in their place. **No existing lesson id or `fr` text changed.** Learners
+u12-l1. u4-l1 got four small-talk openers in their place. The simplification pass moved 96 more (full list in
+[curriculum-review-list.md](curriculum-review-list.md)). **No existing lesson id or `fr` text changed.** Learners
 who already finished u4 keep their cards for the moved phrases; their progress is by lesson id and the French page
 opens up to one past the furthest finished lesson, so the new units placed earlier never lock anyone out.
 
@@ -539,6 +614,9 @@ is marked wrong for her own gender.
   l'Église*). Object pronouns after a non-subject word are avoided for the same reason.
 
 ### 8.5 For review before the trip
+
+The 20 new phrases, the owner's decisions and the pastor's questions for the simplification pass are in
+[curriculum-review-list.md](curriculum-review-list.md). The older list:
 
 A native French speaker and a pastor or mission leader should read these:
 

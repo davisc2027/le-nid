@@ -121,15 +121,19 @@ a unit missing from the map.
 
 | Tier | Name | Units | Lessons (1-based) |
 |---|---|---|---|
-| 0 | Recognise | u0, u1 | 1-6 |
-| 1 | Build | u11, u12, u5, u13 | 7-17 |
-| 2 | Short recall | u2, u3, u9 | 18-29 |
-| 3 | Supported sentences | u4, u14, u6 | 30-39 |
-| 4 | Free recall | u15, u8, u16, u7, u17, u10, u18 | 40-60 |
+| 0 | Recognise | u0, u1 | 1-7 |
+| 1 | Build | u11, u13, u12, u5 | 8-20 |
+| 2 | Short recall | u2, u3, u9 | 21-33 |
+| 3 | Supported sentences | u19, u4, u14, u6 | 34-46 |
+| 4 | Free recall | u15, u20, u8, u16, u7, u17, u10, u18, u21 | 47-72 |
+
+(After the simplification pass of [curriculum-simplification-plan.md](curriculum-simplification-plan.md): 72 lessons, with
+the part-2 units u19 and u20 and the optional end unit u21. The table in the original plan was 1-6, 7-17, 18-29, 30-39,
+40-60 with 60 lessons.)
 
 ```ts
-export const UNIT_TIER: Record<string, Tier> = { u0: 0, u1: 0, u11: 1, u12: 1, u5: 1, u13: 1, u2: 2, u3: 2, u9: 2,
-  u4: 3, u14: 3, u6: 3, u15: 4, u8: 4, u16: 4, u7: 4, u17: 4, u10: 4, u18: 4 };
+export const UNIT_TIER: Record<string, Tier> = { u0: 0, u1: 0, u11: 1, u13: 1, u12: 1, u5: 1, u2: 2, u3: 2, u9: 2,
+  u19: 3, u4: 3, u14: 3, u6: 3, u15: 4, u20: 4, u8: 4, u16: 4, u7: 4, u17: 4, u10: 4, u18: 4, u21: 4 };
 ```
 
 ### 3.2 Typed-production limits (the immediate rule set)
@@ -158,7 +162,8 @@ multi-word phrases. The other 17 phrases (*Il y a*, *La Bible*, *Pouvez-vous m'a
 usable word to blank, so they fall back to bank.
 
 **Where full typing first appears:** 1-word answers in lesson 7 (T1), sentences of up to 3 words in lesson 18 (T2),
-4 words in lesson 30 (T3), 5 to 6 words in lesson 40 (T4). Dictation first appears in lesson 18. The owner's example
+4 words in lesson 30 (T3), 5 to 6 words in lesson 40 (T4). Dictation first appears in lesson 18. (In the 72-lesson course after the simplification pass these are lessons 8, 21, 34 and
+47.) The owner's example
 becomes a bank item in T0, `Vous h······ ici depuis longtemps ?` (one word typed) from lesson 7, a two-blank cloze in
 T3, and a full sentence only from lesson 40.
 
@@ -309,7 +314,7 @@ tier parameter, and LessonPlayer passes the session tier.
 Add a section "Difficulty ramp". It reuses the generation loops; N defaults to 40. `TYPED = type, cloze, listen`.
 
 1. **Tier map:** every unit in `UNITS` has a `UNIT_TIER` entry; tiers never decrease in course order; the first unit
-   is tier 0; tier 4 starts at lesson index 39 (u15-l1).
+   is tier 0; tier 4 starts at u15-l1 (lesson index 39 in the original 60-lesson course, 46 now).
 2. **Core lessons:** for every lesson and N builds, with `t = tierOf(li)`:
    * typed count ≤ the cap in 3.2;
    * T0 has no `type`, `cloze` or `listen`; T1 has no `listen`, and its `type` items are single words of ≤12 chars;

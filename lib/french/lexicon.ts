@@ -132,4 +132,6 @@ export const GLOSS: Record<string, string> = {
   vérité: "truth", porte: "door", voix: "voice", repas: "meal", culte: "worship service", pasteur: "pastor",
   chrétiens: "Christians", résurrection: "resurrection", repentance: "repentance", pécheurs: "sinners",
   invité: "invited", malade: "sick", travail: "job", prénom: "first name", ensemble: "together",
+  // added with the curriculum simplification (aujourd'hui splits into two tokens, so it has a note instead)
+  monsieur: "sir", bienvenue: "welcome", étudiants: "students",
 };

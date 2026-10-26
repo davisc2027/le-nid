@@ -1,10 +1,9 @@
 # Curriculum simplification plan: less complex French early on
 
-Status: **plan only** (nothing built). Scope when built: `content/french/units.json`, `content/french/culture.json`,
+Status: **built** (see "Build notes" at the end for what differs from the plan). Scope: `content/french/units.json`, `content/french/culture.json`,
 `lib/french/exercises.ts` (tier map, pair tables, frontier), `lib/french/lexicon.ts` (glosses), `lib/speech/select.ts`
 and its test, `app/(app)/french/practice/page.tsx`, `scripts/check-curriculum.mjs`, `docs/curriculum.md`.
-Builds **on top of** [difficulty-plan.md](difficulty-plan.md) (typing ramp, tiers by unit), which is being finished
-now: start only once that work is merged and `node scripts/check-curriculum.mjs` is green.
+Builds **on top of** [difficulty-plan.md](difficulty-plan.md) (typing ramp, tiers by unit).
 
 **The owner's point.** Not "make answers more obvious" but "use less complex French early". The 35 learners (many
 with no French, iPhones, trip in March 2027) meet 10 to 19 new words per lesson from lesson 1 on, and sentences such
@@ -453,3 +452,43 @@ removals at the sources, and the check output (load table) pasted in the commit 
    needs a stored content version.)
 6. Allergies: the team's real allergies may need personal phrases (*Je suis allergique à …*); in scope?
 7. Faith words before numbers (u13 before u5): fine for the pastor, or keep numbers first and accept *Jésus* at 15?
+
+## 10. Build notes (what was built, and where it differs from the plan)
+
+Built in tasks B0 to B10 on the owner's decisions below; the numbers in sections 1 to 6 describe the plan, the check output
+and `docs/curriculum.md` section 2.1 describe the result (72 lessons, 488 phrases, 22 units).
+
+**Owner decisions on section 9 (binding).**
+
+1. T0 and T1 caps as planned (T0 up to 7, mean 6.4; T1 up to 9, mean 7.7). No lesson was cut to 5 phrases.
+2. *Je peux vous parler de ma foi ?* stays early, in u12-l2 (lesson 14), instead of moving to u4-l3. It is listed in the check
+   as a formulaic chunk (one slot, one unit), which is its cap exemption. u4-l3 therefore has 5 phrases, not 6.
+3. The Christmas-market lines moved to a new optional end unit **u21 "Marché de Noël (optional)"** (u21-l1, lesson 72). Only
+   the three market-only lines moved (*Où est le marché de Noël ?*, *Des bredele, s'il vous plaît*, *Je rends la tasse pour
+   récupérer la consigne*); u10-l2 (retitled "Alsatian food") keeps five, and u21-l1 got two new phrases (*Joyeux Noël !*,
+   *Un chocolat chaud, s'il vous plaît*) to reach the 5-phrase minimum. So 20 new phrases, not 18.
+4. Faith words first: u13 before u12 and u5, as planned.
+5. No allergy phrases.
+
+**Other differences.**
+
+* Tokenizer: hyphenated words stay whole (as section 1 says; section 6's "E.normalize" would split them). The table in 1.1
+  reproduces within one per lesson except u14-l1 (13 new words, plan 15) and u16-l3 (9, plan 11).
+* *Je ne comprends pas* was added to the chunk list (a survival formula, like *Je ne sais pas*), and *ne … pas* is not counted
+  as a new structure for the two formulas. Without this u11-l1 would introduce two structures in tier 1. *ne … pas* is first
+  seen in lesson 13 (*Nous ne vendons rien*), not 8. The structure budget is checked on twelve tracked structures (see the
+  script); set phrases (*C'était un plaisir*, *Jésus a changé ma vie*, *Seulement si vous voulez*...) are exempt.
+* The engine needed one more fix: a lesson of 5 phrases produced only 11 exercises, so the second pass now repeats the
+  least-recognised phrases to reach 12 (`buildLesson`).
+* B3 also added `practiceFrontier` (finished lessons, then cards) next to `frontierFromCards(cards, finished?)`.
+* The content batches were applied by a script that re-derives `units.json` from the shipped file for each batch. A new unit
+  (u19, u20, u21) appears in the first batch that moves a phrase into it and fills up batch by batch, so no phrase ever
+  existed twice or went missing, and `CURRICULUM_WIP=1` was only needed for the small lessons in between.
+* Say-it for u0-l3 picks *Je vous en prie*, *Excusez-moi*, *Merci* (the sound-coverage rule), not *Merci*, *Pardon*,
+  *Monsieur*. `SAY_IT`, the practice sets and the phrase counts in `lib/speech/phase1.test.mjs` were regenerated.
+* The recording list is generated on demand (`node scripts/make-reference-list.mjs`); nothing is committed, and it now lists
+  the 20 new phrases. `public/reference` is still empty.
+* Culture cards re-pointed: `tu-switch` to u19-l1, `debate` to u19-l3, `sunday-closing` to u20-l3, `kehl-id` to u20 and
+  `christmas-market` to u21-l1. The advisory list still shows eight cards quoting a later phrase, among them `start-in-french` and
+  `alsatian-greetings` (named by the plan) and `words-protestant`, which sat after u12 and now sits before it.
+* The review list for the native speaker and the pastor is [curriculum-review-list.md](curriculum-review-list.md).

@@ -156,6 +156,9 @@ export const SAME_MEANING: [string, string][] = [
   ["Dieu", "Le Seigneur"], ["Jésus-Christ", "Le Fils de Dieu"], ["Christ est mort pour nous", "Jésus est mort sur la croix pour nous"],
   ["Il est ressuscité", "Dieu l'a ressuscité des morts"], ["Dieu nous aime", "L'amour de Dieu"], ["Dieu vous aime", "L'amour de Dieu"],
   ["Dieu nous aime", "Dieu manifeste son amour envers nous"],
+  // the short forms added by the curriculum simplification next to the long ones they lead to
+  ["Où est la place Kléber ?", "Comment aller à la place Kléber ?"], ["C'est à cinq minutes", "C'est à cinq minutes à pied"],
+  ["Pas de viande, s'il vous plaît", "Je ne mange pas de viande"],
 ];
 
 /** Classic confusions, used as preferred wrong options, each with the reason shown after a miss. */
@@ -220,6 +223,11 @@ export const NEAR_MISS: [string, string, string][] = [
   ["Vous êtes d'ici ?", "Vous travaillez dans le quartier ?", "D'ici asks where someone is from; travaillez asks about work."],
   ["Romains, chapitre trois, verset vingt-trois", "Romains, chapitre six, verset vingt-trois", "Trois is 3, six is 6."],
   ["Jean, chapitre trois, verset seize", "Jean, chapitre quatorze, verset six", "Trois seize is 3:16; quatorze six is 14:6."],
+  ["Il est deux heures", "Il est deux heures et demie", "Et demie adds half an hour: two o'clock against half past two."],
+  ["Tournez à droite", "Tournez à gauche au feu", "Droite is right and gauche is left; au feu adds 'at the traffic light'."],
+  ["Un aller simple, s'il vous plaît", "Un aller-retour, s'il vous plaît", "Aller simple is one way; aller-retour is a round trip."],
+  ["Lundi", "Samedi", "Lundi is Monday, samedi is Saturday."],
+  ["Un chocolat chaud, s'il vous plaît", "Un jus de pomme chaud, s'il vous plaît", "Chocolat is chocolate; jus de pomme is apple juice."],
 ];
 
 const pairKey = (a: string, b: string) => (a < b ? a + "\u0000" + b : b + "\u0000" + a);
@@ -282,6 +290,8 @@ export type Tier = 0 | 1 | 2 | 3 | 4;
 export const UNIT_TIER: Record<string, Tier> = {
   u0: 0, u1: 0, u11: 1, u12: 1, u5: 1, u13: 1, u2: 2, u3: 2, u9: 2,
   u4: 3, u14: 3, u6: 3, u15: 4, u8: 4, u16: 4, u7: 4, u17: 4, u10: 4, u18: 4,
+  // docs/curriculum-simplification-plan.md: part-2 units (u19 small talk, u20 city sentences) and the optional end unit u21
+  u19: 3, u20: 4, u21: 4,
 };
 const TIER_OF_LESSON: Tier[] = (() => {
   let last: Tier = 0; // a unit missing from the map takes the tier of the unit before it
@@ -738,8 +748,16 @@ export function buildLesson(input: Lesson): Exercise[] {
   });
   const recognised = new Set(out.filter((e) => e.kind === "choose" || e.kind === "hear").map((e) => e.key));
   const rest = lessonSize(lesson.phrases.length) - out.length;
-  const second = shuffle(lesson.phrases).sort((a, b) => Number(!recognised.has(phraseKey(a.fr))) - Number(!recognised.has(phraseKey(b.fr)))).slice(0, rest);
+  const byRecognition = shuffle(lesson.phrases).sort((a, b) => Number(!recognised.has(phraseKey(a.fr))) - Number(!recognised.has(phraseKey(b.fr))));
+  const second = byRecognition.slice(0, rest);
+  // a lesson of 5 phrases would fall short of 12 exercises: the phrases met least by recognition get a second turn
+  while (second.length < rest && byRecognition.length) second.push(byRecognition[second.length % byRecognition.length]);
   const ordered = shuffle(second);
+  for (let k = 1; k < ordered.length; k++) { // no phrase twice in a row
+    if (ordered[k] !== ordered[k - 1]) continue;
+    const j = ordered.findIndex((q, m) => m > k && q !== ordered[k] && q !== ordered[k + 1]);
+    if (j > 0) [ordered[k], ordered[j]] = [ordered[j], ordered[k]];
+  }
   if (ordered.length > 1 && ordered[0] === first[first.length - 1]) ordered.push(ordered.shift()!); // no phrase twice in a row
   for (const p of ordered) push(make(pickKind(SECOND[c.tier], p, c, out[out.length - 1].kind, counts), p, c));
   return out;
@@ -765,7 +783,9 @@ export function pickReviewPhrases(
   // phrases of the lesson being played are excluded even when an earlier lesson repeats them
   const current = ALL_LESSONS.find((l) => l.id === currentId);
   const own = new Set(current?.phrases.map((p) => phraseKey(p.fr)));
-  const usable = pool.filter((x) => !own.has(x.key));
+  // with saved cards, only phrases that have a card are reviewed: a lesson that gained a phrase after the learner finished
+  // it must not quiz them on something they never met (cards are saved for every phrase of a finished lesson)
+  const usable = pool.filter((x) => !own.has(x.key) && (!cards || !!cards[x.key]));
   const due = usable.filter((x) => cards?.[x.key] && new Date(cards[x.key].due) <= now)
     .sort((a, b) => +new Date(cards![a.key].due) - +new Date(cards![b.key].due));
   const dueKeys = new Set(due.map((x) => x.key));
@@ -789,14 +809,33 @@ function sequence(phrases: Phrase[], c: Ctx, prev?: Kind): Exercise[] {
 
 type BuildOpts = { frontier?: number; cards?: CardMap | null };
 
-/** The furthest lesson (by course index) any saved card belongs to, or 0. */
-export function frontierFromCards(cards: CardMap | null | undefined): number {
+/**
+ * The furthest lesson (by course index) any saved card belongs to, or 0. A fallback only: a phrase that moved later in the
+ * course keeps its card, so the cards of someone at lesson 5 can name a lesson 30 phrase. When the furthest finished
+ * lesson is known (`finished`, a course index, -1 for none) cards whose home is beyond `finished + 1` are ignored.
+ */
+export function frontierFromCards(cards: CardMap | null | undefined, finished?: number): number {
   let best = 0;
   for (const key of Object.keys(cards ?? {})) {
     const p = PHRASE_BY_KEY.get(key);
-    if (p) best = Math.max(best, HOME.get(p) ?? 0);
+    const home = p ? HOME.get(p) ?? 0 : -1;
+    if (home < 0 || (finished !== undefined && home > finished + 1)) continue;
+    best = Math.max(best, home);
   }
   return best;
+}
+
+/**
+ * The course index that sets a Practice session's tier: the furthest finished lesson (from lesson_progress), so moving a
+ * phrase later in the course never raises a learner's tier. `completed` null means lesson_progress could not be read;
+ * the cards decide then.
+ */
+export function practiceFrontier(completed: string[] | null | undefined, cards?: CardMap | null): number {
+  if (!completed) return frontierFromCards(cards);
+  const done = new Set(completed);
+  let finished = -1;
+  ALL_LESSONS.forEach((l, i) => { if (done.has(l.id)) finished = i; });
+  return finished >= 0 ? finished : frontierFromCards(cards, -1);
 }
 
 /**

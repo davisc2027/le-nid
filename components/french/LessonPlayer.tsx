@@ -37,9 +37,11 @@ type Props = {
   completed?: string[];
   /** Practice mode: the phrase keys to practice, in order. */
   practiceKeys?: string[];
+  /** Practice mode: course index of the furthest finished lesson (sets the tier); the cards decide when it is missing. */
+  frontier?: number;
 };
 
-export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards = null, completed = NONE, practiceKeys = NONE }: Props) {
+export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards = null, completed = NONE, practiceKeys = NONE, frontier: practiceFrontier }: Props) {
   const practice = mode === "practice";
   const [queue, setQueue] = useState<Exercise[] | null>(null);
   const [i, setI] = useState(0);
@@ -59,8 +61,8 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   const requeued = useRef<Map<string, number>>(new Map());
   const typedMisses = useRef(0);
   const eased = useRef(false); // after two typed misses the rest of the session uses tiles (session only, nothing stored)
-  // difficulty tier of this session: the lesson's unit, or the furthest lesson the learner has saved cards for
-  const frontier = lesson ? ALL_LESSONS.findIndex((l) => l.id === lesson.id) : frontierFromCards(cards);
+  // difficulty tier of this session: the lesson's unit, or (practice) the furthest lesson the learner has finished
+  const frontier = lesson ? ALL_LESSONS.findIndex((l) => l.id === lesson.id) : practiceFrontier ?? frontierFromCards(cards);
   const tier = tierOf(frontier);
   const saved = useRef<{ cards: boolean; reward: { xp: number; streak: number } | null }>({ cards: false, reward: null });
 

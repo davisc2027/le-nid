@@ -30,6 +30,13 @@ const E = await import("../lib/french/exercises.ts");
 const { UNITS, ALL_LESSONS, ALL_PHRASES } = C;
 const N = Number(process.argv[2]) || 40; // generated lessons per course lesson
 
+// CURRICULUM_WIP=1 is for the middle of a restructure (docs/curriculum-simplification-plan.md section 7): a lesson with
+// fewer than 5 phrases is then a warning instead of a failure, and the generated-lesson checks skip it. Never set in CI.
+const WIP = !!process.env.CURRICULUM_WIP;
+const sparse = (l) => WIP && l.phrases.length < 5;
+// The language-load caps (section "Language load") are enforced; set false only to print them while restructuring.
+const CAPS_ENFORCING = true;
+
 let failures = 0;
 const failKinds = new Map(); // failures grouped by message shape so a broken rule prints once with a count
 const fail = (msg) => {
@@ -64,7 +71,10 @@ section("units.json invariants");
         if (!ok) fail(`lesson ${l.id} names verse "${l.verse}" that is not in public/bible/fr`);
       }
       if (l.id !== `${u.id}-l${k + 1}`) fail(`lesson ${l.id} should be ${u.id}-l${k + 1} (no gaps inside a unit)`);
-      if (l.phrases.length < 5 || l.phrases.length > 10) fail(`${l.id} has ${l.phrases.length} phrases (5-10)`);
+      if (l.phrases.length > 10 || l.phrases.length < 5) {
+        if (WIP && l.phrases.length < 5) console.log(`  WARN (CURRICULUM_WIP) ${l.id} has ${l.phrases.length} phrases (5-10)`);
+        else fail(`${l.id} has ${l.phrases.length} phrases (5-10)`);
+      }
       for (const p of l.phrases) {
         for (const [side, seen] of [["fr", frSeen], ["en", enSeen]]) {
           const k2 = p[side].toLowerCase();
@@ -391,6 +401,7 @@ const kindCount = {};
 const ramp = ramp0();
 const tierMix = {};
 for (const [li, lesson] of ALL_LESSONS.entries()) {
+  if (sparse(lesson)) continue;
   for (let r = 0; r < N; r++) {
     const exs = E.buildLesson(lesson);
     if (r === 0 && process.env.SHOW === lesson.id) console.log(JSON.stringify(exs, null, 1));
@@ -416,25 +427,29 @@ for (const [band, m] of Object.entries(tierMix).sort()) {
 
 section("Review and practice");
 {
-  const done = ALL_LESSONS.slice(0, 12).map((l) => l.id);
+  const at = ALL_LESSONS.findIndex((l) => l.id === "u5-l1"); // a lesson in the middle of tier 1
+  const done = ALL_LESSONS.slice(0, at).map((l) => l.id);
+  // review draws only phrases that have a saved card, so the learner here has a card for everything before u5-l1
+  const haveCards = Object.fromEntries(ALL_LESSONS.slice(0, at).flatMap((l) => l.phrases).map((p) => [E.phraseKey(p.fr), { state: { reps: 3, lapses: 0 }, due: new Date(0).toISOString() }]));
   const reviewMC = [];
   for (let r = 0; r < N * 4; r++) {
-    const ps = E.pickReviewPhrases(done, ALL_LESSONS[12].id, {}, 4);
-    const exs = E.buildReview(ps, undefined, { frontier: 12 });
+    const ps = E.pickReviewPhrases(done, ALL_LESSONS[at].id, haveCards, 4);
+    if (ps.length !== 4) fail(`review pool gave ${ps.length} phrases (4)`);
+    const exs = E.buildReview(ps, undefined, { frontier: at });
     checkSequence(exs, "review");
     if (exs.some((e) => e.kind !== "match" && !e.review)) fail("review exercise without the review flag");
     reviewMC.push(...exs.filter(isMC));
     // a full lesson as the player assembles it: core lesson, then up to 3 review items continuing the sequence
-    const core = E.buildLesson(ALL_LESSONS[12]);
-    const full = [...core, ...E.buildReview(E.pickReviewPhrases(done, ALL_LESSONS[12].id, {}, 3), core[core.length - 1].kind, { frontier: 12 })];
+    const core = E.buildLesson(ALL_LESSONS[at]);
+    const full = [...core, ...E.buildReview(E.pickReviewPhrases(done, ALL_LESSONS[at].id, haveCards, 3), core[core.length - 1].kind, { frontier: at })];
     if (full.length > 18) fail(`lesson with review has ${full.length} exercises (max 18)`);
     checkSequence(full, "lesson + review");
-    const practice = E.buildPractice([...ALL_PHRASES].sort(() => Math.random() - 0.5).slice(0, 10), { frontier: 12 });
+    const practice = E.buildPractice([...ALL_PHRASES].sort(() => Math.random() - 0.5).slice(0, 10), { frontier: at });
     checkSequence(practice, "practice");
     if (practice.length !== 10) fail("practice should give one exercise per phrase");
     reviewMC.push(...practice.filter(isMC));
     if (E.noAudioFallback) for (const e of [...exs, ...practice]) {
-      const f = E.noAudioFallback(e, E.tierOf(12));
+      const f = E.noAudioFallback(e, E.tierOf(at));
       if (f && (f.kind === "listen" || f.kind === "hear")) fail("no-audio fallback still needs audio");
       if (f && isMC(f)) checkSequence([f], "no-audio fallback");
     }
@@ -447,6 +462,7 @@ section("Review and practice");
 {
   const copy = (x) => JSON.parse(JSON.stringify(x));
   for (const l of ALL_LESSONS) {
+    if (sparse(l)) continue;
     try {
       const exs = E.buildLesson(copy(l));
       if (!exs.length) fail(`copied lesson ${l.id} built no exercises`);
@@ -476,7 +492,7 @@ section("Difficulty ramp");
   });
   if (E.tierOf(0) !== 0) fail("ramp: the first unit is not tier 0");
   const first4 = ALL_LESSONS.findIndex((_, i) => E.tierOf(i) === 4);
-  if (first4 !== 39 || ALL_LESSONS[39].id !== "u15-l1") fail(`ramp: tier 4 starts at lesson index ${first4} (${ALL_LESSONS[first4]?.id}), expected 39 (u15-l1)`);
+  if (ALL_LESSONS[first4]?.id !== "u15-l1") fail(`ramp: tier 4 starts at lesson index ${first4} (${ALL_LESSONS[first4]?.id}), expected u15-l1`);
   console.log(`  tiers by lesson: ${[0, 1, 2, 3, 4].map((t) => `T${t} ${ALL_LESSONS.map((_, i) => i).filter((i) => E.tierOf(i) === t).length}`).join(", ")}; tier 4 starts at ${ALL_LESSONS[first4]?.id}`);
 
   // 3 and 4. review and practice at every position
@@ -484,6 +500,7 @@ section("Difficulty ramp");
   const typedWords = new Map(); // li -> typed word counts (review + practice)
   for (let li = 0; li < ALL_LESSONS.length; li++) {
     const t = E.tierOf(li);
+    if (sparse(ALL_LESSONS[li])) continue;
     for (let r = 0; r < N; r++) {
       if (li >= 1) {
         const ps = E.pickReviewPhrases(ids(li), ALL_LESSONS[li].id, null, 3);
@@ -513,11 +530,11 @@ section("Difficulty ramp");
     const cards = Object.fromEntries(ALL_PHRASES.map((p) => [E.phraseKey(p.fr), { state: { lapses: 2, reps: 5 }, due: new Date(0).toISOString() }]));
     const steady = Object.fromEntries(ALL_PHRASES.map((p) => [E.phraseKey(p.fr), { state: { lapses: 0, reps: 3 }, due: new Date(0).toISOString() }]));
     let sawFull = false;
-    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < N; r++) {
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < (sparse(ALL_LESSONS[li]) ? 0 : N); r++) {
       const ps = [...ALL_LESSONS.slice(0, li + 1).flatMap((l) => l.phrases)].sort(() => Math.random() - 0.5).slice(0, 10);
       const all = [...E.buildPractice(ps, { frontier: li, cards }), ...E.buildReview(ps.slice(0, 3), undefined, { frontier: li, cards })];
       if (all.some((e) => e.kind === "type" || e.kind === "listen")) fail(`ramp: lapsed cards still got full typing at ${ALL_LESSONS[li].id}`);
-      if (li >= 39 && [...E.buildPractice(ps, { frontier: li, cards: steady })].some((e) => e.kind === "type" || e.kind === "listen")) sawFull = true;
+      if (li >= first4 && [...E.buildPractice(ps, { frontier: li, cards: steady })].some((e) => e.kind === "type" || e.kind === "listen")) sawFull = true;
     }
     if (!sawFull) fail("ramp: steady cards never get full typing in tier 4 practice");
   }
@@ -528,7 +545,7 @@ section("Difficulty ramp");
     if (!target) fail("ramp: owner example phrase is missing");
     else {
       const others = ALL_PHRASES.filter((p) => p !== target);
-      for (let li = 0; li < 39; li++) for (let r = 0; r < N; r++) {
+      for (let li = 0; li < first4; li++) for (let r = 0; r < (sparse(ALL_LESSONS[li]) ? 0 : N); r++) {
         const ps = [target, ...[...others].sort(() => Math.random() - 0.5).slice(0, 9)];
         const items = [...E.buildPractice(ps, { frontier: li }), ...E.buildReview([target], undefined, { frontier: li })].filter((e) => e.fr === target.fr);
         for (const e of items) {
@@ -536,7 +553,7 @@ section("Difficulty ramp");
           if (li < 6 && TYPED.has(e.kind)) fail(`ramp: owner example is typed (${e.kind}) with frontier ${li}`);
         }
       }
-      for (let r = 0; r < N; r++) for (const e of E.buildLesson(ALL_LESSONS.find((l) => l.phrases.includes(target)))) {
+      for (let r = 0; r < (sparse(ALL_LESSONS.find((l) => l.phrases.includes(target))) ? 0 : N); r++) for (const e of E.buildLesson(ALL_LESSONS.find((l) => l.phrases.includes(target)))) {
         if (e.fr === target.fr && (e.kind === "type" || e.kind === "listen")) fail("ramp: owner example is typed inside its own lesson");
       }
     }
@@ -545,7 +562,7 @@ section("Difficulty ramp");
   // 7 and 8. no-audio fallback and step-down
   {
     const samples = [];
-    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < Math.max(3, N / 4); r++) {
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (let r = 0; r < (sparse(ALL_LESSONS[li]) ? 0 : Math.max(3, N / 4)); r++) {
       for (const e of E.buildLesson(ALL_LESSONS[li])) samples.push([li, e]);
     }
     const needsAudio = (f) => f.kind === "listen" || f.kind === "hear" || (f.kind === "bank" && f.audio) || (f.kind === "choose" && f.audioOnly);
@@ -585,9 +602,9 @@ section("Difficulty ramp");
       }
       void cl; void li;
     }
-    const same = E.buildLesson(ALL_LESSONS[5]).filter((e) => ["choose", "hear", "pick", "register", "match"].includes(e.kind));
+    const same = E.buildLesson(ALL_LESSONS.find((l) => l.id === "u1-l3")).filter((e) => ["choose", "hear", "pick", "register", "match"].includes(e.kind));
     for (const e of same) if (E.stepDown(e, 0) !== e) fail(`ramp: stepDown changed a ${e.kind} item`);
-    for (let li = 0; li < ALL_LESSONS.length; li++) for (const e of E.buildLesson(ALL_LESSONS[li])) {
+    for (let li = 0; li < ALL_LESSONS.length; li++) for (const e of sparse(ALL_LESSONS[li]) ? [] : E.buildLesson(ALL_LESSONS[li])) {
       if (e.kind === "gap" && E.stepDown(e, E.tierOf(li)).kind !== "pick") fail("ramp: gap did not step down to pick");
     }
   }
@@ -635,6 +652,183 @@ section("Difficulty ramp");
     console.log("    unit  lessons  tier  core  review  words mean/max");
     for (const r of rows) console.log(`    ${r.u.padEnd(5)} ${r.lessons.padEnd(8)} T${r.tier}    ${r.core.toFixed(1).padStart(4)}  ${r.rev.toFixed(1).padStart(5)}   ${r.wm.toFixed(1)} / ${r.wx}   ${"#".repeat(Math.round((r.core + r.rev) * 4))}`);
   }
+}
+
+// ---------------------------------------------------------------- language load (docs/curriculum-simplification-plan.md)
+// How much new French each lesson asks for, so a beginner is not handed 15 new words and a 6-word sentence in lesson 5.
+// Tokens are lower-case and accent-free like E.normalize, but a hyphenated word stays whole (Jésus-Christ, dix-huit,
+// Pouvez-vous) as in the plan's table; an elision splits (l'eau = l + eau). Place and person names are ignored; a listed
+// formulaic chunk costs one slot however many words it has.
+section("Language load");
+{
+  const LOAD_CAP = [7, 9, 11, 13, 15], UNITS_CAP = [3, 4, 5, 6, 8], MEAN_CAP = [2.5, 3.0, 4.2, 5.0, 6.0];
+  const VERSE_LOAD = 4, VERSE_UNITS = 1; // verse lessons keep the exact Bible wording
+  const PHRASES_RANGE = [[5, 7], [5, 8], [5, 10], [5, 10], [5, 10]];
+  // Enforced (CAPS_ENFORCING at the top of the file); with it false the caps only print. The shipped-ids check always fails.
+  const capNotes = [];
+  const capFail = (msg) => (CAPS_ENFORCING ? fail(msg) : capNotes.push(msg));
+
+  // 1. shipped ids and keys never disappear (saved cards and finished lessons depend on them)
+  const shipped = JSON.parse(readFileSync(new URL("../content/french/shipped.json", import.meta.url), "utf8"));
+  const haveIds = new Set(ALL_LESSONS.map((l) => l.id)), haveKeys = new Set(ALL_PHRASES.map((p) => E.phraseKey(p.fr)));
+  for (const id of shipped.ids) if (!haveIds.has(id)) fail(`load: shipped lesson id ${id} is gone`);
+  for (const k of shipped.keys) if (!haveKeys.has(k)) fail(`load: shipped phrase key "${k}" is gone (moving a phrase is fine, editing its French is not)`);
+
+  // chunks (formulaic sequences, one slot each); the last one is the owner's exemption: it is taught early as a fixed formula
+  const CHUNK_TEXT = ["s'il vous plaît", "s'il te plaît", "je ne sais pas", "je vous en prie", "il y a", "est-ce que", "est-ce qu'", "qu'est-ce que",
+    "qu'est-ce qui", "est-ce qu'il y a", "je ne comprends pas", "un peu", "au revoir", "à bientôt", "à plus tard", "bien sûr", "pas mal", "ça va", "quelque chose",
+    "tout droit", "à gauche", "à droite", "de rien", "merci beaucoup", "il fait", "il est", "on est", "aujourd'hui", "d'accord", "c'est", "au feu",
+    "l'homme de fer",
+    "je peux vous parler de ma foi"]; // owner decision 2: a fixed formula (7 words) that stays early, next to the other faith formulas
+  const spaceWords = (fr) => fr.replace(/[?!.,:;]/g, " ").split(/\s+/).filter(Boolean);
+  const toks1 = (w) => w.toLowerCase().replace(/œ/g, "oe").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, " ").replace(/[^a-z0-9 -]/g, " ").split(" ").filter(Boolean);
+  const CHUNKS = CHUNK_TEXT.map((c) => spaceWords(c).flatMap(toks1)).sort((a, b) => b.length - a.length);
+  const NAMES = new Set(["marie", "strasbourg", "texas", "californie", "colmar", "paris", "kehl", "kleber", "france", "smith", "homme", "fer", "alsace"]);
+
+  /** Splits a phrase into chunk and word items and counts its units (space words, a chunk counting one). */
+  function analyse(fr) {
+    const words = spaceWords(fr), toks = [], owner = [];
+    words.forEach((w, wi) => toks1(w).forEach((t) => { toks.push(t); owner.push(wi); }));
+    const items = [], chunked = new Set();
+    for (let i = 0; i < toks.length;) {
+      const c = CHUNKS.find((ch) => ch.every((t, k) => toks[i + k] === t));
+      if (c) { items.push({ chunk: c.join(" "), toks: c }); for (let k = 0; k < c.length; k++) chunked.add(i + k); i += c.length; }
+      else { items.push({ toks: [toks[i]] }); i++; }
+    }
+    // a space word is a unit unless a chunk swallowed every part of it
+    const freeWord = new Set(); toks.forEach((_, k) => { if (!chunked.has(k)) freeWord.add(owner[k]); });
+    return { words: words.length, units: freeWord.size + items.filter((x) => x.chunk).length, items };
+  }
+
+  // structures: where a construction first appears, and the first tier that may use it (section 2 of the plan)
+  const PC = "(?<!\\p{L})(ai|as|a|avons|avez|ont|suis|est|sommes|êtes|sont)( (déjà|tous|tant|vraiment))? (été|eu|lu|fait|donné|pardonné|changé|perdu|grandi|péché|aimé|volé|ressuscité|blessé|dû|écouté|pensé|mort|venu|né)(?!\\p{L})";
+  const STRUCT = [
+    { name: "imperative", re: /^(prenez|venez|tournez|traversez|appelez|restez|laissez|ne perdez)\b/i, min: 2 },
+    { name: "est-ce que", re: /(^|[^'’])\best-ce (que|qu')/i, min: 2 },
+    { name: "depuis", re: /\bdepuis\b/i, min: 3 },
+    { name: "aller + inf", re: /\b(vais|vas|va|allons|allez|vont) (\p{L}+(er|ir|re)|prendre|lire|faire)\b/iu, min: 3 },
+    { name: "subjunctive", re: /\b(bénisse|soit|périsse|puisse)\b/i, min: 3 },
+    { name: "passé composé", re: new RegExp(PC, "iu"), min: 3 },
+    { name: "future", re: /\b(serez|entrerai|prendrai)\b/i, min: 4 },
+    { name: "imperfect", re: /\b(était|avais|étions)\b/i, min: 4 },
+    { name: "si clause", re: /^si\b|\bsi (vous|tu|quelqu|on|nous|je)\b/i, min: 4 },
+    { name: "ne … pas", re: /\b(ne|n')\b/i, min: 0 },
+    { name: "modal + inf", re: /\b(pouvez|peux|peut|veux|voulez|faut) (\p{L}+ )?\p{L}+(er|ir|re)\b|\bpouvez-vous \p{L}+/iu, min: 1 },
+    { name: "qu'est-ce que", re: /qu'est-ce (que|qui)/i, min: 1 },
+  ];
+  // set phrases that are learned whole, so they may sit earlier than their grammar would (plan section 6 check 5)
+  const STRUCT_OK = new Set(["C'était un plaisir", "C'était très bon, merci", "Je n'y avais pas pensé", "Jésus a changé ma vie", "Seulement si vous voulez"]);
+  const BUDGET = [1, 1, 2, 2, 99]; // newly introduced structures per lesson, by tier
+
+  const seenTok = new Set(), seenStruct = new Set();
+  const rows = [], firstStruct = new Map();
+  ALL_LESSONS.forEach((l, i) => {
+    const t = E.tierOf(i), here = new Set(), newStruct = [];
+    let load = 0, newWords = 0, words = 0, maxW = 0, maxU = 0;
+    for (const p of l.phrases) {
+      const a = analyse(p.fr);
+      const known = a.items.every((it) => it.toks.every((w) => NAMES.has(w) || seenTok.has(w) || here.has(w)));
+      for (const it of a.items) {
+        const fresh = it.toks.filter((w) => !NAMES.has(w) && !seenTok.has(w) && !here.has(w));
+        newWords += fresh.length;
+        load += it.chunk ? (fresh.length ? 1 : 0) : fresh.length;
+        fresh.forEach((w) => here.add(w));
+      }
+      words += a.words; maxW = Math.max(maxW, a.words); maxU = Math.max(maxU, a.units);
+      const verse = l.verse !== undefined;
+      const unitCap = UNITS_CAP[t] + (verse ? VERSE_UNITS : 0) + (known ? 2 : 0);
+      if (a.units > unitCap) capFail(`load: ${l.id} "${p.fr}" is ${a.units} units (tier ${t} allows ${unitCap}${known ? " for a phrase made only of known words" : ""})`);
+      for (const st of STRUCT) {
+        if (STRUCT_OK.has(p.fr) || !st.re.test(p.fr)) continue; // set phrases are chunks, not grammar
+        if (st.name === "ne … pas" && /^je ne (sais|comprends) pas/i.test(p.fr)) continue; // the survival formulas
+        if (!firstStruct.has(st.name)) firstStruct.set(st.name, { i, id: l.id, fr: p.fr });
+        if (!seenStruct.has(st.name) && !newStruct.includes(st.name)) newStruct.push(st.name);
+        if (t < st.min && !verse) capFail(`load: ${l.id} "${p.fr}" uses ${st.name} in tier ${t} (first allowed in tier ${st.min})`);
+      }
+    }
+    here.forEach((w) => seenTok.add(w)); newStruct.forEach((s) => seenStruct.add(s));
+    const verse = l.verse !== undefined;
+    rows.push({ i, id: l.id, t, n: l.phrases.length, newWords, load, avg: words / (l.phrases.length || 1), maxW, maxU, newStruct, verse });
+    const cap = LOAD_CAP[t] + (verse ? VERSE_LOAD : 0);
+    if (load > cap) capFail(`load: ${l.id} adds ${load} things to remember (tier ${t} allows ${cap})`);
+    const [lo, hi] = PHRASES_RANGE[t];
+    if (l.phrases.length < lo || l.phrases.length > hi) capFail(`load: ${l.id} has ${l.phrases.length} phrases (tier ${t}: ${lo}-${hi})`);
+    if (!verse && BUDGET[t] < newStruct.length && t <= 3) capFail(`load: ${l.id} introduces ${newStruct.length} new structures (${newStruct.join(", ")}; tier ${t} allows ${BUDGET[t]})`);
+  });
+  for (let t = 0; t <= 4; t++) {
+    const rs = rows.filter((r) => r.t === t && !sparse(ALL_LESSONS[r.i]));
+    const ps = rs.reduce((a, r) => a + r.n, 0);
+    const mean = rs.reduce((a, r) => a + r.avg * r.n, 0) / (ps || 1);
+    if (rs.length && mean > MEAN_CAP[t]) capFail(`load: tier ${t} averages ${mean.toFixed(1)} words per phrase (max ${MEAN_CAP[t]})`);
+  }
+
+  // 6. evangelism milestones: lesson number (1-based) a phrase must have appeared by
+  const MILESTONES = [["Jésus-Christ", 12], ["La Bible", 12], ["La prière", 12], ["Dieu vous aime", 15], ["Puis-je prier pour vous ?", 15],
+    ["Vous êtes invité", 15], ["Vous pouvez dire non", 15], ["Je peux vous parler de ma foi ?", 15], ["Jésus a changé ma vie", 40]];
+  for (const [fr, by] of MILESTONES) {
+    const at = lessonOf.get(fr);
+    if (at === undefined) fail(`load: milestone phrase "${fr}" is missing`);
+    else if (at + 1 > by) capFail(`load: "${fr}" is in lesson ${at + 1}, the plan wants it by lesson ${by}`);
+  }
+
+  // 7. frontier regression: someone who finished the first five lessons of the old course keeps tier 0 in Practice even
+  // though cards for phrases that later moved (Vous habitez ici depuis longtemps ?) belong to a much later lesson
+  {
+    const idOf = (fr) => ALL_LESSONS.findIndex((l) => l.phrases.some((p) => p.fr === fr));
+    const oldFive = ["u0-l1", "u0-l2", "u1-l1", "u1-l2", "u1-l3"];
+    const learned = ALL_PHRASES.filter((p) => oldFive.includes(ALL_LESSONS[idOf(p.fr)]?.id)).map((p) => p.fr);
+    const moved = ["Vous habitez ici depuis longtemps ?", "C'est ma première fois en France", "On se tutoie ?", "Je viens des États-Unis", "C'était un plaisir", "Prenez soin de vous"];
+    const cards = Object.fromEntries([...new Set([...learned, ...moved])].map((fr) => [E.phraseKey(fr), { state: { reps: 2, lapses: 0 }, due: new Date(0).toISOString() }]));
+    const done = oldFive.filter((id) => haveIds.has(id));
+    const front = E.practiceFrontier(done, cards);
+    if (E.tierOf(front) !== 0) fail(`load: Practice for someone through u1-l3 is tier ${E.tierOf(front)} (frontier ${front}), expected 0`);
+    if (E.tierOf(E.frontierFromCards(cards, front)) !== 0) fail("load: frontierFromCards still follows a moved phrase beyond the finished lessons");
+    if (E.practiceFrontier(null, cards) !== E.frontierFromCards(cards)) fail("load: Practice without lesson_progress should fall back to the cards");
+    const keys = Object.keys(cards);
+    for (let r = 0; r < N; r++) {
+      const ps = keys.sort(() => Math.random() - 0.5).slice(0, 10).map((k) => ALL_PHRASES.find((p) => E.phraseKey(p.fr) === k));
+      const pr = E.buildPractice(ps, { frontier: front, cards });
+      if (pr.some((e) => TYPED.has(e.kind))) fail("load: Practice at lesson 5 contains a typed item");
+    }
+  }
+
+  // 8. review pool regression: with cards, a review never picks a phrase the learner has no card for
+  {
+    const upTo = ALL_LESSONS.findIndex((l) => l.id === "u1-l3");
+    const finished = ALL_LESSONS.slice(0, upTo + 1).map((l) => l.id);
+    const cur = ALL_LESSONS[Math.min(upTo + 1, ALL_LESSONS.length - 1)].id;
+    // the learner has cards only for phrases they met under the old layout: everything but what was added since
+    const cards = Object.fromEntries(ALL_PHRASES.filter((p) => shipped.keys.includes(E.phraseKey(p.fr)) && finished.includes(ALL_LESSONS[lessonOf.get(p.fr)].id) && p.fr !== "Moi aussi !")
+      .map((p) => [E.phraseKey(p.fr), { state: { reps: 1, lapses: 0 }, due: new Date(0).toISOString() }]));
+    for (let r = 0; r < N * 5; r++) for (const p of E.pickReviewPhrases(finished, cur, cards, 3)) if (!cards[E.phraseKey(p.fr)]) fail(`load: review picked "${p.fr}" without a saved card`);
+    if (E.pickReviewPhrases(finished, cur, null, 3).length < 3 && finished.length > 1) fail("load: review without cards (null) should still draw from finished lessons");
+  }
+
+  // 9. the table, the first lesson of each structure, and the culture-card ordering advisory
+  console.log("  lesson   tier phr new load  words avg/max  units  new structures");
+  for (const r of rows) {
+    const over = r.load > LOAD_CAP[r.t] + (r.verse ? VERSE_LOAD : 0) ? " <-" : "";
+    console.log(`  ${String(r.i + 1).padStart(2)} ${r.id.padEnd(7)} T${r.t}  ${String(r.n).padStart(2)} ${String(r.newWords).padStart(3)} ${String(r.load).padStart(4)}   ${r.avg.toFixed(1)}/${String(r.maxW).padEnd(2)}      ${String(r.maxU).padStart(2)}    ${r.newStruct.join(", ")}${r.verse ? "  [verse]" : ""}${over}`);
+  }
+  console.log("  per tier        lessons  new words mean/max  load mean/max  words per phrase mean/max");
+  for (let t = 0; t <= 4; t++) {
+    const rs = rows.filter((r) => r.t === t && !sparse(ALL_LESSONS[r.i]));
+    if (!rs.length) continue;
+    const m = (f) => (rs.reduce((a, r) => a + f(r), 0) / rs.length).toFixed(1);
+    const mean = (rs.reduce((a, r) => a + r.avg * r.n, 0) / rs.reduce((a, r) => a + r.n, 0)).toFixed(1);
+    console.log(`  T${t}              ${String(rs.length).padStart(4)}     ${m((r) => r.newWords)} / ${Math.max(...rs.map((r) => r.newWords))}            ${m((r) => r.load)} / ${Math.max(...rs.map((r) => r.load))}        ${mean} / ${Math.max(...rs.map((r) => r.maxW))}`);
+  }
+  console.log("  first lesson of each structure: " + [...firstStruct].map(([n, f]) => `${n} ${f.i + 1}`).join(", "));
+  {
+    const culture = JSON.parse(readFileSync(new URL("../content/french/culture.json", import.meta.url), "utf8"));
+    const late = culture.cards.filter((c) => c.lesson && c.phrase && !c.phrase.extra && lessonOf.get(c.phrase.fr) > ALL_LESSONS.findIndex((l) => l.id === c.lesson))
+      .map((c) => `${c.id} (${c.lesson} quotes "${c.phrase.fr}", taught in ${ALL_LESSONS[lessonOf.get(c.phrase.fr)].id})`);
+    if (late.length) console.log(`  advisory: culture cards quoting a phrase taught after their lesson: ${late.join("; ")}`);
+  }
+  if (capNotes.length) {
+    console.log(`  ${capNotes.length} language-load cap note(s):`);
+    for (const n of capNotes.slice(0, 40)) console.log("    " + n);
+  } else console.log(`  language-load caps: ${CAPS_ENFORCING ? "enforcing, " : "report-only, "}no lesson over a cap`);
 }
 
 for (const { n, example } of failKinds.values()) console.log(`  FAIL x${n}: ${example}`);

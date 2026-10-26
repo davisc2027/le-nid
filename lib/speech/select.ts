@@ -16,6 +16,9 @@ export const SOUND_CARDS: { tag: SoundTag; label: string; tip: string }[] = [
   { tag: "question", label: "Questions that go up", tip: "In a yes/no question, let your voice go up at the end: Ça va ?" },
 ];
 
+/** How many lessons the u0 unit has: they pick sound-coverage phrases; the every-third-lesson rule starts after them. */
+const U0_COUNT = ALL_LESSONS.filter((l) => l.id.startsWith("u0-")).length;
+
 type Pos = { li: number; pos: number };
 const POS = new Map<Phrase, Pos>();
 ALL_LESSONS.forEach((l, li) => l.phrases.forEach((p, pos) => POS.set(p, { li, pos })));
@@ -43,7 +46,8 @@ export function speakPhrasesFor(lessonId: string): Phrase[] {
     }
     return chosen;
   }
-  if (li >= 2 && (li - 2) % 3 === 2) {
+  const k = li - U0_COUNT;
+  if (k >= 0 && k % 3 === 2) {
     return eligible
       .map((p, idx) => ({ p, idx }))
       .sort((a, b) => syllables(a.p.fr) - syllables(b.p.fr) || nWords(a.p.fr) - nWords(b.p.fr) || a.idx - b.idx)
