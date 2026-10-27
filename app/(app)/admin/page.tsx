@@ -19,10 +19,11 @@ type Person = { id: string; name: string; email: string | null; team: string | n
 const del = "min-h-11 px-3 text-sm text-red-600 underline";
 const KINDS = ["recap", "homework", "slides", "other"];
 
-function Row({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+function Row({ title, sub, badge, children }: { title: string; sub?: string; badge?: { text: string; done: boolean }; children: React.ReactNode }) {
   return (
     <details className="rounded-xl border border-border px-3">
-      <summary className="min-h-11 cursor-pointer py-2 text-sm"><span className="font-semibold">{title}</span>{sub && <span className="text-muted"> {sub}</span>}</summary>
+      <summary className="min-h-11 cursor-pointer py-2 text-sm"><span className="font-semibold">{title}</span>{sub && <span className="text-muted"> {sub}</span>}
+        {badge && <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-bold ${badge.done ? "border border-good text-good" : "bg-tint text-primary"}`}>{badge.text}</span>}</summary>
       <div className="flex flex-col gap-2 pb-3">{children}</div>
     </details>
   );
@@ -114,6 +115,13 @@ export default async function Admin() {
       </Section>
 
       <Section title="To-dos" open>
+        {(() => {
+          const states = (todos ?? []).map((t) => {
+            const m = assignments?.filter((a) => a.todo_id === t.id && approved.has(a.user_id)) ?? [];
+            return m.length > 0 && m.every((a) => a.completed_at);
+          });
+          return states.length > 0 && <p className="text-sm font-semibold">{states.filter(Boolean).length} of {states.length} to-dos finished by everyone</p>;
+        })()}
         <ActionForm action={addTodo} label="Create and notify" reset>
           <input className="input" name="title" placeholder="e.g. Submit passport copy" required />
           <textarea className="input" name="description" placeholder="Details" rows={2} />
@@ -127,7 +135,8 @@ export default async function Admin() {
           const open = mine.filter((a) => !a.completed_at);
           const uploads = mine.filter((a) => a.upload_path);
           return (
-            <Row key={t.id} title={t.title} sub={`due ${t.due_date}, ${mine.length - open.length}/${mine.length} done`}>
+            <Row key={t.id} title={t.title} sub={`due ${t.due_date}, ${mine.length - open.length}/${mine.length} done`}
+              badge={mine.length === 0 ? undefined : open.length === 0 ? { text: "✓ Everyone done", done: true } : { text: `${open.length} waiting`, done: false }}>
               {open.length > 0 && <p className="text-sm text-muted">Waiting on: {open.map((a) => who.get(a.user_id)).join(", ")}</p>}
               {uploads.length > 0 && (
                 <div className="flex flex-col text-sm">
