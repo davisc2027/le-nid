@@ -33,7 +33,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   ]);
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-[calc(6rem+env(safe-area-inset-bottom))]">
-      <header className="flex items-center justify-between px-4 pt-2">
+      <header className="flex items-center justify-between px-4 pt-7">
         <Link href="/" aria-label="Home"><Logo size={36} /></Link>
         <div className="flex items-center">
           <Link href="/together" className="mr-1 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-sm font-extrabold text-[#2b2118] shadow-sm"><Trophy size={18} strokeWidth={2.4} aria-hidden="true" />Leaderboard</Link>
