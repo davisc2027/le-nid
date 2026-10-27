@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
 import AssignPicker from "@/components/admin/AssignPicker";
+import DateInput from "@/components/DateInput";
 import AdminTabs from "@/components/admin/AdminTabs";
 import ActionForm from "@/components/admin/ActionForm";
 import Section from "@/components/admin/Section";
@@ -227,7 +228,7 @@ export default async function Admin() {
         <ActionForm action={addTodo} label="Create and notify" reset>
           <input className="input" name="title" placeholder="e.g. Submit passport copy" required />
           <textarea className="input" name="description" placeholder="Details" rows={2} />
-          <input className="input" name="due_date" type="date" required />
+          <DateInput className="input" name="due_date" type="date" required />
           <label className="text-sm"><input type="checkbox" name="requires_upload" /> Requires a file upload</label>
           <Picker people={people.filter((p) => approved.has(p.id))} />
           <p className="text-xs text-muted">Reminders go out 5 days, 1 day, and 0 days before the due date.</p>
@@ -250,7 +251,7 @@ export default async function Admin() {
                 <Id id={t.id} />
                 <input className="input" name="title" defaultValue={t.title} required />
                 <textarea className="input" name="description" defaultValue={t.description} rows={2} />
-                <input className="input" name="due_date" type="date" defaultValue={t.due_date} required />
+                <DateInput className="input" name="due_date" type="date" defaultValue={t.due_date} required />
                 <label className="text-sm"><input type="checkbox" name="requires_upload" defaultChecked={t.requires_upload} /> Requires a file upload</label>
                 {t.everyone === false && <input type="hidden" name="scoped" value="1" />}
                 <Picker people={people.filter((p) => approved.has(p.id))} chosen={t.everyone === false ? mine.map((a) => a.user_id) : []} />
@@ -274,7 +275,7 @@ export default async function Admin() {
           <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="anonymous" /> Anonymous (you won&apos;t see who picked what)</label>
           <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="show_results" /> Let people see results after they vote</label>
           <label className="text-sm text-muted">Close on (optional, end of that day, Paris time)
-            <input className="input mt-1" name="closes_on" type="date" /></label>
+            <DateInput className="input mt-1" name="closes_on" type="date" /></label>
           <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="push" defaultChecked /> Notify everyone by push</label>
         </ActionForm>
         {polls.length === 0 && <p className="text-sm text-muted">No polls yet.</p>}
@@ -341,10 +342,10 @@ export default async function Admin() {
       </Section>
       <Section title="Itinerary">
         <ActionForm action={addItineraryItem} label="Add" reset>
-          <input className="input" name="day" type="date" required />
+          <DateInput className="input" name="day" type="date" required />
           <div className="flex gap-2">
-            <input className="input" name="start_time" type="time" />
-            <input className="input" name="end_time" type="time" />
+            <DateInput className="input" name="start_time" type="time" />
+            <DateInput className="input" name="end_time" type="time" />
           </div>
           <input className="input" name="title" placeholder="Title" required />
           <input className="input" name="location" placeholder="Location" />
@@ -355,10 +356,10 @@ export default async function Admin() {
           <Row key={i.id} title={i.title} sub={`${i.day} ${i.start_time?.slice(0, 5) ?? ""}`}>
             <ActionForm action={updateItineraryItem} label="Save">
               <Id id={i.id} />
-              <input className="input" name="day" type="date" defaultValue={i.day} required />
+              <DateInput className="input" name="day" type="date" defaultValue={i.day} required />
               <div className="flex gap-2">
-                <input className="input" name="start_time" type="time" defaultValue={i.start_time?.slice(0, 5) ?? ""} />
-                <input className="input" name="end_time" type="time" defaultValue={i.end_time?.slice(0, 5) ?? ""} />
+                <DateInput className="input" name="start_time" type="time" defaultValue={i.start_time?.slice(0, 5) ?? ""} />
+                <DateInput className="input" name="end_time" type="time" defaultValue={i.end_time?.slice(0, 5) ?? ""} />
               </div>
               <input className="input" name="title" defaultValue={i.title} required />
               <input className="input" name="location" defaultValue={i.location ?? ""} placeholder="Location" />
@@ -372,14 +373,14 @@ export default async function Admin() {
       <Section title="Meetings and files">
         <ActionForm action={addMeeting} label="Add meeting" reset>
           <input className="input" name="title" placeholder="e.g. Prep meeting 2" required />
-          <input className="input" name="meeting_date" type="date" required />
+          <DateInput className="input" name="meeting_date" type="date" required />
         </ActionForm>
         {meetings?.map((m) => (
           <Row key={m.id} title={m.title} sub={m.meeting_date}>
             <ActionForm action={updateMeeting} label="Save">
               <Id id={m.id} />
               <input className="input" name="title" defaultValue={m.title} required />
-              <input className="input" name="meeting_date" type="date" defaultValue={m.meeting_date} required />
+              <DateInput className="input" name="meeting_date" type="date" defaultValue={m.meeting_date} required />
             </ActionForm>
             <ActionForm action={deleteMeeting} label="Delete" buttonClass={del} confirm="Delete this meeting? Its files stay."><Id id={m.id} /></ActionForm>
           </Row>

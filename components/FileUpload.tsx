@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { announceFile } from "@/app/(app)/admin/actions";
+import DateInput from "@/components/DateInput";
 import { createClient } from "@/lib/supabase/client";
 
 type Meeting = { id: string; title: string };
@@ -63,7 +64,7 @@ export default function FileUpload({ meetings }: { meetings: Meeting[] }) {
         {meetings.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
       </select>
       <label className="text-sm text-muted">Release at (blank = now)
-        <input className="input" name="release_at" type="datetime-local" />
+        <DateInput className="input" name="release_at" type="datetime-local" />
       </label>
       <button className="btn" disabled={busy}>{busy ? "Uploading…" : "Upload"}</button>
       {msg && <p className="text-sm text-muted" role="status">{msg}</p>}

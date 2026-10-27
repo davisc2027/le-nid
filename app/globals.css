@@ -316,3 +316,7 @@ input[type="time"].input::-webkit-date-and-time-value {
   text-align: left;
   margin: 0;
 }
+
+/* While a date/time field is empty, hide the browser's own blank text so the helper text shows cleanly. */
+input.date-empty::-webkit-date-and-time-value { color: transparent; }
+input.date-empty::-webkit-datetime-edit { color: transparent; }
