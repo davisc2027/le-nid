@@ -300,12 +300,17 @@ const JIB = `M38 0H236M38 4H212${lines(29, (i) => `M${40 + i * 6} 4L${43 + i * 6
 
 type Anim = { from: number; run: boolean };
 const START = 350, DUR = 560;
+const COURSES = 200;
 
 export default function Cathedral({ ratio, hero = false, className = "" }: { ratio: number; hero?: boolean; className?: string }) {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const [anim, setAnim] = useState<Anim | null>(null);
   const [settled, setSettled] = useState(false);
-  const r = Math.max(0, Math.min(1, ratio || 0));
+  const exact = Math.max(0, Math.min(1, ratio || 0));
+  // The build is laid in 200 courses (each 0.5% of the goal). The course being laid is revealed left to right as XP comes in.
+  const k = exact * COURSES;
+  const r = exact >= 1 ? 1 : Math.floor(k + 1e-9) / COURSES;
+  const laying = exact >= 1 ? 0 : Math.max(0, k - Math.floor(k + 1e-9));
 
   // Decide (before first paint after hydration) whether to replay growth since this device last looked.
   useLayoutEffect(() => {
@@ -370,11 +375,11 @@ export default function Cathedral({ ratio, hero = false, className = "" }: { rat
   const craneMs = running ? Math.max(600, total - START) : 0;
   const craneStyle = (t: string): CSSProperties => ({ transform: t, transition: running ? `transform ${craneMs}ms cubic-bezier(.45,.05,.35,1) ${START}ms` : undefined });
 
-  const meters = Math.round(r * SPIRE_M);
+  const meters = Math.round(exact * SPIRE_M);
   const gained = anim ? meters - Math.round(anim.from * SPIRE_M) : 0;
   const label = r >= 1
     ? `Strasbourg Cathedral, complete: ${SPIRE_M} of ${SPIRE_M} metres built. Odile the stork is on top.`
-    : `Strasbourg Cathedral under construction: ${meters} of ${SPIRE_M} metres built, ${Math.round(r * 100)}% of the group goal.`;
+    : `Strasbourg Cathedral under construction: ${meters} of ${SPIRE_M} metres built, ${Math.round(exact * 100)}% of the group goal.`;
 
   // Scaffolding around the course being built (rest state only).
   const scaffold = (() => {
@@ -406,6 +411,19 @@ export default function Cathedral({ ratio, hero = false, className = "" }: { rat
 
         {/* built stone */}
         <g clipPath={`url(#${uid}-base)`}>{partsIn(baseY, 400)}</g>
+        {/* the course being laid right now: stone appears from the left edge as progress comes in */}
+        {!anim && laying > 0.001 && (() => {
+          const yb = yAt(r), yt = yAt(r + 1 / COURSES);
+          const [sx1, sx2] = silhouette(yb - 0.5);
+          const w = (sx2 - sx1) * laying;
+          return (
+            <g>
+              <clipPath id={`${uid}-lay`}><rect x={n1(sx1)} y={n1(yt)} width={n1(w)} height={n1(yb - yt + 0.3)} /></clipPath>
+              <g clipPath={`url(#${uid}-lay)`}>{partsIn(yt, yb)}</g>
+              <rect x={n1(sx1 + w - 0.6)} y={n1(yt)} width="1.2" height={n1(yb - yt)} fill={GOLD} opacity=".85" />
+            </g>
+          );
+        })()}
         {running && bands.map((b, i) => {
           const y0 = yAt(b.hi), y1 = yAt(b.lo);
           const [sx1, sx2] = silhouette(y1 - 0.5);
