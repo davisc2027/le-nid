@@ -20,7 +20,7 @@ export default function DateInput({ type, className = "input", defaultValue, ...
     return () => { el.removeEventListener("input", sync); el.removeEventListener("change", sync); el.form?.removeEventListener("reset", reset); };
   }, []);
   return (
-    <div className="relative">
+    <div className="relative min-w-0 flex-1">
       <input ref={ref} type={type} defaultValue={defaultValue} className={`${className} ${has ? "" : "date-empty"}`} {...rest} />
       {!has && <span aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted">{HINT[type]}</span>}
     </div>
