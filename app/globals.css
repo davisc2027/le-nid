@@ -292,3 +292,27 @@ body {
 .cath .cath-hook, .cath .cath-sparkle { animation-iteration-count: 3; }
 :root { --accent-ink: #a65a0f; }
 @media (prefers-color-scheme: dark) { :root { --accent-ink: #f0a04b; } }
+
+/* Date and time fields: iOS gives them their own intrinsic width and a collapsed empty state.
+   Lock them to the same size as the other text boxes. */
+input[type="date"].input,
+input[type="datetime-local"].input,
+input[type="time"].input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 3rem;
+  text-align: left;
+  line-height: 1.5;
+}
+input[type="date"].input::-webkit-date-and-time-value,
+input[type="datetime-local"].input::-webkit-date-and-time-value,
+input[type="time"].input::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: left;
+  margin: 0;
+}
