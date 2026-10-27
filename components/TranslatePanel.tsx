@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ChevronRight, MessagesSquare, Mic, Square, Turtle, Volume2, X } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, MessagesSquare, Mic, Square, Trash2, Turtle, Volume2, X } from "lucide-react";
 import { speak } from "@/lib/french/speech";
 import Stork from "@/components/art/Stork";
 
@@ -21,6 +21,10 @@ export default function TranslatePanel() {
   const [shown, setShown] = useState<Entry | null>(null);
   const [full, setFull] = useState(false);
   const [history, setHistory] = useState<Entry[]>([]);
+  const saveHistory = (next: Entry[]) => {
+    setHistory(next);
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch {}
+  };
   const [listening, setListening] = useState(false);
   const [canListen, setCanListen] = useState(false);
   const [coach, setCoach] = useState(false);
@@ -173,11 +177,22 @@ export default function TranslatePanel() {
       {!shown && <div className="flex items-end gap-2"><Stork mood="think" size={64} /><p className="card mb-2 flex-1 text-sm">Speak or type, then tap Translate. "Show them" fills the screen so the other person can read it.</p></div>}
       {history.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="label">Recent</h2>
-          {history.map((h, i) => (
-            <button key={i} className="card text-left" onClick={() => { setShown(h); setDir(h.dir); }}>
-              <span className="text-sm text-muted">{h.from}</span><span className="font-bold">{h.to}</span>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="label">Recent</h2>
+            <button type="button" className="btn ghost min-h-11 !px-3 text-sm" onClick={() => { if (window.confirm("Clear all recent translations on this phone?")) saveHistory([]); }}>
+              <Trash2 size={16} aria-hidden="true" /> Clear all
             </button>
+          </div>
+          {history.map((h, i) => (
+            <div key={`${h.from}-${i}`} className="flex items-stretch gap-2">
+              <button className="card flex-1 text-left" onClick={() => { setShown(h); setDir(h.dir); }}>
+                <span className="text-sm text-muted">{h.from}</span><span className="font-bold">{h.to}</span>
+              </button>
+              <button type="button" aria-label={`Remove "${h.from}" from recent`} className="grid min-h-12 w-12 shrink-0 place-items-center rounded-xl border border-border bg-surface text-muted"
+                onClick={() => saveHistory(history.filter((_, n) => n !== i))}>
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
           ))}
         </section>
       )}
