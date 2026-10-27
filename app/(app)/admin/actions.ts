@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient, getProfile } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
 import { parseRef, refKey } from "@/lib/bible/reference";
+import { parisEndOfDay, MAX_OPTION, MAX_QUESTION } from "@/lib/polls";
 import type { State } from "@/components/admin/ActionForm";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -362,4 +363,65 @@ export async function signInCode(_: State, f: FormData) {
     if (error || !code) throw new Error(error?.message ?? "Couldn't make a code");
     return `Code for ${email}: ${code}. Send it to them privately. It works once and expires within an hour.`;
   });
+}
+
+/** A missing polls table (migration 0014 not run) becomes a plain instruction instead of a database error. */
+function pollFail(error: { message: string; code?: string } | null) {
+  if (!error) return;
+  if (error.code === "42P01" || error.code === "PGRST205" || /schema cache|does not exist/i.test(error.message)) throw new Error("Run migration 0014 first");
+  throw new Error(error.message);
+}
+
+/** Creates a poll and (optionally) pushes it to everyone. Options come from repeated "option" fields. */
+export async function addPoll(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const question = text(f, "question");
+    const options = f.getAll("option").map((o) => String(o).trim()).filter(Boolean);
+    if (!question) throw new Error("Write a question");
+    if (question.length > MAX_QUESTION) throw new Error(`Keep the question under ${MAX_QUESTION} characters`);
+    if (options.length < 2) throw new Error("Add at least 2 options");
+    if (options.length > 8) throw new Error("At most 8 options");
+    if (new Set(options.map((o) => o.toLowerCase())).size !== options.length) throw new Error("Two options are the same");
+    if (options.some((o) => o.length > MAX_OPTION)) throw new Error(`Keep each option under ${MAX_OPTION} characters`);
+    const day = text(f, "closes_on");
+    let closes_at: string | null = null;
+    if (day) {
+      closes_at = parisEndOfDay(day);
+      if (!closes_at) throw new Error("That close date is not valid");
+      if (Date.parse(closes_at) <= Date.now()) throw new Error("The close date is in the past");
+    }
+    const since = new Date(Date.now() - 120_000).toISOString();
+    const dup = await supabase.from("polls").select("id").eq("question", question).gte("created_at", since).limit(1);
+    pollFail(dup.error);
+    if (dup.data?.length) return "Already sent";
+    const me = await getProfile();
+    pollFail((await supabase.from("polls").insert({
+      question, options, closes_at, created_by: me?.id ?? null,
+      multiple: f.get("multiple") === "on", anonymous: f.get("anonymous") === "on", show_results: f.get("show_results") === "on",
+    })).error);
+    const note = f.get("push") === "on" ? await push({ title: "New poll", body: question.length > 140 ? `${question.slice(0, 139)}…` : question, url: "/" }) : "";
+    return `Poll sent${note}`;
+  }, ["/"]);
+}
+
+/** Close, or reopen (a reopened poll drops a close date that has already passed). */
+export async function setPollClosed(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const id = text(f, "id");
+    const closed = text(f, "closed") === "1";
+    const patch: { closed: boolean; closes_at?: null } = { closed };
+    if (!closed) {
+      const { data } = await supabase.from("polls").select("closes_at").eq("id", id).single();
+      if (data?.closes_at && Date.parse(data.closes_at) <= Date.now()) patch.closes_at = null;
+    }
+    pollFail((await supabase.from("polls").update(patch).eq("id", id)).error);
+    return closed ? "Closed" : "Reopened";
+  }, ["/"]);
+}
+
+export async function deletePoll(_: State, f: FormData) {
+  return run(async (supabase) => {
+    pollFail((await supabase.from("polls").delete().eq("id", text(f, "id"))).error);
+    return "Deleted";
+  }, ["/"]);
 }

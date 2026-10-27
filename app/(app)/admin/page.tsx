@@ -7,13 +7,16 @@ import AdminTabs from "@/components/admin/AdminTabs";
 import ActionForm from "@/components/admin/ActionForm";
 import Section from "@/components/admin/Section";
 import UploadLink from "@/components/admin/UploadLink";
+import PollOptions from "@/components/admin/PollOptions";
+import PollBars from "@/components/polls/PollBars";
+import { isOpen, nowMs, rate, toTally, type Poll, type ResultRow, type Tally } from "@/lib/polls";
 import {
   postAnnouncement, updateAnnouncement, deleteAnnouncement,
   addItineraryItem, updateItineraryItem, deleteItineraryItem,
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
   addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
-  addAllowedEmails, removeAllowedEmail, setAccess, signInCode,
+  addAllowedEmails, removeAllowedEmail, setAccess, signInCode, addPoll, setPollClosed, deletePoll,
 } from "./actions";
 
 type Person = { id: string; name: string; email: string | null; team: string | null; role: string; status: string; created_at: string };
@@ -30,6 +33,27 @@ function Row({ title, sub, badge, children }: { title: string; sub?: string; bad
   );
 }
 
+type Voter = { user_id: string | null; name: string; option_idx: number | null; voted: boolean };
+type PollInfo = { poll: Poll; tally: Tally; voters: Voter[] };
+
+/** All polls with their tallies. Any error (usually migration 0014 not run) comes back as `missing` and the rest of the page carries on. */
+async function loadPolls(supabase: Awaited<ReturnType<typeof createClient>>): Promise<{ missing: boolean; polls: PollInfo[] }> {
+  try {
+    const { data, error } = await supabase.from("polls")
+      .select("id, question, options, multiple, anonymous, show_results, closes_at, closed, created_at")
+      .order("created_at", { ascending: false }).limit(30);
+    if (error) return { missing: true, polls: [] };
+    const polls = await Promise.all(((data ?? []) as Poll[]).map(async (poll) => {
+      const [r, v] = await Promise.all([supabase.rpc("poll_results", { p_poll: poll.id }), supabase.rpc("admin_poll_voters", { p_poll: poll.id })]);
+      if (r.error || v.error) throw new Error("poll rpc failed");
+      return { poll, tally: toTally(r.data as ResultRow[], poll.options.length), voters: (v.data ?? []) as Voter[] };
+    }));
+    return { missing: false, polls };
+  } catch {
+    return { missing: true, polls: [] };
+  }
+}
+
 const Picker = ({ people, chosen = [] }: { people: Person[]; chosen?: string[] }) => (
   <AssignPicker people={people.map((p) => ({ id: p.id, label: p.name || p.email || "(no name)" }))} chosen={chosen} />
 );
@@ -39,6 +63,7 @@ export default async function Admin() {
   const profile = await getProfile();
   if (profile?.role !== "admin") redirect("/");
   const supabase = await createClient();
+  const pollsPromise = loadPolls(supabase);
   const [
     { data: meetings }, { data: todos }, { data: assignments }, { data: peopleRaw }, { data: goal },
     { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
@@ -59,6 +84,7 @@ export default async function Admin() {
     supabase.from("verse_set_items").select("set_id, ref, position").order("position"),
     supabase.from("allowed_emails").select("email").order("email"),
   ]);
+  const { missing: pollsMissing, polls } = await pollsPromise;
   const people = (peopleRaw ?? []) as Person[];
   const approved = new Set(people.filter((p) => p.status === "approved").map((p) => p.id));
   const waiting = people.filter((p) => p.status === "pending");
@@ -79,6 +105,7 @@ export default async function Admin() {
           { id: "overview", label: "Overview" },
           { id: "people", label: "People", badge: waiting.length },
           { id: "todos", label: "To-dos" },
+          { id: "polls", label: "Polls" },
           { id: "content", label: "Content" },
           { id: "settings", label: "Settings" },
         ]}
@@ -108,6 +135,22 @@ export default async function Admin() {
           );
         })}
       </Section>
+      {polls.some((x) => isOpen(x.poll, nowMs())) && (
+        <Section title="Open polls" open>
+          {polls.filter((x) => isOpen(x.poll, nowMs())).map(({ poll, tally }) => (
+            <div key={poll.id} className="rounded-xl border border-border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="min-w-0 break-words font-semibold">{poll.question}</p>
+                <span className="shrink-0 rounded-full bg-tint px-2 py-0.5 text-xs font-bold text-primary">{tally.voters}/{approved.size}</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-border" role="progressbar" aria-valuemin={0} aria-valuemax={approved.size} aria-valuenow={tally.voters} aria-label={`${poll.question} response rate`}>
+                <div className="h-full rounded-full bg-good" style={{ width: `${rate(tally.voters, approved.size)}%` }} />
+              </div>
+              <p className="mt-1 text-sm text-muted">{rate(tally.voters, approved.size)}% answered. Details in the Polls tab.</p>
+            </div>
+          ))}
+        </Section>
+      )}
           </>),
           people: (<>
       <Section title="Sign-in help">
@@ -217,6 +260,63 @@ export default async function Admin() {
           );
         })}
         <ActionForm action={assignMissing} label="Repair missing assignments" buttonClass="min-h-11 px-3 text-sm text-muted underline" />
+      </Section>
+          </>),
+          polls: (<>
+      <Section title="Polls" open>
+        {pollsMissing ? (
+          <p className="text-sm font-semibold">Run migration 0014 (supabase/migrations/0014_polls.sql) to turn on polls.</p>
+        ) : (<>
+        <ActionForm action={addPoll} label="Send poll" reset>
+          <input className="input" name="question" placeholder="e.g. Which evening works for the group dinner?" maxLength={300} required />
+          <PollOptions />
+          <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="multiple" /> Allow more than one answer</label>
+          <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="anonymous" /> Anonymous (you won&apos;t see who picked what)</label>
+          <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="show_results" /> Let people see results after they vote</label>
+          <label className="text-sm text-muted">Close on (optional, end of that day, Paris time)
+            <input className="input mt-1" name="closes_on" type="date" /></label>
+          <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="push" defaultChecked /> Notify everyone by push</label>
+        </ActionForm>
+        {polls.length === 0 && <p className="text-sm text-muted">No polls yet.</p>}
+        {polls.map(({ poll, tally, voters }) => {
+          const open = isOpen(poll, nowMs());
+          const waiting = voters.filter((v) => !v.voted);
+          const picks = poll.options.map((_, i) => voters.filter((v) => v.voted && v.option_idx === i).map((v) => v.name));
+          return (
+            <div key={poll.id} className="rounded-xl border border-border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="min-w-0 break-words font-semibold">{poll.question}</p>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${open ? "bg-tint text-primary" : "border border-border text-muted"}`}>{open ? "Open" : "Closed"}</span>
+              </div>
+              <p className="mt-1 text-xs text-muted">
+                {[poll.multiple && "several answers", poll.anonymous && "anonymous", poll.show_results && "results shared", poll.closes_at && `closes ${new Date(poll.closes_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Paris" })}`].filter(Boolean).join(" · ") || "single answer"}
+              </p>
+              <div className="mt-3"><PollBars options={poll.options} counts={tally.counts} voters={tally.voters} multiple={poll.multiple} showCounts /></div>
+              <p className="mt-3 text-sm font-semibold">{tally.voters} of {approved.size} approved {approved.size === 1 ? "person" : "people"} answered ({rate(tally.voters, approved.size)}%)</p>
+              {waiting.length > 0 && (
+                <details className="mt-1">
+                  <summary className="min-h-11 cursor-pointer py-2 text-sm text-muted">Not answered yet ({waiting.length})</summary>
+                  <p className="pb-2 text-sm">{waiting.map((v) => v.name).join(", ")}</p>
+                </details>
+              )}
+              {!poll.anonymous && tally.voters > 0 && (
+                <details>
+                  <summary className="min-h-11 cursor-pointer py-2 text-sm text-muted">Who picked what</summary>
+                  <div className="flex flex-col gap-1 pb-2 text-sm">
+                    {poll.options.map((o, i) => <p key={i}><span className="font-semibold">{o}:</span> {picks[i].join(", ") || "no one"}</p>)}
+                  </div>
+                </details>
+              )}
+              <div className="mt-1 flex flex-wrap items-center gap-x-4">
+                <ActionForm action={setPollClosed} label={open ? "Close" : "Reopen"} buttonClass={del} confirm={open ? "Close this poll? People will no longer be able to answer." : "Reopen this poll?"}>
+                  <Id id={poll.id} /><input type="hidden" name="closed" value={open ? "1" : "0"} />
+                </ActionForm>
+                <ActionForm action={deletePoll} label="Delete" buttonClass={del} confirm="Delete this poll and all its answers?"><Id id={poll.id} /></ActionForm>
+              </div>
+            </div>
+          );
+        })}
+        </>)}
       </Section>
           </>),
           content: (<>

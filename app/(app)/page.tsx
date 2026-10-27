@@ -1,9 +1,11 @@
 import { createClient, getProfile } from "@/lib/supabase/server";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ChevronRight, Pin, Trophy } from "lucide-react";
 import PushToggle from "@/components/PushToggle";
 import InstallBanner from "@/components/InstallBanner";
 import SpireGoal from "@/components/art/SpireGoal";
+import PollsSection from "@/components/polls/PollsSection";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -34,6 +36,7 @@ export default async function Home() {
       {!me?.name && <Link href="/me" className="card !border-primary font-bold">Add your name so the group knows who you are →</Link>}
       <PushToggle prompt />
       <Link href="/together" className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 15000} title={goal?.title ?? "Raise the spire"} /></Link>
+      <Suspense fallback={null}><PollsSection /></Suspense>
       {items?.length ? items.map((a) => (
         <article key={a.id} className="card">
           <h2 className="font-bold">{a.pinned && <Pin size={16} className="mr-1 inline -mt-0.5 text-primary" aria-label="Pinned" />}{a.title}</h2>
