@@ -184,11 +184,11 @@ export default function TranslatePanel() {
             </button>
           </div>
           {history.map((h, i) => (
-            <div key={`${h.from}-${i}`} className="flex items-stretch gap-2">
-              <button className="card flex-1 text-left" onClick={() => { setShown(h); setDir(h.dir); }}>
+            <div key={`${h.from}-${i}`} className="relative">
+              <button className="card w-full pr-12 text-left" onClick={() => { setShown(h); setDir(h.dir); }}>
                 <span className="text-sm text-muted">{h.from}</span><span className="font-bold">{h.to}</span>
               </button>
-              <button type="button" aria-label={`Remove "${h.from}" from recent`} className="grid min-h-12 w-12 shrink-0 place-items-center rounded-xl border border-border bg-surface text-muted"
+              <button type="button" aria-label={`Remove "${h.from}" from recent`} className="absolute right-1 top-1 grid size-11 place-items-center rounded-xl text-muted hover:bg-tint"
                 onClick={() => saveHistory(history.filter((_, n) => n !== i))}>
                 <X size={20} aria-hidden="true" />
               </button>
