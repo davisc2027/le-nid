@@ -13,7 +13,7 @@ import {
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
   addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
-  addAllowedEmails, removeAllowedEmail, setAccess,
+  addAllowedEmails, removeAllowedEmail, setAccess, signInCode,
 } from "./actions";
 
 type Person = { id: string; name: string; email: string | null; team: string | null; role: string; status: string; created_at: string };
@@ -110,6 +110,12 @@ export default async function Admin() {
       </Section>
           </>),
           people: (<>
+      <Section title="Sign-in help">
+        <p className="text-xs text-muted">If someone never receives their emailed code, make one here and send it to them privately. They enter it on the sign-in screen of the Home Screen app, using their own email. It works once, and anyone who has it could sign in as them, so don&apos;t post it in a group chat.</p>
+        <ActionForm action={signInCode} label="Make a sign-in code" reset>
+          <input className="input" name="email" type="email" placeholder="their@email.com" required />
+        </ActionForm>
+      </Section>
       <Section title={`Access requests (${waiting.length} waiting)`} open={waiting.length > 0}>
         <p className="text-xs text-muted">Anyone can ask to join by signing in. They see nothing until you approve them here. Denied people can be approved again at any time.</p>
         {waiting.length === 0 && <p className="text-sm text-muted">No one is waiting for approval.</p>}

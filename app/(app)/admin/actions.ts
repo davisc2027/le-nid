@@ -351,3 +351,15 @@ export async function announceFile(title: string) {
     await sendPushToAll({ title: "New resource", body: title.slice(0, 100), url: "/files" });
   } catch { /* the file is already saved; a failed push is not worth an error */ }
 }
+
+/** For someone whose emailed code never arrives: makes a one-time 8-digit code the admin can send them privately. */
+export async function signInCode(_: State, f: FormData) {
+  return run(async () => {
+    const email = text(f, "email").toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email");
+    const { data, error } = await createServiceClient().auth.admin.generateLink({ type: "magiclink", email });
+    const code = data?.properties?.email_otp;
+    if (error || !code) throw new Error(error?.message ?? "Couldn't make a code");
+    return `Code for ${email}: ${code}. Send it to them privately. It works once and expires within an hour.`;
+  });
+}
