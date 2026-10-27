@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
 import AssignPicker from "@/components/admin/AssignPicker";
+import AdminTabs from "@/components/admin/AdminTabs";
 import ActionForm from "@/components/admin/ActionForm";
 import Section from "@/components/admin/Section";
 import UploadLink from "@/components/admin/UploadLink";
@@ -73,7 +74,42 @@ export default async function Admin() {
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-extrabold">Admin</h1>
-
+      <AdminTabs
+        tabs={[
+          { id: "overview", label: "Overview" },
+          { id: "people", label: "People", badge: waiting.length },
+          { id: "todos", label: "To-dos" },
+          { id: "content", label: "Content" },
+          { id: "settings", label: "Settings" },
+        ]}
+        panels={{
+          overview: (<>
+      {waiting.length > 0 && (
+        <p className="card text-sm font-semibold">{waiting.length} {waiting.length === 1 ? "person is" : "people are"} waiting for approval. Open the People tab.</p>
+      )}
+      <Section title="To-do completion" open>
+        {(todos ?? []).length === 0 && <p className="text-sm text-muted">No to-dos yet.</p>}
+        {(todos ?? []).map((t) => {
+          const m = assignments?.filter((a) => a.todo_id === t.id && approved.has(a.user_id)) ?? [];
+          const waitingOn = m.filter((a) => !a.completed_at);
+          const done = m.length - waitingOn.length;
+          const all = m.length > 0 && waitingOn.length === 0;
+          return (
+            <div key={t.id} className="rounded-xl border border-border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold">{t.title} <span className="text-xs font-normal text-muted">due {t.due_date}</span></p>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${all ? "border border-good text-good" : "bg-tint text-primary"}`}>{all ? "✓ Everyone done" : `${done}/${m.length}`}</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-border" role="progressbar" aria-valuemin={0} aria-valuemax={m.length} aria-valuenow={done} aria-label={`${t.title} completion`}>
+                <div className="h-full rounded-full bg-good" style={{ width: `${m.length ? (100 * done) / m.length : 0}%` }} />
+              </div>
+              {waitingOn.length > 0 && <p className="mt-2 text-sm text-muted">Waiting on: {waitingOn.map((a) => who.get(a.user_id)).join(", ")}</p>}
+            </div>
+          );
+        })}
+      </Section>
+          </>),
+          people: (<>
       <Section title={`Access requests (${waiting.length} waiting)`} open={waiting.length > 0}>
         <p className="text-xs text-muted">Anyone can ask to join by signing in. They see nothing until you approve them here. Denied people can be approved again at any time.</p>
         {waiting.length === 0 && <p className="text-sm text-muted">No one is waiting for approval.</p>}
@@ -98,7 +134,23 @@ export default async function Admin() {
           </div>
         ))}
       </Section>
-
+      <Section title={`People and teams (${approved.size})`}>
+        {people.filter((p) => approved.has(p.id)).map((p) => (
+          <div key={p.id} className="flex flex-col gap-1 border-b border-border pb-2">
+            <ActionForm action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
+              <Id id={p.id} />
+              <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
+              <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
+            </ActionForm>
+            <ActionForm action={deletePerson} label="Delete person" buttonClass={del} confirm={`Permanently delete ${p.name || p.email} and all their progress? This can't be undone.`}><Id id={p.id} /></ActionForm>
+          </div>
+        ))}
+        {[...waiting, ...denied].map((p) => (
+          <ActionForm key={p.id} action={deletePerson} label="Delete" buttonClass={del} className="flex items-center gap-2 text-sm" confirm={`Permanently delete ${p.name || p.email}?`}>
+            <Id id={p.id} /><span className="min-w-0 flex-1 truncate text-muted">{p.name || p.email} ({p.status === "pending" ? "waiting" : "denied"})</span>
+          </ActionForm>
+        ))}
+      </Section>
       <Section title={`Pre-approved emails (${allowed?.length ?? 0})`}>
         <p className="text-xs text-muted">Optional. Emails listed here are approved automatically when they first sign in, with no request step.</p>
         <ActionForm action={addAllowedEmails} label="Add emails" reset>
@@ -113,7 +165,8 @@ export default async function Admin() {
           </div>
         ))}
       </Section>
-
+          </>),
+          todos: (<>
       <Section title="To-dos" open>
         {(() => {
           const states = (todos ?? []).map((t) => {
@@ -159,7 +212,8 @@ export default async function Admin() {
         })}
         <ActionForm action={assignMissing} label="Repair missing assignments" buttonClass="min-h-11 px-3 text-sm text-muted underline" />
       </Section>
-
+          </>),
+          content: (<>
       <Section title="Announcements">
         <ActionForm action={postAnnouncement} label="Post" reset>
           <input className="input" name="title" placeholder="Title" required />
@@ -179,7 +233,6 @@ export default async function Admin() {
           </Row>
         ))}
       </Section>
-
       <Section title="Itinerary">
         <ActionForm action={addItineraryItem} label="Add" reset>
           <input className="input" name="day" type="date" required />
@@ -210,7 +263,6 @@ export default async function Admin() {
           </Row>
         ))}
       </Section>
-
       <Section title="Meetings and files">
         <ActionForm action={addMeeting} label="Add meeting" reset>
           <input className="input" name="title" placeholder="e.g. Prep meeting 2" required />
@@ -242,7 +294,6 @@ export default async function Admin() {
           </Row>
         ))}
       </Section>
-
       <Section title="Verse sets">
         <ActionForm action={addVerseSet} label="Publish set" reset>
           <input className="input" name="title" placeholder="e.g. Core verses for the trip" required />
@@ -261,7 +312,8 @@ export default async function Admin() {
           </Row>
         ))}
       </Section>
-
+          </>),
+          settings: (<>
       <Section title="Group goal">
         <ActionForm action={updateGoal} label="Save goal">
           <input className="input" name="title" defaultValue={goal?.title} required />
@@ -269,24 +321,9 @@ export default async function Admin() {
             <input className="input" name="target_xp" type="number" min="100" defaultValue={goal?.target_xp} required /></label>
         </ActionForm>
       </Section>
-
-      <Section title={`People and teams (${approved.size})`}>
-        {people.filter((p) => approved.has(p.id)).map((p) => (
-          <div key={p.id} className="flex flex-col gap-1 border-b border-border pb-2">
-            <ActionForm action={setTeam} label="Set" className="flex items-center gap-2 text-sm" buttonClass="btn !px-3 !py-1">
-              <Id id={p.id} />
-              <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
-              <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
-            </ActionForm>
-            <ActionForm action={deletePerson} label="Delete person" buttonClass={del} confirm={`Permanently delete ${p.name || p.email} and all their progress? This can't be undone.`}><Id id={p.id} /></ActionForm>
-          </div>
-        ))}
-        {[...waiting, ...denied].map((p) => (
-          <ActionForm key={p.id} action={deletePerson} label="Delete" buttonClass={del} className="flex items-center gap-2 text-sm" confirm={`Permanently delete ${p.name || p.email}?`}>
-            <Id id={p.id} /><span className="min-w-0 flex-1 truncate text-muted">{p.name || p.email} ({p.status === "pending" ? "waiting" : "denied"})</span>
-          </ActionForm>
-        ))}
-      </Section>
+          </>),
+        }}
+      />
     </div>
   );
 }
