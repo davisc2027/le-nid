@@ -79,7 +79,7 @@ export default async function Admin() {
     supabase.rpc("admin_list_people"),
     supabase.from("trip_goal").select("title, target_xp").single(),
     supabase.from("announcements").select("id, title, body, pinned").order("created_at", { ascending: false }).limit(20),
-    supabase.from("itinerary_items").select("id, day, start_time, end_time, title, location, map_url, notes").order("day", { ascending: false }).order("start_time").limit(60),
+    supabase.from("itinerary_items").select("*").order("day", { ascending: false }).order("start_time").limit(60),
     supabase.from("files").select("id, title, kind, meeting_id").order("created_at", { ascending: false }),
     supabase.from("verse_sets").select("id, title, description").order("created_at", { ascending: false }),
     supabase.from("verse_set_items").select("set_id, ref, position").order("position"),
@@ -348,6 +348,12 @@ export default async function Admin() {
             <DateInput className="input" name="end_time" type="time" />
           </div>
           <input className="input" name="title" placeholder="Title" required />
+          <label className="flex flex-col gap-1 text-sm font-semibold">Time zone
+            <select className="input" name="tz" defaultValue={"Europe/Paris"}>
+              <option value="Europe/Paris">Strasbourg (default)</option>
+              <option value="America/Chicago">Texas</option>
+            </select>
+          </label>
           <input className="input" name="location" placeholder="Location" />
           <input className="input" name="map_url" placeholder="Map link (optional)" />
           <textarea className="input" name="notes" placeholder="Notes" rows={2} />
@@ -362,9 +368,17 @@ export default async function Admin() {
                 <DateInput className="input" name="end_time" type="time" defaultValue={i.end_time?.slice(0, 5) ?? ""} />
               </div>
               <input className="input" name="title" defaultValue={i.title} required />
+              <label className="flex flex-col gap-1 text-sm font-semibold">Time zone
+                <select className="input" name="tz" defaultValue={i.tz === "America/Chicago" ? "America/Chicago" : "Europe/Paris"}>
+                  <option value="Europe/Paris">Strasbourg (default)</option>
+                  <option value="America/Chicago">Texas</option>
+                </select>
+              </label>
+              {"tz" in i && <input type="hidden" name="tz_known" value="1" />}
               <input className="input" name="location" defaultValue={i.location ?? ""} placeholder="Location" />
               <input className="input" name="map_url" defaultValue={i.map_url ?? ""} placeholder="Map link (optional)" />
               <textarea className="input" name="notes" defaultValue={i.notes ?? ""} rows={2} />
+              <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="notify" /> Notify everyone about this change</label>
             </ActionForm>
             <ActionForm action={deleteItineraryItem} label="Delete" buttonClass={del} confirm="Delete this itinerary item?"><Id id={i.id} /></ActionForm>
           </Row>

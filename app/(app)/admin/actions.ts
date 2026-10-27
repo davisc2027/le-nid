@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient, getProfile } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push";
 import { parseRef, refKey } from "@/lib/bible/reference";
+import { formatRange, dayHeading } from "@/lib/itinerary";
 import { parisEndOfDay, MAX_OPTION, MAX_QUESTION } from "@/lib/polls";
 import type { State } from "@/components/admin/ActionForm";
 
@@ -72,8 +73,10 @@ export async function deleteAnnouncement(_: State, f: FormData) {
   }, ["/"]);
 }
 
-function itineraryFields(f: FormData) {
-  return {
+/** tz is only sent when it matters, so saving keeps working before migration 0016 adds the column. */
+function itineraryFields(f: FormData, editing: boolean) {
+  const tz = text(f, "tz") === "America/Chicago" ? "America/Chicago" : "Europe/Paris";
+  const fields: Record<string, string | null> = {
     day: text(f, "day"),
     start_time: text(f, "start_time") || null,
     end_time: text(f, "end_time") || null,
@@ -82,19 +85,37 @@ function itineraryFields(f: FormData) {
     map_url: mapUrl(text(f, "map_url")),
     notes: text(f, "notes") || null,
   };
+  // Editing: the form says whether this row already has a tz column ("tz_known"); only then is the default value sent too.
+  if (tz === "America/Chicago" || (editing && f.get("tz_known") === "1")) fields.tz = tz;
+  return fields;
+}
+
+function tzFail(error: { message: string } | null, fields: Record<string, unknown>) {
+  if (error && "tz" in fields && /\btz\b/.test(error.message)) throw new Error("Run migration 0016 first");
+  fail(error);
 }
 
 export async function addItineraryItem(_: State, f: FormData) {
   return run(async (supabase) => {
-    fail((await supabase.from("itinerary_items").insert(itineraryFields(f))).error);
+    const fields = itineraryFields(f, false);
+    tzFail((await supabase.from("itinerary_items").insert(fields)).error, fields);
     return "Added";
   }, ["/itinerary"]);
 }
 
 export async function updateItineraryItem(_: State, f: FormData) {
   return run(async (supabase) => {
-    fail((await supabase.from("itinerary_items").update(itineraryFields(f)).eq("id", text(f, "id"))).error);
-    return "Saved";
+    const fields = itineraryFields(f, true);
+    tzFail((await supabase.from("itinerary_items").update(fields).eq("id", text(f, "id"))).error, fields);
+    let note = "";
+    if (f.get("notify") === "on") {
+      const range = formatRange(String(fields.start_time ?? ""), String(fields.end_time ?? ""));
+      const when = dayHeading(String(fields.day));
+      const where = fields.tz === "America/Chicago" ? " (Texas time)" : fields.tz ? " (Strasbourg time)" : "";
+      const r = await sendPushToAll({ title: "Schedule updated", body: `${fields.title}: ${when}, ${range}${where}`.slice(0, 140), url: "/itinerary" });
+      if (r.error) note = ` (push not sent: ${r.error})`;
+    }
+    return `Saved${note}`;
   }, ["/itinerary"]);
 }
 
