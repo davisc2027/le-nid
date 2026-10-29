@@ -17,7 +17,7 @@ import {
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
   addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
-  addAllowedEmails, removeAllowedEmail, setAccess, signInCode, addPoll, setPollClosed, deletePoll,
+  addAllowedEmails, removeAllowedEmail, setAccess, signInCode, remindTodo, addPoll, setPollClosed, deletePoll,
 } from "./actions";
 
 type Person = { id: string; name: string; email: string | null; team: string | null; role: string; status: string; created_at: string };
@@ -132,6 +132,9 @@ export default async function Admin() {
                 <div className="h-full rounded-full bg-good" style={{ width: `${m.length ? (100 * done) / m.length : 0}%` }} />
               </div>
               {waitingOn.length > 0 && <p className="mt-2 text-sm text-muted">Waiting on: {waitingOn.map((a) => who.get(a.user_id)).join(", ")}</p>}
+              {waitingOn.length > 0 && (
+                <ActionForm action={remindTodo} label={`Remind ${waitingOn.length} now`} buttonClass="btn ghost mt-2" confirm={`Send a reminder notification to ${waitingOn.length} ${waitingOn.length === 1 ? "person" : "people"} who haven't finished this?`}><Id id={t.id} /></ActionForm>
+              )}
             </div>
           );
         })}
@@ -241,6 +244,9 @@ export default async function Admin() {
             <Row key={t.id} title={t.title} sub={`due ${t.due_date}, ${mine.length - open.length}/${mine.length} done`}
               badge={mine.length === 0 ? undefined : open.length === 0 ? { text: "✓ Everyone done", done: true } : { text: `${open.length} waiting`, done: false }}>
               {open.length > 0 && <p className="text-sm text-muted">Waiting on: {open.map((a) => who.get(a.user_id)).join(", ")}</p>}
+              {open.length > 0 && (
+                <ActionForm action={remindTodo} label={`Remind ${open.length} ${open.length === 1 ? "person" : "people"} now`} buttonClass="btn ghost" confirm={`Send a reminder notification to ${open.length} ${open.length === 1 ? "person" : "people"} who haven't finished this?`}><Id id={t.id} /></ActionForm>
+              )}
               {uploads.length > 0 && (
                 <div className="flex flex-col text-sm">
                   <p className="font-semibold">Uploads</p>

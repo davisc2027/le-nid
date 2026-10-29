@@ -226,6 +226,23 @@ export async function updateTodo(_: State, f: FormData) {
   }, ["/todos"]);
 }
 
+/** Pushes a reminder to everyone assigned to this to-do who has not finished it. */
+export async function remindTodo(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const id = text(f, "id");
+    const [{ data: todo }, { data: open }] = await Promise.all([
+      supabase.from("todos").select("title, due_date").eq("id", id).single(),
+      supabase.from("todo_assignments").select("user_id, profiles!inner(status)").eq("todo_id", id).is("completed_at", null).eq("profiles.status", "approved"),
+    ]);
+    if (!todo) throw new Error("To-do not found");
+    const ids = (open ?? []).map((a) => a.user_id);
+    if (!ids.length) return "Everyone has finished this one. No reminder sent.";
+    const r = await sendPushToAll({ title: `Reminder: ${todo.title}`, body: `Due ${todo.due_date}. Tap to finish it.`, url: "/todos" }, ids);
+    if (r.error) throw new Error(r.error);
+    return `Reminder sent to ${r.sent} of ${ids.length} ${ids.length === 1 ? "person" : "people"}${r.sent < ids.length ? " (the rest haven't turned notifications on)" : ""}.`;
+  });
+}
+
 export async function deleteTodo(_: State, f: FormData) {
   return run(async (supabase) => {
     fail((await supabase.from("todos").delete().eq("id", text(f, "id"))).error);
