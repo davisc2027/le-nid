@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Nid: Three Circles mockup</title>
+<style>
+:root{--bg:#faf5ec;--surface:#fff;--fg:#2b2118;--muted:#6e6257;--border:#e6dccd;--primary:#a8412e;--primary-fg:#fff;--accent:#e8892b;--tint:#f4e3dc;--good:#3f7d4e;--blue:#2d4f8f;}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1612;--surface:#2a211b;--fg:#f3e9dd;--muted:#b8a999;--border:#4a3b31;--primary:#d9694f;--tint:#3a2620;--good:#7cc48e;--blue:#8fb0d6;}}
+*{box-sizing:border-box}
+body{margin:0;background:#d9d2c6;font-family:Nunito,system-ui,-apple-system,sans-serif;color:var(--fg);padding:24px 12px 48px}
+h1{text-align:center;font-size:20px;margin:0 0 4px}
+.sub{text-align:center;color:#4a4036;font-size:14px;margin:0 auto 20px;max-width:640px}
+.row{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start}
+.cap{text-align:center;font-size:13px;font-weight:800;margin:0 0 8px;color:#4a4036}
+.phone{width:390px;height:780px;background:var(--bg);border:10px solid #1b1b1b;border-radius:44px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.status{height:44px;flex:none}
+.scroll{flex:1;overflow-y:auto;padding:0 16px 16px}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px}
+.logo{font-weight:900;color:var(--primary);font-size:20px}
+.pill{background:var(--accent);color:#2b2118;font-weight:800;font-size:13px;border-radius:999px;padding:9px 12px}
+h2{font-size:24px;font-weight:900;margin:6px 0 10px}
+.label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px}
+.card b{display:block}
+.card small{color:var(--muted)}
+.new{display:inline-block;background:var(--accent);color:#2b2118;font-size:11px;font-weight:900;border-radius:999px;padding:2px 8px;margin-left:6px}
+.hero{background:var(--tint);border-color:var(--primary)}
+.nav{flex:none;display:flex;justify-content:space-around;border-top:1px solid var(--border);padding:8px 4px 18px;background:var(--bg);font-size:11px;font-weight:800;color:var(--muted)}
+.nav span{padding:6px 8px;border-radius:999px}
+.nav .on{background:var(--primary);color:#fff}
+.btn{display:block;width:100%;min-height:48px;border:0;border-radius:14px;background:var(--primary);color:var(--primary-fg);font:800 16px inherit;font-family:inherit;padding:12px;cursor:pointer}
+.btn.ghost{background:var(--surface);color:var(--primary);border:2px solid var(--primary)}
+.seg{display:flex;gap:6px;margin:6px 0 10px}
+.seg button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--fg);font:800 14px inherit;font-family:inherit;cursor:pointer}
+.seg button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lang{display:flex;gap:0;border:2px solid var(--primary);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:var(--surface);color:var(--primary);font:900 14px inherit;font-family:inherit;padding:9px 16px;cursor:pointer;min-height:44px}
+.lang button.on{background:var(--primary);color:#fff}
+svg{width:100%;height:auto;display:block}
+.fade{opacity:0;transition:opacity .55s ease,transform .55s ease;transform:scale(.94);transform-origin:center;transform-box:fill-box}
+.fade.show{opacity:1;transform:scale(1)}
+.say{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;min-height:92px}
+.say .step{font-size:12px;font-weight:800;color:var(--primary);text-transform:uppercase}
+.say p{margin:4px 0 0;font-size:16px;line-height:1.4}
+.verse{display:inline-block;margin-top:6px;font-size:13px;font-weight:800;color:var(--blue);background:var(--tint);border-radius:999px;padding:3px 10px}
+.dots{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.dots i{width:9px;height:9px;border-radius:99px;background:var(--border)}
+.dots i.on{background:var(--primary);width:22px}
+.ctl{display:flex;gap:8px}
+.ctl .btn{flex:1}
+.w{display:flex;align-items:center;gap:10px}
+.w .t{flex:1}
+.w .fr{font-weight:900;font-size:17px}
+.w .en{font-size:13px;color:var(--muted)}
+.spk{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--primary);font-size:18px}
+.field{display:block;margin:0 0 8px;font-size:12px;font-weight:800;color:var(--muted)}
+.inp{width:100%;min-height:46px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--fg);padding:9px 12px;font:600 15px inherit;font-family:inherit;margin-top:3px}
+textarea.inp{min-height:74px}
+.tabs{display:flex;gap:6px;overflow:auto;padding:4px 0 8px}
+.tabs span{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:9px 14px;font-size:13px;font-weight:800}
+.tabs .on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.flag{display:inline-block;background:#fff3cd;color:#6b4e00;font-size:11px;font-weight:900;border-radius:6px;padding:2px 7px}
+.note{max-width:900px;margin:26px auto 0;background:#fff;border-radius:14px;padding:16px 20px;font-size:14px;line-height:1.5;color:#2b2118}
+.note b{color:#a8412e}
+</style>
+</head>
+<body>
+<h1>Le Nid: Three Circles (mockup, not built)</h1>
+<p class="sub">Four screens. The second one works: tap Next, and switch English / Français. All French is draft text for a native speaker to review.</p>
+
+<div class="row">
+
+<!-- 1. Learn tab -->
+<div>
+<p class="cap">1. Learn tab: a new card</p>
+<div class="phone">
+ <div class="status"></div>
+ <div class="scroll">
+  <div class="hdr"><span class="logo">Le Nid</span><span class="pill">Leaderboard</span></div>
+  <h2>Learn</h2>
+  <div class="card hero"><b>Share the gospel: Three Circles <span class="new">NEW</span></b><small>Learn the words, then show it on your phone. English or French.</small>
+   <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><span class="flag">3 parts</span><small>Watch · Words · Practice</small></div></div>
+  <div class="label">French lessons</div>
+  <div class="card"><b>Premiers pas</b><small>Lessons 1 to 3</small></div>
+  <div class="card"><b>Bonjour !</b><small>Lessons 4 to 7</small></div>
+  <div class="label">Scripture memory</div>
+  <div class="card"><b>Memorize a verse</b><small>English first, then French</small></div>
+  <div class="label">Culture</div>
+  <div class="card"><b>Who lives here</b><small>Etiquette, neighbours, quizzes</small></div>
+ </div>
+ <div class="nav"><span>Home</span><span>Itinerary</span><span>To-dos</span><span class="on">Learn</span><span>Translate</span><span>Files</span></div>
+</div>
+</div>
+
+<!-- 2. Interactive visual -->
+<div>
+<p class="cap">2. The visual (this one works)</p>
+<div class="phone">
+ <div class="status"></div>
+ <div class="scroll">
+  <div class="hdr"><span class="logo" id="t-title">Three Circles</span>
+   <div class="lang" role="group" aria-label="Language"><button id="b-en" class="on">EN</button><button id="b-fr">FR</button></div></div>
+  <svg viewBox="0 0 320 350" role="img" aria-label="Three circles diagram">
+   <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+   <g class="fade" id="c1"><circle cx="160" cy="70" r="60" fill="#dbe9d5" stroke="#3f7d4e" stroke-width="3"/>
+     <text x="160" y="66" text-anchor="middle" font-size="14" font-weight="900" fill="#27502f" id="l1a">God's</text>
+     <text x="160" y="84" text-anchor="middle" font-size="14" font-weight="900" fill="#27502f" id="l1b">Design</text></g>
+   <g class="fade" id="c2"><circle cx="70" cy="250" r="60" fill="#efd6cf" stroke="#a8412e" stroke-width="3"/>
+     <path d="M34 214l12 10-8 9 12 7M98 204l-8 14 10 6-8 12" stroke="#a8412e" stroke-width="2" fill="none" stroke-linecap="round" opacity=".75"/>
+     <text x="70" y="262" text-anchor="middle" font-size="14" font-weight="900" fill="#7a2b1c" id="l2a">Brokenness</text></g>
+   <g class="fade" id="a1" style="color:#a8412e"><path d="M118 118C98 146 86 168 80 186" stroke="currentColor" stroke-width="3.5" fill="none" marker-end="url(#ah)"/></g>
+   <g class="fade" id="c3"><circle cx="250" cy="250" r="60" fill="#f7e8c2" stroke="#d9a21b" stroke-width="3"/>
+     <path d="M250 204v30M236 216h28" stroke="#7a5a05" stroke-width="6" stroke-linecap="round"/>
+     <text x="250" y="262" text-anchor="middle" font-size="14" font-weight="900" fill="#5c4304" id="l3a">Gospel</text></g>
+   <g class="fade" id="a2" style="color:#2d4f8f"><path d="M136 250H184" stroke="currentColor" stroke-width="4" fill="none" marker-end="url(#ah)"/>
+     <text x="160" y="338" text-anchor="middle" font-size="13" font-weight="900" fill="currentColor" id="l-a2">Repent and believe</text>
+     <path d="M160 262V322" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/></g>
+   <g class="fade" id="a3" style="color:#3f7d4e"><path d="M252 186C262 150 236 126 210 112" stroke="currentColor" stroke-width="3.5" fill="none" marker-end="url(#ah)"/>
+     <text x="282" y="112" text-anchor="middle" font-size="11.5" font-weight="900" fill="currentColor" id="l-a3a">Recover</text>
+     <text x="282" y="126" text-anchor="middle" font-size="11.5" font-weight="900" fill="currentColor" id="l-a3b">and pursue</text></g>
+  </svg>
+  <div class="say"><span class="step" id="s-step"></span><p id="s-text"></p><span class="verse" id="s-verse"></span></div>
+  <div class="dots" id="dots"></div>
+  <div class="ctl"><button class="btn ghost" id="back">Back</button><button class="btn" id="next">Next</button></div>
+  <button class="btn ghost" style="margin-top:8px" id="show">Show them (full screen)</button>
+ </div>
+ <div class="nav"><span>Home</span><span>Itinerary</span><span>To-dos</span><span class="on">Learn</span><span>Translate</span><span>Files</span></div>
+</div>
+</div>
+
+<!-- 3. Words -->
+<div>
+<p class="cap">3. Learn the words to say it</p>
+<div class="phone">
+ <div class="status"></div>
+ <div class="scroll">
+  <div class="hdr"><span class="logo">Three Circles</span><span class="flag">Draft French</span></div>
+  <div class="seg"><button>Watch</button><button class="on">Words</button><button>Practice</button></div>
+  <div class="label">Step 1 · God's design</div>
+  <div class="card w"><div class="t"><div class="fr">Dieu nous a créés pour vivre avec lui.</div><div class="en">God made us to live with him.</div></div><button class="spk">🔊</button></div>
+  <div class="card w"><div class="t"><div class="fr">la paix</div><div class="en">peace</div></div><button class="spk">🔊</button></div>
+  <div class="label">Step 2 · Brokenness</div>
+  <div class="card w"><div class="t"><div class="fr">Le monde est brisé.</div><div class="en">The world is broken.</div></div><button class="spk">🔊</button></div>
+  <div class="card w"><div class="t"><div class="fr">le péché</div><div class="en">sin</div></div><button class="spk">🔊</button></div>
+  <div class="label">Step 3 · Gospel</div>
+  <div class="card w"><div class="t"><div class="fr">Jésus est mort et ressuscité pour nous.</div><div class="en">Jesus died and rose again for us.</div></div><button class="spk">🔊</button></div>
+  <div class="label">Ask</div>
+  <div class="card w"><div class="t"><div class="fr">Où vous situez-vous ?</div><div class="en">Where would you put yourself?</div></div><button class="spk">🔊</button></div>
+  <button class="btn ghost" style="margin-top:6px">🎤 Say it (optional)</button>
+ </div>
+ <div class="nav"><span>Home</span><span>Itinerary</span><span>To-dos</span><span class="on">Learn</span><span>Translate</span><span>Files</span></div>
+</div>
+</div>
+
+<!-- 4. Admin -->
+<div>
+<p class="cap">4. Admin: tweak the wording</p>
+<div class="phone">
+ <div class="status"></div>
+ <div class="scroll">
+  <div class="hdr"><span class="logo">Admin</span></div>
+  <div class="tabs"><span>Overview</span><span>People</span><span>To-dos</span><span>Polls</span><span class="on">Content</span><span>Settings</span></div>
+  <div class="card"><b>Three Circles <span class="flag">Draft French</span></b><small>Edit what people read and hear. Saves for everyone.</small></div>
+  <div class="tabs"><span>Intro</span><span class="on">1 · Design</span><span>2 · Brokenness</span><span>3 · Gospel</span><span>Arrows</span><span>Words</span></div>
+  <label class="field">Circle label (English)<input class="inp" value="God's Design"></label>
+  <label class="field">Circle label (Français)<input class="inp" value="Le projet de Dieu"></label>
+  <label class="field">What to say (English)<textarea class="inp">God made the world good. He made us to know him, to live at peace with each other, and to enjoy his creation.</textarea></label>
+  <label class="field">What to say (Français)<textarea class="inp">Dieu a fait le monde bon. Il nous a créés pour le connaître, vivre en paix les uns avec les autres et profiter de sa création.</textarea></label>
+  <label class="field">Verse<input class="inp" value="Genèse 1:31"></label>
+  <label class="field" style="display:flex;gap:8px;align-items:center"><input type="checkbox" checked> Reviewed by a native speaker</label>
+  <button class="btn">Save</button>
+  <button class="btn ghost" style="margin-top:8px">Reset this step to the original</button>
+ </div>
+ <div class="nav"><span>Home</span><span>Itinerary</span><span>To-dos</span><span>Learn</span><span>Translate</span><span>Files</span></div>
+</div>
+</div>
+
+</div>
+
+<div class="note"><b>How to read this:</b> screen 2 is the product. In the real app "Show them (full screen)" hides all app chrome and makes the circles huge so you can hold up your phone, like Translate's "Show them". The step captions are what you say out loud; the Words tab teaches those same sentences in French, with the phone's French voice. Everything on screens 2 to 4 can be edited by an admin (screen 4), in both languages.</div>
+
+<script>
+const T={
+ en:{title:"Three Circles",l1:["God's","Design"],l2:"Brokenness",l3:"Gospel",a2:"Repent and believe",a3:["Recover","and pursue"],
+  steps:[
+   ["Start","Draw or tap Next. Ask: \"Can I show you something that helps me think about life and faith?\"",""],
+   ["1 · God's design","God made the world good. He made us to know him, to live at peace with each other, and to enjoy his creation.","Genesis 1:31"],
+   ["2 · Brokenness","But something went wrong. Sin broke our relationship with God and with each other. We try to fix it ourselves, and it doesn't work.","Romans 3:23"],
+   ["3 · The Gospel","God didn't leave us there. Jesus came, lived the life we couldn't, died for our sin, and rose again.","Romans 5:8"],
+   ["Repent and believe","We turn from our own way and trust Jesus. That is how we cross from brokenness to the Gospel.","Romans 10:9"],
+   ["Recover and pursue","Then we begin to live as God designed, with him, and with others. Ask: \"Where would you put yourself right now?\"","Ephesians 2:8-9"]
+  ]},
+ fr:{title:"Les trois cercles",l1:["Le projet","de Dieu"],l2:"La brisure",l3:"L'Évangile",a2:"Se repentir et croire",a3:["Se relever","et avancer"],
+  steps:[
+   ["Début","Dessinez ou touchez Suivant. Demandez : « Puis-je vous montrer quelque chose qui m'aide à réfléchir à la vie et à la foi ? »",""],
+   ["1 · Le projet de Dieu","Dieu a fait le monde bon. Il nous a créés pour le connaître, vivre en paix les uns avec les autres et profiter de sa création.","Genèse 1:31"],
+   ["2 · La brisure","Mais quelque chose s'est brisé. Le péché a rompu notre relation avec Dieu et avec les autres. Nous essayons de le réparer seuls, et cela ne marche pas.","Romains 3:23"],
+   ["3 · L'Évangile","Dieu ne nous a pas laissés là. Jésus est venu, a vécu la vie que nous ne pouvions pas vivre, est mort pour nos péchés et est ressuscité.","Romains 5:8"],
+   ["Se repentir et croire","Nous quittons notre propre chemin et nous faisons confiance à Jésus. C'est ainsi que nous passons de la brisure à l'Évangile.","Romains 10:9"],
+   ["Se relever et avancer","Ensuite, nous apprenons à vivre comme Dieu l'a voulu, avec lui et avec les autres. Demandez : « Où vous situez-vous en ce moment ? »","Éphésiens 2:8-9"]
+  ]}
+};
+let lang="en",i=0;
+const $=id=>document.getElementById(id);
+const show={c1:1,c2:2,a1:2,c3:3,a2:4,a3:5};
+function render(){
+  const d=T[lang];
+  $("t-title").textContent=d.title;
+  $("l1a").textContent=d.l1[0];$("l1b").textContent=d.l1[1];
+  $("l2a").textContent=d.l2;$("l3a").textContent=d.l3;
+  $("l-a2").textContent=d.a2;$("l-a3a").textContent=d.a3[0];$("l-a3b").textContent=d.a3[1];
+  for(const k in show)$(k).classList.toggle("show",i>=show[k]);
+  const s=d.steps[i];
+  $("s-step").textContent=s[0];$("s-text").textContent=s[1];
+  $("s-verse").textContent=s[2];$("s-verse").style.display=s[2]?"inline-block":"none";
+  $("dots").innerHTML=d.steps.map((_,n)=>`<i class="${n===i?"on":""}"></i>`).join("");
+  $("back").disabled=i===0;$("next").textContent=i===d.steps.length-1?(lang==="en"?"Start over":"Recommencer"):(lang==="en"?"Next":"Suivant");
+  $("back").textContent=lang==="en"?"Back":"Retour";
+  $("show").textContent=lang==="en"?"Show them (full screen)":"Montrer (plein écran)";
+  $("b-en").classList.toggle("on",lang==="en");$("b-fr").classList.toggle("on",lang==="fr");
+}
+$("next").onclick=()=>{i=i===T[lang].steps.length-1?0:i+1;render()};
+$("back").onclick=()=>{if(i>0){i--;render()}};
+$("b-en").onclick=()=>{lang="en";render()};
+$("b-fr").onclick=()=>{lang="fr";render()};
+$("show").onclick=()=>alert("In the real app this opens a full-screen view with only the circles, large text and the language toggle, for holding the phone up to someone.");
+render();
+</script>
+</body>
+</html>
