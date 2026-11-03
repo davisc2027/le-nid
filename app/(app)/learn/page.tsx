@@ -7,6 +7,7 @@ import LandmarkArt from "@/components/art/LandmarkArt";
 import Rosace from "@/components/art/Rosace";
 import { StreakCount } from "@/components/art/OdileSays";
 import OdileActor from "@/components/art/OdileActor";
+import CirclesDiagram from "@/components/gospel/CirclesDiagram";
 
 export default async function Learn() {
   const supabase = await createClient();
@@ -24,6 +25,14 @@ export default async function Learn() {
         <div className="flex items-end gap-1.5"><OdileActor size={40} /><h1 className="text-2xl font-extrabold">Learn</h1></div>
         <p className="font-bold text-primary"><Flame size={18} className="mr-1 inline -mt-0.5 text-accent" aria-hidden="true" /><StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
       </div>
+      <Link href="/learn/three-circles" className="card flex min-h-28 flex-row items-center gap-4 !border-primary bg-tint">
+        <span className="w-[72px] shrink-0"><CirclesDiagram step={5} lang="en" compact labels={{ design: "Three Circles", brokenness: "", gospel: "", believe: "", recover: "" }} /></span>
+        <div>
+          <h2 className="text-lg font-extrabold">Share the gospel: Three Circles <span className="ml-1 inline-block rounded-full bg-accent px-2 py-0.5 align-middle text-[11px] font-black text-[#2b2118]">NEW</span></h2>
+          <p className="text-sm text-muted">Learn the words, then show it on your phone. English or French.</p>
+          <p className="mt-1 text-xs font-bold text-primary">Watch · Words · Practice</p>
+        </div>
+      </Link>
       <Link href="/french" className="card flex min-h-28 flex-row items-center gap-4">
         <LandmarkArt unit="u4" progress={(lessons?.length ?? 0) / ALL_LESSONS.length} size={72} />
         <div><h2 className="text-lg font-extrabold">French</h2><p className="text-sm text-muted">Everyday phrases · {lessons?.length ?? 0} of {ALL_LESSONS.length} lessons</p></div>

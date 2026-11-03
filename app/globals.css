@@ -19,6 +19,11 @@
   --cath-recess: #7d3a2b; --cath-door: #5a3324; --cath-door-lit: #ffcf6e; --cath-hole: var(--surface);
   --cath-blueprint: #5f86c9; --cath-scaffold: #a5774c; --cath-crane: #e8a02e; --cath-gold: #f0b43c;
   --cath-bronze: #a87a3c; --cath-ground: #ecdfc9; --cath-glass-green: #2f7d5a;
+  /* Three Circles diagram */
+  --cc-design-fill: #dbe9d5; --cc-design-line: #3f7d4e; --cc-design-text: #27502f;
+  --cc-broken-fill: #efd6cf; --cc-broken-line: #a8412e; --cc-broken-text: #7a2b1c;
+  --cc-gospel-fill: #f7e8c2; --cc-gospel-line: #b88a10; --cc-gospel-text: #5c4304;
+  --cc-believe: #2d4f8f; --cc-recover: #3f7d4e;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -38,6 +43,10 @@
     --cath-recess: #2e1a15; --cath-door: #24150f; --cath-door-lit: #ffc95e;
     --cath-blueprint: #7d9fe0; --cath-scaffold: #a3805e; --cath-crane: #f0a04b; --cath-gold: #f4c04f;
     --cath-bronze: #b8894a; --cath-ground: #30261d; --cath-glass-green: #3f9a70;
+    --cc-design-fill: #25392b; --cc-design-line: #7cc48e; --cc-design-text: #d4eed9;
+    --cc-broken-fill: #4a2a22; --cc-broken-line: #e8806a; --cc-broken-text: #f6d0c5;
+    --cc-gospel-fill: #4a3b16; --cc-gospel-line: #e8b53a; --cc-gospel-text: #f7e2a6;
+    --cc-believe: #8fb0d6; --cc-recover: #7cc48e;
   }
 }
 
@@ -320,3 +329,8 @@ input[type="time"].input::-webkit-date-and-time-value {
 /* While a date/time field is empty, hide the browser's own blank text so the helper text shows cleanly. */
 input.date-empty::-webkit-date-and-time-value { color: transparent; }
 input.date-empty::-webkit-datetime-edit { color: transparent; }
+
+/* Three Circles: parts of the drawing fade and grow in as the steps build; no motion when reduced motion is on. */
+.cc-part { opacity: 0; transform: scale(.94); transform-origin: center; transform-box: fill-box; transition: opacity .55s ease, transform .55s ease; }
+.cc-part.cc-on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .cc-part { transition: none; transform: none; } }

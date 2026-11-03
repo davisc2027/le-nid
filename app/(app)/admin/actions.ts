@@ -6,6 +6,7 @@ import { sendPushToAll } from "@/lib/push";
 import { parseRef, refKey } from "@/lib/bible/reference";
 import { formatRange, dayHeading } from "@/lib/itinerary";
 import { parisEndOfDay, MAX_OPTION, MAX_QUESTION } from "@/lib/polls";
+import { applyPatch, checkPatch, SLUG as GOSPEL_SLUG, type PatchInput } from "@/lib/gospel";
 import type { State } from "@/components/admin/ActionForm";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -462,4 +463,27 @@ export async function deletePoll(_: State, f: FormData) {
     pollFail((await supabase.from("polls").delete().eq("id", text(f, "id"))).error);
     return "Deleted";
   }, ["/"]);
+}
+
+/**
+ * Saves the admin's edits to a built-in resource (today only "three-circles") into app_content. The patch is
+ * validated strictly (known fields only, both languages present, character limits, verses that parse) and laid over
+ * what is already stored, so one tab's Save never overwrites another tab's text. `reset` removes saved edits for a
+ * step so the shipped wording shows again; `reviewed` is the "checked by a native speaker" flag.
+ */
+export async function saveGospelContent(slug: string, patch: PatchInput): Promise<State> {
+  return run(async (supabase) => {
+    if (slug !== GOSPEL_SLUG) throw new Error("Unknown content");
+    const checked = checkPatch(patch, { parseVerse: (v) => { const r = parseRef(v); return r ? refKey(r) : null; } });
+    const { data: row, error } = await supabase.from("app_content").select("data, reviewed").eq("slug", slug).maybeSingle();
+    if (error) throw new Error("Run migration 0017 first (the app_content table is missing).");
+    const next = applyPatch(row?.data, checked);
+    if (JSON.stringify(next).length > 150_000) throw new Error("That is too much text");
+    const profile = await getProfile();
+    const { error: saveErr } = await supabase.from("app_content").upsert({
+      slug, data: next, reviewed: checked.reviewed ?? row?.reviewed ?? false, updated_at: new Date().toISOString(), updated_by: profile?.id ?? null,
+    }, { onConflict: "slug" });
+    fail(saveErr);
+    return checked.reset.length && !Object.keys(checked.data).length ? "Back to the original wording." : "Saved. Everyone sees it now.";
+  }, ["/learn/three-circles", "/learn/three-circles/show"]);
 }

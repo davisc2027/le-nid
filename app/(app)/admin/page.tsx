@@ -10,6 +10,8 @@ import Section from "@/components/admin/Section";
 import UploadLink from "@/components/admin/UploadLink";
 import PollOptions from "@/components/admin/PollOptions";
 import PollBars from "@/components/polls/PollBars";
+import GospelEditor from "@/components/admin/GospelEditor";
+import { GOSPEL_DEFAULTS, loadGospel } from "@/lib/gospel-load";
 import { isOpen, nowMs, rate, toTally, type Poll, type ResultRow, type Tally } from "@/lib/polls";
 import {
   postAnnouncement, updateAnnouncement, deleteAnnouncement,
@@ -65,6 +67,7 @@ export default async function Admin() {
   if (profile?.role !== "admin") redirect("/");
   const supabase = await createClient();
   const pollsPromise = loadPolls(supabase);
+  const gospelPromise = loadGospel();
   const [
     { data: meetings }, { data: todos }, { data: assignments }, { data: peopleRaw }, { data: goal },
     { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
@@ -86,6 +89,7 @@ export default async function Admin() {
     supabase.from("allowed_emails").select("email").order("email"),
   ]);
   const { missing: pollsMissing, polls } = await pollsPromise;
+  const gospel = await gospelPromise;
   const people = (peopleRaw ?? []) as Person[];
   const approved = new Set(people.filter((p) => p.status === "approved").map((p) => p.id));
   const waiting = people.filter((p) => p.status === "pending");
@@ -327,6 +331,9 @@ export default async function Admin() {
       </Section>
           </>),
           content: (<>
+      <Section title="Three Circles">
+        <GospelEditor initial={gospel.content} defaults={GOSPEL_DEFAULTS} reviewed={gospel.reviewed} missing={gospel.missing} />
+      </Section>
       <Section title="Announcements">
         <ActionForm action={postAnnouncement} label="Post" reset>
           <input className="input" name="title" placeholder="Title" required />

@@ -1,6 +1,6 @@
-# Three Circles: learn it, say it, show it (plan only, nothing built)
+# Three Circles: learn it, say it, show it
 
-Status: **plan and mockup**. Mockup: `docs/three-circles-mockup.html` (open it in a browser; screen 2 is interactive).
+Status: **built** (B1 to B8; owner decisions applied: whole team, app's current Bible text, three circles only, closing question and no church contact line on Show them, editor for all wording with the Reviewed flag). Still open: B0 and B9 (native-speaker review of the French, pastor sign-off, NAMB permission email) and running migration 0017. Leader guide: `docs/three-circles.md`. Plan and mockup: `docs/three-circles-mockup.html` (open it in a browser; screen 2 is interactive).
 
 
 ## 1. What the owner asked for

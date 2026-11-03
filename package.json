@@ -12,6 +12,8 @@
     "test:speech": "node lib/speech/phase1.test.mjs",
     "test:itinerary": "node --experimental-strip-types lib/itinerary.test.mjs",
     "test:polls": "node --experimental-strip-types lib/polls.test.mjs",
+    "test:gospel": "node --experimental-strip-types lib/gospel.test.mjs",
+    "check:gospel": "node scripts/check-gospel.mjs",
     "test:mic": "node --experimental-strip-types lib/audio/micStream.test.mjs",
     "e2e": "playwright test"
   },

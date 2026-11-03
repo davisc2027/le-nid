@@ -3,10 +3,10 @@
 const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
-const PAGES = "pages-v3"; // only the shell URLs below, never RSC or admin pages
+const PAGES = "pages-v4"; // only the shell URLs below, never RSC or admin pages
 const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
 const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
-const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn"];
+const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
 const MAX_STATIC = 120;
 const MAX_BIBLE = 140;
 const MAX_REFERENCE = 300;

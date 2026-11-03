@@ -20,8 +20,8 @@ const TABS = [
   { href: "/files", label: "Files", icon: "files", match: (p: string) => p.startsWith("/files") },
 ];
 
-/** Hidden while inside a lesson or verse drill so the exercise gets the whole screen. */
-const immersive = (p: string) => /^\/french\/./.test(p) || /^\/scripture\/(learn|review)/.test(p);
+/** Hidden while inside a lesson, a verse drill or the full-screen Three Circles view so the exercise gets the whole screen. */
+const immersive = (p: string) => /^\/french\/./.test(p) || /^\/learn\/three-circles\/show/.test(p) || /^\/scripture\/(learn|review)/.test(p);
 
 export default function BottomNav({ openTodos }: { openTodos: number }) {
   const path = usePathname();

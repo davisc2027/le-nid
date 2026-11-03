@@ -1,0 +1,113 @@
+{
+  "title": { "en": "Three Circles", "fr": "Les trois cercles" },
+  "intro": {
+    "en": "Draw three circles on paper as you talk, or tap Next and hold your phone so they can see.",
+    "fr": "Dessinez trois cercles sur une feuille en parlant, ou touchez Suivant et montrez votre téléphone."
+  },
+  "circles": {
+    "design": { "en": "God's Design", "fr": "Le projet de Dieu" },
+    "brokenness": { "en": "Brokenness", "fr": "La brisure" },
+    "gospel": { "en": "Gospel", "fr": "L'Évangile" }
+  },
+  "arrows": {
+    "believe": { "en": "Repent and believe", "fr": "Se repentir et croire" },
+    "recover": { "en": "Recover and pursue", "fr": "Se relever et avancer" }
+  },
+  "steps": {
+    "start": {
+      "title": { "en": "Start", "fr": "Début" },
+      "say": {
+        "en": "Can I show you something that helps me think about life and faith?",
+        "fr": "Puis-je vous montrer quelque chose qui m'aide à réfléchir à la vie et à la foi ?"
+      },
+      "key": { "en": "Can I show you something?", "fr": "Puis-je vous montrer quelque chose ?" },
+      "verses": []
+    },
+    "design": {
+      "title": { "en": "1 · God's design", "fr": "1 · Le projet de Dieu" },
+      "say": {
+        "en": "God made the world good. He made us to know him, to live at peace with each other, and to enjoy his creation.",
+        "fr": "Dieu a fait le monde bon. Il nous a créés pour le connaître, vivre en paix les uns avec les autres et profiter de sa création."
+      },
+      "key": { "en": "God made us to live with him.", "fr": "Dieu nous a créés pour vivre avec lui." },
+      "verses": ["GEN 1:31"]
+    },
+    "brokenness": {
+      "title": { "en": "2 · Brokenness", "fr": "2 · La brisure" },
+      "say": {
+        "en": "But something went wrong. Sin broke our relationship with God and with each other. We try to fix it ourselves, and it doesn't work.",
+        "fr": "Mais quelque chose s'est brisé. Le péché a rompu notre relation avec Dieu et avec les autres. Nous essayons de le réparer seuls, et cela ne marche pas."
+      },
+      "key": { "en": "The world is broken.", "fr": "Le monde est brisé." },
+      "verses": ["ROM 3:23", "ROM 6:23"]
+    },
+    "gospel": {
+      "title": { "en": "3 · The Gospel", "fr": "3 · L'Évangile" },
+      "say": {
+        "en": "God didn't leave us there. Jesus came, lived the life we couldn't, died for our sin, and rose again.",
+        "fr": "Dieu ne nous a pas laissés là. Jésus est venu, a vécu la vie que nous ne pouvions pas vivre, est mort pour nos péchés et est ressuscité."
+      },
+      "key": { "en": "Jesus died and rose again for us.", "fr": "Jésus est mort et ressuscité pour nous." },
+      "verses": ["ROM 5:8"]
+    },
+    "believe": {
+      "title": { "en": "Repent and believe", "fr": "Se repentir et croire" },
+      "say": {
+        "en": "We turn from our own way and trust Jesus. That is how we cross from brokenness to the Gospel.",
+        "fr": "Nous quittons notre propre chemin et nous faisons confiance à Jésus. C'est ainsi que nous passons de la brisure à l'Évangile."
+      },
+      "key": { "en": "We trust Jesus.", "fr": "Nous faisons confiance à Jésus." },
+      "verses": ["ROM 10:9"]
+    },
+    "recover": {
+      "title": { "en": "Recover and pursue", "fr": "Se relever et avancer" },
+      "say": {
+        "en": "Then we begin to live as God designed, with him and with others.",
+        "fr": "Ensuite, nous apprenons à vivre comme Dieu l'a voulu, avec lui et avec les autres."
+      },
+      "key": { "en": "A new way to live.", "fr": "Une nouvelle façon de vivre." },
+      "verses": ["EPH 2:8-9"]
+    }
+  },
+  "words": [
+    { "step": "start", "fr": "la vie", "en": "life" },
+    { "step": "start", "fr": "une question", "en": "a question" },
+    { "step": "design", "fr": "la paix", "en": "peace" },
+    { "step": "design", "fr": "la création", "en": "creation" },
+    { "step": "design", "fr": "une relation", "en": "a relationship" },
+    { "step": "brokenness", "fr": "le péché", "en": "sin" },
+    { "step": "brokenness", "fr": "brisé", "en": "broken" },
+    { "step": "brokenness", "fr": "réparer", "en": "to fix, to repair" },
+    { "step": "gospel", "fr": "la croix", "en": "the cross" },
+    { "step": "gospel", "fr": "le pardon", "en": "forgiveness" },
+    { "step": "gospel", "fr": "la grâce", "en": "grace" },
+    { "step": "gospel", "fr": "ressuscité", "en": "risen" },
+    { "step": "believe", "fr": "se repentir", "en": "to repent" },
+    { "step": "believe", "fr": "croire", "en": "to believe" },
+    { "step": "believe", "fr": "la foi", "en": "faith" },
+    { "step": "believe", "fr": "faire confiance", "en": "to trust" },
+    { "step": "recover", "fr": "une nouvelle vie", "en": "a new life" },
+    { "step": "recover", "fr": "suivre Jésus", "en": "to follow Jesus" },
+    { "step": "recover", "fr": "avancer", "en": "to move forward" }
+  ],
+  "openers": [
+    { "en": "What was faith like in your family growing up?", "fr": "Comment la foi était-elle présente dans votre famille quand vous étiez enfant ?" },
+    { "en": "What do you think gives life meaning?", "fr": "Selon vous, qu'est-ce qui donne un sens à la vie ?" },
+    { "en": "How do you feel about faith and church today?", "fr": "Quel regard portez-vous aujourd'hui sur la foi et sur l'Église ?" },
+    { "en": "Would you like to hear what has meant a lot to me?", "fr": "Aimeriez-vous entendre ce qui compte beaucoup pour moi ?" }
+  ],
+  "listening": [
+    { "en": "Tell me more about that.", "fr": "Dites-m'en plus à ce sujet." },
+    { "en": "What do you think?", "fr": "Qu'en pensez-vous ?" },
+    { "en": "I understand.", "fr": "Je comprends." },
+    { "en": "I'd love to hear your story.", "fr": "J'aimerais beaucoup entendre votre histoire." },
+    { "en": "Thank you for sharing that with me.", "fr": "Merci de partager cela avec moi." },
+    { "en": "Can I ask you something?", "fr": "Puis-je vous poser une question ?" },
+    { "en": "No pressure at all.", "fr": "Sans aucune pression." }
+  ],
+  "closing": [
+    { "en": "Where would you put yourself right now?", "fr": "Où vous situez-vous en ce moment ?" },
+    { "en": "What would be a good next step for you?", "fr": "Quelle serait une bonne prochaine étape pour vous ?" },
+    { "en": "Would you like to talk about this again?", "fr": "Aimeriez-vous en reparler ?" }
+  ]
+}
