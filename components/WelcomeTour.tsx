@@ -83,9 +83,20 @@ export default function WelcomeTour({ auto }: { auto: boolean }) {
 
   // per-step Odile cue + highlight of the matching nav tab
   // take them to the feature being described
+  // Only when the step changes. Re-running on every route change would bounce the person back to the step's page
+  // whenever they tap a tab themselves while the tour is open.
+  const pathRef = useRef(pathname);
+  const navigating = useRef(false); // true while the tour's own navigation is in flight
   useEffect(() => {
-    if (open && pathname !== step.href) router.push(step.href);
-  }, [open, step.href, pathname, router]);
+    pathRef.current = pathname;
+    if (!open) return;
+    if (pathname === step.href) navigating.current = false;
+    // The person tapped a tab themselves: they are done with the tour.
+    else if (!navigating.current) close();
+  }, [pathname, open, step.href, close]);
+  useEffect(() => {
+    if (open && pathRef.current !== step.href) { navigating.current = true; router.push(step.href); }
+  }, [open, step.href, router]);
 
   useEffect(() => {
     if (!open) return;

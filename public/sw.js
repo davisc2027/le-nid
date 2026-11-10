@@ -3,7 +3,7 @@
 const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
-const PAGES = "pages-v4"; // only the shell URLs below, never RSC or admin pages
+const PAGES = "pages-v5"; // only the shell URLs below, never RSC or admin pages
 const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
 const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
 const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
@@ -138,8 +138,11 @@ self.addEventListener("fetch", (event) => {
         return res;
       })
       .catch(() =>
+        // Offline: the cached copy of this page. Only the shell pages may fall back to the cached Home page; anything
+        // else (Translate, lessons...) gets the browser's own offline page, so a dropped connection never looks like
+        // the app "kicked you back to Home" while the address still says /translate.
         caches.match(p, { cacheName: PAGES }).then((r) =>
-          r || caches.match("/", { cacheName: PAGES }) || Response.error()).then((r) => r || Response.error()),
+          r || (shell ? caches.match("/", { cacheName: PAGES }) : null)).then((r) => r || Response.error()),
       ),
   );
 });
