@@ -3,7 +3,7 @@
 const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
-const PAGES = "pages-v5"; // only the shell URLs below, never RSC or admin pages
+const PAGES = "pages-v6"; // only the shell URLs below, never RSC or admin pages
 const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
 const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
 const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
@@ -73,6 +73,18 @@ self.addEventListener("message", (event) => {
   if (event.data === "clear") event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))));
 });
 
+// Shown when a page can't be loaded and there is no saved copy of it. Built here because /offline.html would need a login.
+const offlinePage = () => new Response(
+  `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Can't reach Le Nid</title>
+<style>:root{color-scheme:light dark}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:24px;font:16px/1.5 -apple-system,system-ui,sans-serif;background:#faf5ec;color:#2b2118;text-align:center}
+@media (prefers-color-scheme:dark){body{background:#1d1612;color:#f3e9dd}}
+main{max-width:340px}h1{font-size:22px;margin:0 0 8px}p{margin:0 0 14px}b{color:#a8412e}
+button{min-height:48px;width:100%;border:0;border-radius:14px;background:#a8412e;color:#fff;font:800 16px inherit;font-family:inherit}</style></head>
+<body><main><h1>Can't reach Le Nid</h1><p>This page didn't load. If you're on Wi-Fi, try switching to <b>cellular data</b> (some Wi-Fi networks block the app), then tap Try again.</p>
+<button onclick="location.reload()">Try again</button></main></body></html>`,
+  { status: 503, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } },
+);
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -139,10 +151,10 @@ self.addEventListener("fetch", (event) => {
       })
       .catch(() =>
         // Offline: the cached copy of this page. Only the shell pages may fall back to the cached Home page; anything
-        // else (Translate, lessons...) gets the browser's own offline page, so a dropped connection never looks like
+        // else (Translate, lessons...) gets the "Can't reach Le Nid" page, so a dropped connection never looks like
         // the app "kicked you back to Home" while the address still says /translate.
         caches.match(p, { cacheName: PAGES }).then((r) =>
-          r || (shell ? caches.match("/", { cacheName: PAGES }) : null)).then((r) => r || Response.error()),
+          r || (shell ? caches.match("/", { cacheName: PAGES }) : null)).then((r) => r || offlinePage()),
       ),
   );
 });
