@@ -19,7 +19,7 @@ import {
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
   addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
-  addAllowedEmails, removeAllowedEmail, setAccess, signInCode, remindTodo, addPoll, setPollClosed, deletePoll,
+  addAllowedEmails, removeAllowedEmail, setAccess, signInCode, remindTodo, retireTodo, addPoll, setPollClosed, deletePoll,
 } from "./actions";
 
 type Person = { id: string; name: string; email: string | null; team: string | null; role: string; status: string; created_at: string };
@@ -69,15 +69,17 @@ export default async function Admin() {
   const pollsPromise = loadPolls(supabase);
   const gospelPromise = loadGospel();
   const [
-    { data: meetings }, { data: todos }, { data: assignments }, { data: peopleRaw }, { data: goal },
+    { data: meetings }, { data: todosAll }, { data: assignments }, { data: peopleRaw }, { data: goal },
     { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
   ] = await Promise.all([
     supabase.from("meetings").select("id, title, meeting_date").order("meeting_date", { ascending: false }),
     (async () => {
-      const r = await supabase.from("todos").select("id, title, description, due_date, requires_upload, everyone").order("due_date");
-      // before migration 0013 there is no everyone column
-      return r.error ? supabase.from("todos").select("id, title, description, due_date, requires_upload").order("due_date") : r;
-    })() as unknown as Promise<{ data: { id: string; title: string; description: string; due_date: string; requires_upload: boolean; everyone?: boolean }[] | null }>,
+      const full = await supabase.from("todos").select("id, title, description, due_date, requires_upload, everyone, retired_at").order("due_date");
+      if (!full.error) return full;
+      // before migration 0018 there is no retired_at column, before 0013 no everyone column
+      const mid = await supabase.from("todos").select("id, title, description, due_date, requires_upload, everyone").order("due_date");
+      return mid.error ? supabase.from("todos").select("id, title, description, due_date, requires_upload").order("due_date") : mid;
+    })() as unknown as Promise<{ data: { id: string; title: string; description: string; due_date: string; requires_upload: boolean; everyone?: boolean; retired_at?: string | null }[] | null }>,
     supabase.from("todo_assignments").select("todo_id, user_id, completed_at, upload_path"),
     supabase.rpc("admin_list_people"),
     supabase.from("trip_goal").select("title, target_xp").single(),
@@ -90,6 +92,8 @@ export default async function Admin() {
   ]);
   const { missing: pollsMissing, polls } = await pollsPromise;
   const gospel = await gospelPromise;
+  const todos = (todosAll ?? []).filter((t) => !t.retired_at);
+  const retiredTodos = (todosAll ?? []).filter((t) => t.retired_at);
   const people = (peopleRaw ?? []) as Person[];
   const approved = new Set(people.filter((p) => p.status === "approved").map((p) => p.id));
   const waiting = people.filter((p) => p.status === "pending");
@@ -136,6 +140,7 @@ export default async function Admin() {
                 <div className="h-full rounded-full bg-good" style={{ width: `${m.length ? (100 * done) / m.length : 0}%` }} />
               </div>
               {waitingOn.length > 0 && <p className="mt-2 text-sm text-muted">Waiting on: {waitingOn.map((a) => who.get(a.user_id)).join(", ")}</p>}
+              <ActionForm action={retireTodo} label="Retire" buttonClass="btn ghost mt-2" confirm="Retire this to-do? It disappears for everyone, even people who haven't finished it, and sends no more reminders. You can bring it back."><Id id={t.id} /><input type="hidden" name="retire" value="1" /></ActionForm>
               {waitingOn.length > 0 && (
                 <ActionForm action={remindTodo} label={`Remind ${waitingOn.length} now`} buttonClass="btn ghost mt-2" confirm={`Send a reminder notification to ${waitingOn.length} ${waitingOn.length === 1 ? "person" : "people"} who haven't finished this?`}><Id id={t.id} /></ActionForm>
               )}
@@ -266,12 +271,25 @@ export default async function Admin() {
                 {t.everyone === false && <input type="hidden" name="scoped" value="1" />}
                 <Picker people={people.filter((p) => approved.has(p.id))} chosen={t.everyone === false ? mine.map((a) => a.user_id) : []} />
               </ActionForm>
+              <ActionForm action={retireTodo} label="Retire to-do" buttonClass="btn ghost" confirm="Retire this to-do? It disappears for everyone, even people who haven't finished it, and sends no more reminders. You can bring it back."><Id id={t.id} /><input type="hidden" name="retire" value="1" /></ActionForm>
               <ActionForm action={deleteTodo} label="Delete to-do" buttonClass={del} confirm="Delete this to-do for everyone?"><Id id={t.id} /></ActionForm>
             </Row>
           );
         })}
         <ActionForm action={assignMissing} label="Repair missing assignments" buttonClass="min-h-11 px-3 text-sm text-muted underline" />
       </Section>
+
+      {retiredTodos.length > 0 && (
+        <Section title={`Retired to-dos (${retiredTodos.length})`}>
+          <p className="text-xs text-muted">Hidden from everyone and no reminders. Progress and uploads are kept. Bring one back if you need it again.</p>
+          {retiredTodos.map((t) => (
+            <div key={t.id} className="rounded-xl border border-border p-3">
+              <p className="font-semibold">{t.title} <span className="text-xs font-normal text-muted">due {t.due_date}</span></p>
+              <ActionForm action={retireTodo} label="Bring back" buttonClass="btn ghost mt-2"><Id id={t.id} /><input type="hidden" name="retire" value="0" /></ActionForm>
+            </div>
+          ))}
+        </Section>
+      )}
           </>),
           polls: (<>
       <Section title="Polls" open>

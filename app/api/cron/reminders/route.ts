@@ -23,12 +23,18 @@ export async function GET(request: Request) {
 
   const db = createServiceClient();
   const today = parisToday();
-  const { data: rows, error } = await db
+  // retired_at exists after migration 0018; before it, fall back to the old query.
+  const withRetired = await db
     .from("todo_assignments")
-    .select("todo_id, user_id, todos(title, due_date), profiles!inner(email, status)")
+    .select("todo_id, user_id, todos(title, due_date, retired_at), profiles!inner(email, status)")
     .eq("profiles.status", "approved")
     .is("completed_at", null);
+  const { data: all, error } = withRetired.error
+    ? await db.from("todo_assignments").select("todo_id, user_id, todos(title, due_date), profiles!inner(email, status)").eq("profiles.status", "approved").is("completed_at", null)
+    : withRetired;
   if (error) return Response.json({ error: error.message }, { status: 500 });
+  // Retired to-dos get no reminders and no weekly-email line.
+  const rows = (all ?? []).filter((r) => !(r.todos as unknown as { retired_at?: string | null } | null)?.retired_at);
 
   let count = 0;
   await Promise.all((rows ?? []).map(async (r) => {

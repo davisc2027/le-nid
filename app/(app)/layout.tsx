@@ -28,7 +28,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       return (old.data as { status?: string }[] | null)?.filter((p) => p.status === "pending").length ?? 0;
     })(),
     profile
-      ? supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null)
+      ? (async () => {
+          // Retired to-dos do not count. retired_at exists after migration 0018; before it, count everything as before.
+          const r = await supabase.from("todo_assignments").select("todo_id, todos!inner(retired_at)", { count: "exact", head: true })
+            .eq("user_id", profile.id).is("completed_at", null).is("todos.retired_at", null);
+          if (!r.error) return r;
+          return supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null);
+        })()
       : Promise.resolve({ count: 0 }),
   ]);
   return (

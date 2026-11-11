@@ -244,6 +244,16 @@ export async function remindTodo(_: State, f: FormData) {
   });
 }
 
+/** Retires a to-do for everyone (or brings it back). Nobody's progress or uploads are deleted. */
+export async function retireTodo(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const retire = text(f, "retire") === "1";
+    const { error } = await supabase.from("todos").update({ retired_at: retire ? new Date().toISOString() : null }).eq("id", text(f, "id"));
+    if (error) throw new Error(/retired_at/.test(error.message) ? "Run migration 0018 first" : error.message);
+    return retire ? "Retired. It no longer shows for anyone and sends no more reminders." : "Brought back. It shows again for everyone it was assigned to.";
+  }, ["/todos"]);
+}
+
 export async function deleteTodo(_: State, f: FormData) {
   return run(async (supabase) => {
     fail((await supabase.from("todos").delete().eq("id", text(f, "id"))).error);
