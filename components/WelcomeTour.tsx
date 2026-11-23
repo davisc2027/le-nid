@@ -5,6 +5,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Bell, X } from "lucide-react";
+import { enablePush, readPushState, type PushState } from "@/lib/push-client";
 import OdileActor from "@/components/art/OdileActor";
 import { cue, reducedMotion, type Cue, type Reaction } from "@/lib/odile-motion";
 import { GENTLE_KEY } from "@/lib/odile";
@@ -43,8 +44,26 @@ const STEPS: Step[] = [
     text: "Earn XP and the group climbs toward its shared goal. Healthy competition, mostly healthy.",
     gentle: "Earn XP and the group climbs toward its shared goal. Every bit helps." },
   { title: "Notifications", href: "/me", mood: "happy", react: "hearts",
-    text: "Turn them on from Me to hear about announcements and reminders. On iPhone, first Add to Home Screen. I won't ask for permission here." },
+    text: "Schedule changes, announcements and reminders arrive as notifications. Tap the button below, then tap Allow. On iPhone this works from the Home Screen app." },
 ];
+
+function TourNotify() {
+  const [state, setState] = useState<PushState | "busy" | "done" | null>(null);
+  useEffect(() => {
+    let live = true;
+    readPushState().then((s) => { if (live) setState(s === "on" ? "done" : s); });
+    return () => { live = false; };
+  }, []);
+  if (state === null || state === "unsupported") return <p className="text-sm text-muted">Add Le Nid to your Home Screen first, then notifications can be turned on from Me.</p>;
+  if (state === "done") return <p className="text-sm font-bold text-good" role="status">Notifications are on.</p>;
+  if (state === "denied") return <p className="text-sm text-muted">They&apos;re blocked on this phone. Turn them on in iPhone Settings, Notifications, Le Nid.</p>;
+  return (
+    <button type="button" className="btn min-h-12" disabled={state === "busy"}
+      onClick={async () => { setState("busy"); const r = await enablePush(); setState(r === "on" ? "done" : r === "denied" ? "denied" : "off"); }}>
+      <Bell size={18} aria-hidden="true" /> {state === "busy" ? "Working…" : "Turn on notifications"}
+    </button>
+  );
+}
 
 export default function WelcomeTour({ auto }: { auto: boolean }) {
   const [open, setOpen] = useState(false);
@@ -151,6 +170,7 @@ export default function WelcomeTour({ auto }: { auto: boolean }) {
         <p id="tour-text" className="text-base" aria-live="polite">
           {last && <Bell size={18} className="mr-1 inline align-text-bottom text-primary" aria-hidden="true" />}{text}
         </p>
+        {last && <TourNotify />}
         <div className="flex justify-center gap-1.5" role="img" aria-label={`Step ${i + 1} of ${STEPS.length}`}>
           {STEPS.map((_, n) => <span key={n} className={`h-2 rounded-full ${n === i ? "w-5 bg-primary" : "w-2 bg-border"}`} />)}
         </div>

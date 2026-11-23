@@ -2,20 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
-function toKey(b64: string) {
-  const pad = "=".repeat((4 - (b64.length % 4)) % 4);
-  const raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
-}
-
-async function save(sub: PushSubscription) {
-  const j = sub.toJSON();
-  const { error } = await createClient().rpc("claim_push_subscription", {
-    p_endpoint: sub.endpoint, p_p256dh: j.keys?.p256dh ?? "", p_auth: j.keys?.auth ?? "",
-  });
-  if (error) throw error;
-}
+import { enablePush, savePushSubscription } from "@/lib/push-client";
 
 /** Removes this device's subscription (database row and browser). Safe to call when not subscribed. */
 export async function unsubscribePush() {
@@ -41,23 +28,17 @@ export default function PushToggle({ prompt = false }: { prompt?: boolean }) {
       const sub = await reg.pushManager.getSubscription();
       if (!sub) return setStatus("off");
       setStatus("on");
-      try { await save(sub); } catch { setError("Couldn't save notifications for this phone. Turn them off and on again."); }
+      try { await savePushSubscription(sub); } catch { setError("Couldn't save notifications for this phone. Turn them off and on again."); }
     }).catch(() => {});
   }, []);
 
   async function enable() {
     setError(""); setBusy(true);
-    try {
-      if ((await Notification.requestPermission()) !== "granted") return setStatus("denied");
-      const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!key) throw new Error("missing key");
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(key) });
-      await save(sub);
-      setStatus("on");
-    } catch {
-      setError("Couldn't turn on notifications. Check your connection and try again.");
-    } finally { setBusy(false); }
+    const r = await enablePush();
+    if (r === "on") setStatus("on");
+    else if (r === "denied") setStatus("denied");
+    else setError("Couldn't turn on notifications. Check your connection and try again.");
+    setBusy(false);
   }
 
   async function disable() {

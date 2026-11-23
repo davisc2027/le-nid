@@ -69,7 +69,7 @@ export default async function Admin() {
   const pollsPromise = loadPolls(supabase);
   const gospelPromise = loadGospel();
   const [
-    { data: meetings }, { data: todosAll }, { data: assignments }, { data: peopleRaw }, { data: goal },
+    { data: meetings }, { data: todosAll }, { data: assignments }, { data: peopleRaw }, { data: pushRaw, error: pushErr }, { data: goal },
     { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
   ] = await Promise.all([
     supabase.from("meetings").select("id, title, meeting_date").order("meeting_date", { ascending: false }),
@@ -82,6 +82,7 @@ export default async function Admin() {
     })() as unknown as Promise<{ data: { id: string; title: string; description: string; due_date: string; requires_upload: boolean; everyone?: boolean; retired_at?: string | null }[] | null }>,
     supabase.from("todo_assignments").select("todo_id, user_id, completed_at, upload_path"),
     supabase.rpc("admin_list_people"),
+    supabase.rpc("admin_push_status"),
     supabase.from("trip_goal").select("title, target_xp").single(),
     supabase.from("announcements").select("id, title, body, pinned").order("created_at", { ascending: false }).limit(20),
     supabase.from("itinerary_items").select("*").order("day", { ascending: false }).order("start_time").limit(60),
@@ -92,10 +93,12 @@ export default async function Admin() {
   ]);
   const { missing: pollsMissing, polls } = await pollsPromise;
   const gospel = await gospelPromise;
+  const pushOn = new Set(((pushRaw ?? []) as { user_id: string }[]).map((r) => r.user_id));
   const todos = (todosAll ?? []).filter((t) => !t.retired_at);
   const retiredTodos = (todosAll ?? []).filter((t) => t.retired_at);
   const people = (peopleRaw ?? []) as Person[];
   const approved = new Set(people.filter((p) => p.status === "approved").map((p) => p.id));
+  const approvedPeople = people.filter((p) => p.status === "approved");
   const waiting = people.filter((p) => p.status === "pending");
   const denied = people.filter((p) => p.status === "rejected");
   const who = new Map(people.map((p) => [p.id, p.name || p.email]));
@@ -166,6 +169,16 @@ export default async function Admin() {
       )}
           </>),
           people: (<>
+      <Section title={pushErr ? "Notifications" : `Notifications (${approvedPeople.filter((p) => pushOn.has(p.id)).length} of ${approvedPeople.length} on)`} open={!pushErr && approvedPeople.some((p) => !pushOn.has(p.id))}>
+        {pushErr ? <p className="text-sm text-muted">Run migration 0019 to see who has notifications on.</p> : (
+          <>
+            <p className="text-xs text-muted">Notifications can only be turned on by each person on their own phone (on iPhone, from the Home Screen app). People below still need to.</p>
+            {approvedPeople.filter((p) => !pushOn.has(p.id)).length === 0
+              ? <p className="text-sm font-semibold text-good">Everyone has notifications on.</p>
+              : <p className="text-sm"><b>Off:</b> {approvedPeople.filter((p) => !pushOn.has(p.id)).map((p) => p.name || p.email).join(", ")}</p>}
+          </>
+        )}
+      </Section>
       <Section title="Sign-in help">
         <p className="text-xs text-muted">If someone never receives their emailed code, make one here and send it to them privately. They enter it on the sign-in screen of the Home Screen app, using their own email. It works once, and anyone who has it could sign in as them, so don&apos;t post it in a group chat.</p>
         <ActionForm action={signInCode} label="Make a sign-in code" reset>

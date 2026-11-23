@@ -6,6 +6,7 @@ import Logo from "@/components/art/Logo";
 import BottomNav from "@/components/BottomNav";
 import RouteBackdrop from "@/components/RouteBackdrop";
 import TourHost from "@/components/TourHost";
+import NotifyGate from "@/components/NotifyGate";
 import { after } from "next/server";
 import { notifyAdminsOfRequest } from "@/lib/notify";
 import PendingScreen from "@/components/PendingScreen";
@@ -54,6 +55,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <Script id="sw" strategy="afterInteractive">{`if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});`}</Script>
       <BottomNav openTodos={count ?? 0} />
       <TourHost />
+      <NotifyGate />
     </div>
   );
 }
