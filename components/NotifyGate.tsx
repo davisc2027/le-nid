@@ -58,12 +58,12 @@ export default function NotifyGate() {
         <p className="max-w-xs text-base">So you don&apos;t miss schedule changes, announcements and to-do reminders on the trip. Tap the button, then tap <b>Allow</b>.</p>
       )}
       {state !== "denied" && (
-        <button ref={btn} type="button" className="btn max-w-xs" onClick={turnOn} disabled={busy}>
+        <button ref={btn} type="button" className="btn w-full max-w-xs" onClick={turnOn} disabled={busy}>
           <Bell size={20} aria-hidden="true" /> {busy ? "Working…" : "Turn on notifications"}
         </button>
       )}
       {error && <p className="text-sm text-primary" role="alert">{error}</p>}
-      <button type="button" className="btn ghost min-h-12 max-w-xs" onClick={later}>Not now</button>
+      <button type="button" className="btn ghost min-h-12 w-full max-w-xs" onClick={later}>Not now</button>
     </div>
   );
 }
