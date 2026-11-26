@@ -7,7 +7,12 @@ import { parseRef, refKey } from "@/lib/bible/reference";
 import { formatRange, dayHeading } from "@/lib/itinerary";
 import { parisEndOfDay, MAX_OPTION, MAX_QUESTION } from "@/lib/polls";
 import { applyPatch, checkPatch, SLUG as GOSPEL_SLUG, type PatchInput } from "@/lib/gospel";
-import { audit } from "@/lib/admin-audit";
+import { audit, lastAudit } from "@/lib/admin-audit";
+import { EMERGENCY_DEFAULTS } from "@/lib/emergency-load";
+import { PRIVACY_DEFAULTS } from "@/lib/privacy-load";
+import { checkForm as checkEmergencyForm, overrideOf as emergencyOverride, GROUP_IDS, SLUG as EMERGENCY_SLUG } from "@/lib/emergency";
+import { checkPrivacyForm, overrideOf as privacyOverride, SECTION_IDS, SLUG as PRIVACY_SLUG } from "@/lib/privacy";
+import { parisToday, reminderBody, throttleMinutes } from "@/lib/attention";
 import { LIMITS } from "@/lib/uploads";
 import type { State } from "@/components/admin/ActionForm";
 
@@ -569,4 +574,85 @@ export async function saveGospelContent(slug: string, patch: PatchInput): Promis
     fail(saveErr);
     return checked.reset.length && !Object.keys(checked.data).length ? "Back to the original wording." : "Saved. Everyone sees it now.";
   }, ["/learn/three-circles", "/learn/three-circles/show"]);
+}
+
+/** Writes (or clears, when `data` is null) one app_content row. A missing table becomes a plain instruction. */
+async function saveContent(supabase: Supabase, slug: string, data: Record<string, unknown> | null) {
+  if (JSON.stringify(data ?? {}).length > 40_000) throw new Error("That is too much text");
+  if (data === null) {
+    const { error } = await supabase.from("app_content").delete().eq("slug", slug);
+    if (error) throw new Error("Run migration 0017 first (the app_content table is missing).");
+    return;
+  }
+  const profile = await getProfile();
+  const { error } = await supabase.from("app_content").upsert({ slug, data, updated_at: new Date().toISOString(), updated_by: profile?.id ?? null }, { onConflict: "slug" });
+  if (error) throw new Error(/app_content/.test(error.message) ? "Run migration 0017 first (the app_content table is missing)." : error.message);
+}
+
+/** Saves the Emergency info editor: every group arrives as a textarea ("Label | value | phone | map link" per line). */
+export async function saveEmergency(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const checked = checkEmergencyForm(Object.fromEntries(GROUP_IDS.map((id) => [id, String(f.get(`g_${id}`) ?? "")])));
+    await saveContent(supabase, EMERGENCY_SLUG, emergencyOverride(EMERGENCY_DEFAULTS, checked));
+    return "Saved. Everyone sees it now. People get the new copy offline after they next open the page online.";
+  }, ["/emergency"]);
+}
+
+export async function resetEmergency(): Promise<State> {
+  return run(async (supabase) => {
+    await saveContent(supabase, EMERGENCY_SLUG, null);
+    return "Back to the original placeholders.";
+  }, ["/emergency"]);
+}
+
+/** Saves the privacy notice editor (one textarea per section). */
+export async function savePrivacy(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const checked = checkPrivacyForm(Object.fromEntries(SECTION_IDS.map((id) => [id, String(f.get(`p_${id}`) ?? "")])));
+    await saveContent(supabase, PRIVACY_SLUG, privacyOverride(PRIVACY_DEFAULTS, checked));
+    return "Saved. Everyone sees it now.";
+  }, ["/privacy"]);
+}
+
+export async function resetPrivacy(): Promise<State> {
+  return run(async (supabase) => {
+    await saveContent(supabase, PRIVACY_SLUG, null);
+    return "Back to the original wording.";
+  }, ["/privacy"]);
+}
+
+/** Last reminder per person on this server instance: a fallback for when the audit table (migration 0020) is missing. */
+const remindedAt = new Map<string, number>();
+const REMIND_WINDOW_MS = 3_600_000;
+
+/**
+ * Pushes a short reminder about their open to-dos to ONE person. At most once an hour per person (the last
+ * "remind_person" audit row, plus an in-memory fallback). Nothing is recorded when they have no notifications on.
+ */
+export async function remindPerson(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const id = text(f, "id");
+    if (!UUID.test(id)) throw new Error("Missing person");
+    const db = createServiceClient();
+    const [{ data: who }, me] = await Promise.all([db.from("profiles").select("email, name, status").eq("id", id).maybeSingle(), getProfile()]);
+    if (!who || who.status !== "approved") throw new Error("They are not an approved member");
+    const now = Date.now();
+    const last = Math.max(remindedAt.get(id) ?? 0, (await lastAudit("remind_person", who.email, REMIND_WINDOW_MS)) ?? 0) || null;
+    const wait = throttleMinutes(last, now, REMIND_WINDOW_MS);
+    if (wait > 0) throw new Error(`${who.name || "They"} ${who.name ? "was" : "were"} reminded a moment ago. Try again in about ${wait} ${wait === 1 ? "minute" : "minutes"}.`);
+
+    type Row = { todos: { title: string; due_date: string; retired_at?: string | null } | null };
+    let r = (await supabase.from("todo_assignments").select("todos!inner(title, due_date, retired_at)").eq("user_id", id).is("completed_at", null).is("todos.retired_at", null)) as { data: Row[] | null; error: unknown };
+    if (r.error) r = (await supabase.from("todo_assignments").select("todos!inner(title, due_date)").eq("user_id", id).is("completed_at", null)) as { data: Row[] | null; error: unknown }; // before migration 0018
+    if (r.error) throw new Error("Couldn't read their to-dos. Try again.");
+    const open = (r.data ?? []).map((x) => x.todos).filter((t): t is NonNullable<Row["todos"]> => !!t && !t.retired_at);
+    if (!open.length) return "They have no open to-dos. Nothing sent.";
+
+    const sent = await sendPushToAll({ title: "A reminder about your to-dos", body: reminderBody(open, parisToday()), url: "/todos" }, [id]);
+    if (sent.error) throw new Error(sent.error);
+    if (!sent.sent) return `${who.name || "They"} ${who.name ? "hasn't" : "haven't"} turned notifications on, so nothing was sent. Message them another way.`;
+    remindedAt.set(id, now);
+    await audit(me?.id, "remind_person", who.email, { open: open.length });
+    return `Reminder sent to ${who.name || who.email}.`;
+  });
 }

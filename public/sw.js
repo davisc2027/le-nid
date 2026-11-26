@@ -3,10 +3,10 @@
 const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
-const PAGES = "pages-v7"; // only the shell URLs below, never RSC or admin pages
+const PAGES = "pages-v8"; // only the shell URLs below, never RSC or admin pages
 const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
 const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
-const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
+const SHELL = ["/", "/emergency", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
 const MAX_STATIC = 300; // ~50 chunks per build, so this keeps roughly 6 deploys of chunks for cached shell pages
 const NAV_TIMEOUT_MS = 4000; // weak Wi-Fi: after this long, a shell page is served from its saved copy
 const MAX_BIBLE = 140;

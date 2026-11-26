@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Star } from "lucide-react";
+import { after } from "next/server";
+import { Download, Star } from "lucide-react";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import FileUpload from "@/components/FileUpload";
 import AssignPicker from "@/components/admin/AssignPicker";
@@ -11,7 +12,16 @@ import UploadLink from "@/components/admin/UploadLink";
 import PollOptions from "@/components/admin/PollOptions";
 import PollBars from "@/components/polls/PollBars";
 import GospelEditor from "@/components/admin/GospelEditor";
+import NeedsAttention from "@/components/admin/NeedsAttention";
+import RosterSection, { type RosterCounts } from "@/components/admin/RosterSection";
+import EmergencyEditor from "@/components/admin/EmergencyEditor";
+import PrivacyEditor from "@/components/admin/PrivacyEditor";
 import { GOSPEL_DEFAULTS, loadGospel } from "@/lib/gospel-load";
+import { loadEmergency } from "@/lib/emergency-load";
+import { loadPrivacy } from "@/lib/privacy-load";
+import { auditOnce } from "@/lib/admin-audit";
+import { computeAttention, parisToday, type ExtrasIn } from "@/lib/attention";
+import type { RosterPerson } from "@/lib/csv";
 import { isOpen, nowMs, rate, toTally, type Poll, type ResultRow, type Tally } from "@/lib/polls";
 import {
   postAnnouncement, updateAnnouncement, deleteAnnouncement,
@@ -68,9 +78,11 @@ export default async function Admin() {
   const supabase = await createClient();
   const pollsPromise = loadPolls(supabase);
   const gospelPromise = loadGospel();
+  const emergencyPromise = loadEmergency();
+  const privacyPromise = loadPrivacy();
   const [
     { data: meetings }, { data: todosAll }, { data: assignments }, { data: peopleRaw }, { data: pushRaw, error: pushErr }, { data: goal },
-    { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
+    { data: rosterRaw, error: rosterErr }, { data: announcements }, { data: items }, { data: files }, { data: sets }, { data: setItems }, { data: allowed },
   ] = await Promise.all([
     supabase.from("meetings").select("id, title, meeting_date").order("meeting_date", { ascending: false }),
     (async () => {
@@ -84,6 +96,7 @@ export default async function Admin() {
     supabase.rpc("admin_list_people"),
     supabase.rpc("admin_push_status"),
     supabase.from("trip_goal").select("title, target_xp").single(),
+    supabase.rpc("admin_roster"), // admins only; missing until migration 0021
     supabase.from("announcements").select("id, title, body, pinned").order("created_at", { ascending: false }).limit(20),
     supabase.from("itinerary_items").select("*").order("day", { ascending: false }).order("start_time").limit(60),
     supabase.from("files").select("id, title, kind, meeting_id").order("created_at", { ascending: false }),
@@ -93,6 +106,8 @@ export default async function Admin() {
   ]);
   const { missing: pollsMissing, failed: pollsFailed, polls } = await pollsPromise;
   const gospel = await gospelPromise;
+  const emergency = await emergencyPromise;
+  const privacy = await privacyPromise;
   const pushOn = new Set(((pushRaw ?? []) as { user_id: string }[]).map((r) => r.user_id));
   const todos = (todosAll ?? []).filter((t) => !t.retired_at);
   const retiredTodos = (todosAll ?? []).filter((t) => t.retired_at);
@@ -102,6 +117,25 @@ export default async function Admin() {
   const waiting = people.filter((p) => p.status === "pending");
   const denied = people.filter((p) => p.status === "rejected");
   const who = new Map(people.map((p) => [p.id, p.name || p.email]));
+  const roster = rosterErr ? null : ((rosterRaw ?? []) as RosterPerson[]);
+  // Opening the Admin page with the roster loaded shows emergency contacts and medical notes, so it is logged (at most once
+  // every 10 minutes per leader, so refreshes and saves do not fill the log).
+  if (roster) after(() => auditOnce(profile.id, "view_roster", { people: roster.length }, 10 * 60_000));
+  const counts: RosterCounts = new Map();
+  const liveTodos = new Set(todos.map((t) => t.id));
+  for (const a of assignments ?? []) {
+    if (!liveTodos.has(a.todo_id)) continue;
+    const c = counts.get(a.user_id) ?? { done: 0, total: 0 };
+    c.total++; if (a.completed_at) c.done++;
+    counts.set(a.user_id, c);
+  }
+  const attention = computeAttention({
+    people: people.map((p) => ({ id: p.id, name: p.name, email: p.email, status: p.status })),
+    todos, assignments: assignments ?? [],
+    pushOn: pushErr ? null : pushOn,
+    extras: roster ? new Map<string, ExtrasIn>(roster.map((r) => [r.id, r])) : null,
+    today: parisToday(),
+  });
   const meetingOptions = (sel: string | null) => (
     <select className="input" name="meeting_id" defaultValue={sel ?? ""}>
       <option value="">No meeting</option>
@@ -126,6 +160,9 @@ export default async function Admin() {
       {waiting.length > 0 && (
         <p className="card text-sm font-semibold">{waiting.length} {waiting.length === 1 ? "person is" : "people are"} waiting for approval. Open the People tab.</p>
       )}
+      <Section title={`Needs attention${attention.length ? ` (${attention.length})` : ""}`} open>
+        <NeedsAttention list={attention} partial={!roster || !!pushErr} />
+      </Section>
       <Section title="To-do completion" open>
         {(todos ?? []).length === 0 && <p className="text-sm text-muted">No to-dos yet.</p>}
         {(todos ?? []).map((t) => {
@@ -178,6 +215,9 @@ export default async function Admin() {
               : <p className="text-sm"><b>Off:</b> {approvedPeople.filter((p) => !pushOn.has(p.id)).map((p) => p.name || p.email).join(", ")}</p>}
           </>
         )}
+      </Section>
+      <Section title={roster ? `Roster (${roster.length})` : "Roster"} open={!!roster}>
+        {roster ? <RosterSection people={roster} pushOn={pushErr ? null : pushOn} counts={counts} /> : <p className="text-sm font-semibold">Run migration 0021 (supabase/migrations/0021_roster.sql) to see the roster with emergency contacts.</p>}
       </Section>
       <Section title="Sign-in help">
         <p className="text-xs text-muted">If someone never receives their emailed code, make one here and send it to them privately. They enter it on the sign-in screen of the Home Screen app, using their own email. It works once, and anyone who has it could sign in as them, so don&apos;t post it in a group chat.</p>
@@ -300,6 +340,7 @@ export default async function Admin() {
             </Row>
           );
         })}
+        <a href="/admin/export?type=todos" download className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border-2 border-primary bg-surface px-4 py-2 text-sm font-bold text-primary"><Download size={18} aria-hidden="true" />Download to-do status CSV</a>
         <ActionForm action={assignMissing} label="Repair missing assignments" buttonClass="min-h-11 px-3 text-sm text-muted underline" />
       </Section>
 
@@ -491,6 +532,12 @@ export default async function Admin() {
       </Section>
           </>),
           settings: (<>
+      <Section title="Emergency info">
+        <EmergencyEditor content={emergency.content} missing={emergency.missing} />
+      </Section>
+      <Section title="Privacy notice">
+        <PrivacyEditor content={privacy.content} missing={privacy.missing} />
+      </Section>
       <Section title="Group goal">
         <ActionForm action={updateGoal} label="Save goal">
           <input className="input" name="title" defaultValue={goal?.title} required />

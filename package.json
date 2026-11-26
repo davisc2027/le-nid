@@ -15,13 +15,17 @@
     "test:polls": "node --experimental-strip-types lib/polls.test.mjs",
     "test:gospel": "node --experimental-strip-types lib/gospel.test.mjs",
     "test:handoff": "node --experimental-strip-types lib/handoff-guard.test.mjs",
+    "test:csv": "node --experimental-strip-types lib/csv.test.mjs",
+    "test:emergency": "node --experimental-strip-types lib/emergency.test.mjs",
+    "test:privacy": "node --experimental-strip-types lib/privacy.test.mjs",
+    "test:attention": "node --experimental-strip-types lib/attention.test.mjs",
     "check:gospel": "node scripts/check-gospel.mjs",
     "check:talk": "node --experimental-strip-types scripts/check-talk.mjs",
     "check:verses": "node --experimental-strip-types scripts/check-verses.mjs",
     "check:curriculum": "node --experimental-strip-types scripts/check-curriculum.mjs 1",
     "test:mic": "node --experimental-strip-types lib/audio/micStream.test.mjs",
     "e2e": "playwright test",
-    "test": "npm run test:speech && npm run test:itinerary && npm run test:polls && npm run test:gospel && npm run test:mic && npm run test:handoff && npm run check:gospel && npm run check:talk && npm run check:verses && npm run check:curriculum"
+    "test": "npm run test:speech && npm run test:itinerary && npm run test:polls && npm run test:gospel && npm run test:mic && npm run test:handoff && npm run test:csv && npm run test:emergency && npm run test:privacy && npm run test:attention && npm run check:gospel && npm run check:talk && npm run check:verses && npm run check:curriculum"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

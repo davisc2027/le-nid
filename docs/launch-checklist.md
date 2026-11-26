@@ -3,10 +3,10 @@
 Everything here is something only the project owner can do: dashboard settings, SQL, environment variables, content reviews and tests on real phones. It consolidates section 4 of `docs/audit-trip-readiness.md`, the "Owner-side settings" and "Could not verify" sections of `docs/audit-security.md`, and the owner items from `docs/audit-reliability.md`. Tick each box as you go. Setup details are in `SETUP.md`; the migration list is in `README.md`.
 
 ## 1. Supabase: database
-- [ ] Run **every file in `supabase/migrations`, in order** (0001-0019 and any newer, such as the security hardening migration from the security audit). Each is safe to re-run. **0010 contains security fixes: do not skip it.**
+- [ ] Run **every file in `supabase/migrations`, in order** (0001-0021 and any newer). Each is safe to re-run. **0010 contains security fixes: do not skip it.**
 - [ ] Confirm they all applied. Missing ones fail quietly (messages like "Run migration 0019 first" in Admin; some code paths fail open). Check with `select proname from pg_proc where proname in ('my_stats','admin_push_status','poll_results');` and `select column_name from information_schema.columns where table_name in ('todos','itinerary_items') and column_name in ('retired_at','everyone','tz','updated_at');`. The Learn page uses `my_stats()` (0010) and falls back to slower queries without it.
 - [ ] Make leaders admins: `update profiles set role = 'admin' where email in (...)`.
-- [ ] Note the project region and write it in your privacy note (EU for passport or health data; moving later means a new project).
+- [ ] Note the project region (Project Settings > General) and write it in the privacy notice (Admin > Settings > Privacy notice, the `[REGION]` placeholder). EU for passport or health data; moving later means a new project.
 - [ ] Database > Advisors (Security and Performance): re-run after any change; no "RLS disabled", "security definer view" or "function search_path mutable" warnings.
 - [ ] Storage: both buckets are **private**. Apply the file size and type limits from the security audit (M4: 10 MB, jpeg/png/heic/webp/pdf for `todo-uploads`). Look for objects outside `<uid>/` and orphaned uploads (H1 in the security audit).
 - [ ] Backups: free plan keeps daily backups for 7 days, which also keep "deleted" passports until they age out.
@@ -52,15 +52,24 @@ Set in Vercel > Project Settings > Environment Variables and mirror in `.env.loc
 - [ ] Pre-approve the emails (Admin > Pre-approved emails), post a welcome announcement, add the itinerary, to-dos, a verse set and a first poll.
 - [ ] Decide whether to reset XP earned during testing (`delete from xp_events where ...`) before the goal starts.
 - [ ] Replace the placeholder icons with real art (`app/icons/[size]/route.tsx`, `app/apple-icon.tsx`).
-- [ ] Privacy note: what is collected, who sees passports (leaders only), providers used (Groq, DeepL, Gmail or Resend, push services), deletion dates, who to contact. Link it from `/login` and `/me`. Delete passport uploads by the date you set (suggested 30 April 2027).
+- [ ] Privacy notice (built in, `/privacy`; everyone sees a one-time consent screen after migration 0021). Admin > Settings > Privacy notice: replace every `[bracketed]` placeholder (the editor lists what is left): **region** (Supabase project region), **email provider** (Gmail SMTP or Resend), **deletion date** (30 days after we return; write the real date), **contact** (a leader's name and phone or email). Read the whole page once as a student would. The sign-in page does not link to it (the notice needs a sign-in to load); it is on Me and on the consent screen.
+- [ ] Admin > Settings > Emergency info: fill in **leader names and phone numbers** (Label | role | phone), the **lodging address and map link**, the **meeting point**, the embassy or consulate, the insurance 24-hour line and policy number, and the group-chat fallback under Notes. Replace every "Ask your leader" line. Then check it as a student: open `/emergency`, turn on airplane mode, reload (it must still show the numbers; open it once online first).
+- [ ] Ask everyone to add their emergency contact on Me (optional medical notes). Check Admin > Overview > Needs attention for "No emergency contact" and "Privacy not accepted".
 - [ ] Time behaviour to tell leaders: reminders run at 14:00 UTC; "Overdue" is judged on the Paris date; the weekly leaderboard rolls over Monday 00:00 Paris (Sunday evening in Texas); streak days follow each phone's local date.
 
 ## 7. Operational (non-code; see `docs/admin-and-leader-ideas.md` section 9)
 - [ ] Name the trip lead, tech contact, safeguarding lead and who holds medical information.
 - [ ] Decide the data policy and retention date, and whether anyone is under 18.
 - [ ] Ask the insurer or church about waiver wording and whether health information may be stored digitally.
-- [ ] Printed emergency card and leader binder; an official fallback chat; eSIM decision (the app has no emergency-contacts page yet).
-- [ ] Calendar: forms 8 weeks out, passports verified 12 weeks out, weekly manual backup, clean-up 30 days after return.
+- [ ] Printed emergency card and leader binder; an official fallback chat; eSIM decision. Print the roster (Admin > People > Roster > Download roster CSV) the week before departure and keep a copy offline with the trip lead; every download is logged.
+- [ ] Calendar: forms 8 weeks out, passports verified 12 weeks out, weekly manual backup (the two CSV downloads), clean-up 30 days after return.
+
+### After the trip: export, then delete
+1. Within the retention date in the privacy notice: Admin > People > Roster, **Download roster CSV** and **Download to-dos CSV** (Admin > To-dos has the second one too). Store them with one named leader, encrypted, only if the church needs a record. Delete them from phones and downloads folders afterwards.
+2. Delete each person with Admin > People > People and teams > **Delete person**. This removes their account, progress, emergency contact, medical notes and uploaded files, and says how many files went.
+3. Empty the `todo-uploads` bucket from the Supabase dashboard for anything left (see `docs/privacy-and-retention.md`), then clear `push_subscriptions` if you keep the project.
+4. Backups keep a copy for up to 7 days (free plan); pause or delete the Supabase project after that if you will not use it again.
+5. `admin_audit` (who exported or viewed what) holds no medical data; keep it until the project is deleted.
 
 ## 8. Still unverified (needs dashboards or a live test)
 - [ ] Whether Supabase Storage serves uploaded HTML or SVG inline on signed URLs.

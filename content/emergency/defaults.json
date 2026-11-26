@@ -1,0 +1,21 @@
+{
+  "leaders": [
+    { "label": "Trip leader", "value": "Ask your leader for their number", "phone": "", "map": "" },
+    { "label": "Second leader", "value": "Ask your leader for their number", "phone": "", "map": "" }
+  ],
+  "staying": [
+    { "label": "Where we are staying", "value": "Ask your leader for the address", "phone": "", "map": "" }
+  ],
+  "meeting": [
+    { "label": "If we get separated", "value": "Ask your leader where we meet", "phone": "", "map": "" }
+  ],
+  "embassy": [
+    { "label": "Embassy or consulate", "value": "Ask your leader", "phone": "", "map": "" }
+  ],
+  "insurance": [
+    { "label": "Travel insurance", "value": "Ask your leader for the policy number and 24-hour phone", "phone": "", "map": "" }
+  ],
+  "notes": [
+    { "label": "Good to know", "value": "Ask your leader", "phone": "", "map": "" }
+  ]
+}

@@ -10,6 +10,9 @@ import NotifyGate from "@/components/NotifyGate";
 import { after } from "next/server";
 import { notifyAdminsOfRequest } from "@/lib/notify";
 import PendingScreen from "@/components/PendingScreen";
+import PrivacyGate from "@/components/PrivacyGate";
+import { loadMyExtras } from "@/lib/my-extras";
+import { loadPrivacy } from "@/lib/privacy-load";
 
 const iconLink = "flex min-h-11 min-w-12 flex-col items-center justify-center rounded-xl text-lg leading-none hover:bg-tint";
 const iconLabel = "mt-0.5 text-[11px] font-bold text-muted";
@@ -20,7 +23,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   if (profile && profile.status !== "approved") return <PendingScreen id={profile.id} name={profile.name} rejected={profile.status === "rejected"} />;
   const supabase = await createClient();
   const isAdmin = profile?.role === "admin";
-  const [waiting, { count }] = await Promise.all([
+  const [waiting, { count }, extras] = await Promise.all([
     !isAdmin ? 0 : (async () => {
       // pending_count() exists after migration 0010; fall back to counting the people list until then.
       const r = await supabase.rpc("pending_count");
@@ -37,7 +40,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           return supabase.from("todo_assignments").select("todo_id", { count: "exact", head: true }).eq("user_id", profile.id).is("completed_at", null);
         })()
       : Promise.resolve({ count: 0 }),
+    // null before migration 0021 (no consent screen then) or if the read fails
+    profile ? loadMyExtras(supabase) : Promise.resolve(null),
   ]);
+  // Consent first, then the first-time tour, then the notification prompt: the last two are held back until it is accepted.
+  const needsConsent = !!extras && !extras.privacy_ack_at;
+  const privacy = needsConsent ? await loadPrivacy() : null;
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <header className="flex items-center justify-between px-4 pt-7">
@@ -54,8 +62,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <main className="flex-1 px-4 py-4">{children}</main>
       <Script id="sw" strategy="afterInteractive">{`if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});`}</Script>
       <BottomNav openTodos={count ?? 0} />
-      <TourHost />
-      <NotifyGate />
+      {privacy ? <PrivacyGate summary={privacy.content.summary} /> : <><TourHost /><NotifyGate /></>}
     </div>
   );
 }

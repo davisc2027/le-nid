@@ -6,14 +6,14 @@ Stack: Next.js (App Router) + Tailwind, Supabase (Postgres, Auth, Storage), `web
 
 ## Quick start (see SETUP.md for the full checklist)
 1. `npm install`
-2. Create a free Supabase project. Run **every file in `supabase/migrations` (0001-0019 and any newer), in order**, in the SQL editor (or `npx supabase link` then `npx supabase db push`). `0010` contains security fixes; see the migrations table below.
+2. Create a free Supabase project. Run **every file in `supabase/migrations` (0001-0021 and any newer), in order**, in the SQL editor (or `npx supabase link` then `npx supabase db push`). `0010` contains security fixes; see the migrations table below.
 3. Supabase dashboard -> Authentication -> URL Configuration: set Site URL to your deployed URL and add `<url>/auth/callback` (and `http://localhost:3000/auth/callback`) to Redirect URLs.
 4. `cp .env.example .env.local` and fill it in (variables are listed in SETUP.md section 2). Generate push keys with `npx web-push generate-vapid-keys`. Never commit `vercel-env.txt` or any env file.
 5. `npm run dev`, sign in with your email, then make yourself admin in the SQL editor:
    `update profiles set role = 'admin' where email in ('you@example.com', 'coleader@example.com');`
 6. Sign-up is restricted to an allowlist: add every trip member's email on the Admin page before they sign in.
 
-## Migrations (0001-0019)
+## Migrations (0001-0021)
 | File | Purpose |
 | --- | --- |
 | `0001_core.sql` | Core schema: profiles, announcements, push subscriptions, itinerary, meetings, files. |
@@ -35,8 +35,17 @@ Stack: Next.js (App Router) + Tailwind, Supabase (Postgres, Auth, Storage), `web
 | `0017_app_content.sql` | Admin-editable wording for built-in resources (Three Circles) with a "reviewed" flag. |
 | `0018_todo_retired.sql` | Admins can retire a to-do without deleting anyone's progress. |
 | `0019_push_status.sql` | Admin list of who has notifications on (never the endpoints or keys). |
+| `0020_security_hardening.sql` | `admin_audit` log, upload size and type limits on the storage buckets, push subscription limits. |
+| `0021_roster.sql` | Emergency contact, optional medical notes and privacy consent on each profile, saved only through functions (`save_my_emergency`, `accept_privacy`, `my_profile_extras`); `admin_roster()` for leaders. Needed for the Emergency card on Me, the consent screen, the Roster and CSV export, and the emergency/privacy checks in Needs attention. |
 
 Recommended order: run **every file in `supabase/migrations` once, in numeric order**, before inviting anyone (each is safe to re-run). Do not skip 0010: it contains security fixes. The app still opens when a later migration is missing (it shows messages such as "Run migration 0019 first"), but a missing one hides features and weakens protections. Files numbered 0020 and up (for example the security hardening migration from `docs/audit-security.md`) follow the same rule.
+
+## Trip operations (emergency, roster, privacy)
+- **Emergency screen** (`/emergency`, red button on Home and a link on Me): 112, 15, 17 and 18 as big call buttons with a French phrase to say aloud, then leader numbers, lodging, meeting point, embassy, insurance and notes. It is in the service worker's `SHELL` list, so it opens with no connection once it has been opened online (open it once after installing). Leaders edit the groups in Admin, Settings, **Emergency info** (stored in `app_content`, slug `emergency`; shipped placeholders are in `content/emergency/defaults.json`). It also shows the signed-in person's own emergency contact.
+- **My emergency info and consent** (migration 0021): the Me page has a card for an emergency contact and optional medical notes; only leaders can read them (Admin, People, Roster). Everyone approved sees a one-time consent screen (first, before the tour and the notification prompt). The privacy notice is at `/privacy`, from `content/privacy.json`, editable in Admin, Settings, **Privacy notice** (slug `privacy`); fill in its [bracketed] placeholders before inviting people.
+- **Roster and CSV** (Admin, People, Roster): `/admin/export?type=roster` and `?type=todos` (admins only, UTF-8 with BOM, formula-safe, never cached). Downloads and roster views are written to `admin_audit` (`export_roster`, `export_todos`, `view_roster`).
+- **Needs attention** (Admin, Overview): who is overdue or has something open, with a Remind button (one push to that person, at most once an hour).
+- Tests: `npm run test:csv`, `test:emergency`, `test:privacy`, `test:attention` (all part of `npm test`).
 
 ## Deploy
 Import the repo into Vercel and add the same env vars from `.env.example`. Push to `main` to deploy. Follow SETUP.md for email templates (Confirm signup and Magic Link), custom SMTP and the iPhone checklist.
