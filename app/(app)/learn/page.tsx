@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Flame, Landmark } from "lucide-react";
 import { CARDS } from "@/components/culture/data";
+import LoadError from "@/components/LoadError";
 import { createClient } from "@/lib/supabase/server";
 import { ALL_LESSONS } from "@/lib/french/content";
 import LandmarkArt from "@/components/art/LandmarkArt";
@@ -11,20 +12,36 @@ import CirclesDiagram from "@/components/gospel/CirclesDiagram";
 
 export default async function Learn() {
   const supabase = await createClient();
-  const [{ data: lessons }, { data: cards }, { data: streak }, { data: xp }] = await Promise.all([
-    supabase.from("lesson_progress").select("lesson_id"),
-    supabase.from("srs_cards").select("learned_at, due"),
-    supabase.from("streaks").select("current, last_day").maybeSingle(),
-    supabase.from("xp_events").select("amount"),
+  // my_stats() (migration 0010) returns the XP total, lesson count and streak in one small row, so the page no
+  // longer downloads every xp_events and lesson_progress row. Before 0010 (or if the RPC fails) fall back to the old queries.
+  const [stats, learnedRes, dueRes] = await Promise.all([
+    supabase.rpc("my_stats").maybeSingle(),
+    supabase.from("srs_cards").select("*", { count: "exact", head: true }).not("learned_at", "is", null),
+    supabase.from("srs_cards").select("*", { count: "exact", head: true }).not("learned_at", "is", null).lte("due", new Date().toISOString()),
   ]);
-  const learned = cards?.filter((c) => c.learned_at).length ?? 0;
-  const due = cards?.filter((c) => c.learned_at && c.due && new Date(c.due) <= new Date()).length ?? 0;
+  let lessonCount = 0, xpTotal = 0, streak: { current: number; last_day: string | null } | null = null;
+  let failed = !!(learnedRes.error || dueRes.error);
+  const row = stats.data as { xp_total: number | string; lessons_done: number; streak: number; last_day: string | null } | null;
+  if (!stats.error && row) {
+    lessonCount = row.lessons_done; xpTotal = Number(row.xp_total); streak = { current: row.streak, last_day: row.last_day };
+  } else {
+    const [{ data: lessons, error: e1 }, { data: st, error: e2 }, { data: xp, error: e3 }] = await Promise.all([
+      supabase.from("lesson_progress").select("lesson_id"),
+      supabase.from("streaks").select("current, last_day").maybeSingle(),
+      supabase.from("xp_events").select("amount"),
+    ]);
+    if (e1 || e2 || e3) failed = true;
+    lessonCount = lessons?.length ?? 0; streak = st ?? null; xpTotal = xp?.reduce((n, e) => n + e.amount, 0) ?? 0;
+  }
+  const learned = learnedRes.count ?? 0;
+  const due = dueRes.count ?? 0;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-end gap-1.5"><OdileActor size={40} /><h1 className="text-2xl font-extrabold">Learn</h1></div>
-        <p className="font-bold text-primary"><Flame size={18} className="mr-1 inline -mt-0.5 text-accent" aria-hidden="true" /><StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xp?.reduce((n, e) => n + e.amount, 0) ?? 0} XP</p>
+        <p className="font-bold text-primary"><Flame size={18} className="mr-1 inline -mt-0.5 text-accent" aria-hidden="true" /><StreakCount current={streak?.current} lastDay={streak?.last_day} /> · {xpTotal} XP</p>
       </div>
+      {failed && <LoadError what="your progress" />}
       <Link href="/learn/three-circles" className="card flex min-h-28 flex-row items-center gap-4 !border-primary bg-tint">
         <span className="w-[72px] shrink-0"><CirclesDiagram step={5} lang="en" compact labels={{ design: "Three Circles", brokenness: "", gospel: "", believe: "", recover: "" }} /></span>
         <div>
@@ -34,8 +51,8 @@ export default async function Learn() {
         </div>
       </Link>
       <Link href="/french" className="card flex min-h-28 flex-row items-center gap-4">
-        <LandmarkArt unit="u4" progress={(lessons?.length ?? 0) / ALL_LESSONS.length} size={72} />
-        <div><h2 className="text-lg font-extrabold">French</h2><p className="text-sm text-muted">Everyday phrases · {lessons?.length ?? 0} of {ALL_LESSONS.length} lessons</p></div>
+        <LandmarkArt unit="u4" progress={lessonCount / ALL_LESSONS.length} size={72} />
+        <div><h2 className="text-lg font-extrabold">French</h2><p className="text-sm text-muted">Everyday phrases · {lessonCount} of {ALL_LESSONS.length} lessons</p></div>
       </Link>
       <Link href="/scripture" className="card flex min-h-28 flex-row items-center gap-4">
         <Rosace filled={learned} total={Math.max(learned, 6)} size={72} />

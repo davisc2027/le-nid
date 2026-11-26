@@ -22,6 +22,7 @@ export default function PushToggle({ prompt = false }: { prompt?: boolean }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- push support is known only in the browser
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) { setStatus("unsupported"); return; }
     navigator.serviceWorker.register("/sw.js").then(async (reg) => {
       if (Notification.permission === "denied") return setStatus("denied");

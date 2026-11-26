@@ -3,16 +3,20 @@
 const BIBLE_VERSION = "1";
 const STATIC = "static-v1"; // hashed /_next/static files: kept across deploys so open sessions keep their chunks
 const BIBLE = "bible-" + BIBLE_VERSION;
-const PAGES = "pages-v6"; // only the shell URLs below, never RSC or admin pages
+const PAGES = "pages-v7"; // only the shell URLs below, never RSC or admin pages
 const REFERENCE = "reference-v1"; // volunteer recordings for the speaking feature
 const KEEP = [STATIC, BIBLE, PAGES, REFERENCE];
 const SHELL = ["/", "/itinerary", "/files", "/todos", "/learn", "/learn/three-circles", "/learn/three-circles/show"];
-const MAX_STATIC = 120;
+const MAX_STATIC = 300; // ~50 chunks per build, so this keeps roughly 6 deploys of chunks for cached shell pages
+const NAV_TIMEOUT_MS = 4000; // weak Wi-Fi: after this long, a shell page is served from its saved copy
 const MAX_BIBLE = 140;
 const MAX_REFERENCE = 300;
 
 self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : {};
+  // Always show a notification (iOS can revoke a subscription after silent pushes), even if the payload is not JSON.
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch {}
+  if (!data || typeof data !== "object") data = {};
   event.waitUntil(
     self.registration.showNotification(data.title || "Le Nid", {
       body: data.body || "",
@@ -142,19 +146,37 @@ self.addEventListener("fetch", (event) => {
   if (p.startsWith("/api/") || p.startsWith("/auth") || p.startsWith("/login") || p.startsWith("/files/")) return;
 
   const shell = SHELL.includes(p);
-  // Page loads: network-first; offline falls back to the cached shell page, else the cached Home page.
-  event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (shell && good(res)) event.waitUntil(remember(PAGES, p, res.clone()));
-        return res;
-      })
-      .catch(() =>
-        // Offline: the cached copy of this page. Only the shell pages may fall back to the cached Home page; anything
-        // else (Translate, lessons...) gets the "Can't reach Le Nid" page, so a dropped connection never looks like
-        // the app "kicked you back to Home" while the address still says /translate.
-        caches.match(p, { cacheName: PAGES }).then((r) =>
-          r || (shell ? caches.match("/", { cacheName: PAGES }) : null)).then((r) => r || offlinePage()),
-      ),
-  );
+  // Page loads: network-first. The network fetch is never cancelled: if it is slow the saved copy is shown after
+  // NAV_TIMEOUT_MS (shell pages only) and the fetch carries on, refreshing the saved copy for next time.
+  // Offline (the fetch fails): the saved copy of this page. Only the shell pages may fall back to the saved Home
+  // page; anything else (Translate, lessons...) gets the "Can't reach Le Nid" page, so a dropped connection never
+  // looks like the app "kicked you back to Home" while the address still says /translate.
+  let saved = Promise.resolve();
+  const network = fetch(req).then((res) => {
+    if (shell && good(res)) saved = remember(PAGES, p, res.clone());
+    return res;
+  });
+  event.waitUntil(network.then(() => saved, () => {})); // keeps the worker alive until a late response is stored
+  event.respondWith((async () => {
+    if (shell) {
+      let timer;
+      const first = await Promise.race([
+        network.then((res) => ({ res }), () => ({ failed: true })),
+        new Promise((resolve) => { timer = setTimeout(() => resolve({ slow: true }), NAV_TIMEOUT_MS); }),
+      ]);
+      clearTimeout(timer);
+      if (first.res) return first.res;
+      if (first.slow) {
+        const hit = await caches.match(p, { cacheName: PAGES });
+        if (hit) return hit;
+        // nothing saved for this page: keep waiting for the network rather than show a different page
+      }
+    }
+    try {
+      return await network;
+    } catch {
+      const hit = (await caches.match(p, { cacheName: PAGES })) || (shell ? await caches.match("/", { cacheName: PAGES }) : null);
+      return hit || offlinePage();
+    }
+  })());
 });

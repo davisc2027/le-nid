@@ -18,7 +18,7 @@ import {
   addItineraryItem, updateItineraryItem, deleteItineraryItem,
   addMeeting, updateMeeting, deleteMeeting, updateFile, deleteFile,
   addTodo, updateTodo, deleteTodo, assignMissing,
-  addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, updateGoal,
+  addVerseSet, updateVerseSet, deleteVerseSet, setTeam, deletePerson, deleteUpload, updateGoal,
   addAllowedEmails, removeAllowedEmail, setAccess, signInCode, remindTodo, retireTodo, addPoll, setPollClosed, deletePoll,
 } from "./actions";
 
@@ -39,21 +39,21 @@ function Row({ title, sub, badge, children }: { title: string; sub?: string; bad
 type Voter = { user_id: string | null; name: string; option_idx: number | null; voted: boolean };
 type PollInfo = { poll: Poll; tally: Tally; voters: Voter[] };
 
-/** All polls with their tallies. Any error (usually migration 0014 not run) comes back as `missing` and the rest of the page carries on. */
-async function loadPolls(supabase: Awaited<ReturnType<typeof createClient>>): Promise<{ missing: boolean; polls: PollInfo[] }> {
+/** The 10 newest polls with their tallies (2 RPCs each, so the list is capped). `missing` means migration 0014 has not run (table not found); any other error comes back as `failed`. The rest of the page carries on either way. */
+async function loadPolls(supabase: Awaited<ReturnType<typeof createClient>>): Promise<{ missing: boolean; failed: boolean; polls: PollInfo[] }> {
   try {
     const { data, error } = await supabase.from("polls")
       .select("id, question, options, multiple, anonymous, show_results, closes_at, closed, created_at")
-      .order("created_at", { ascending: false }).limit(30);
-    if (error) return { missing: true, polls: [] };
+      .order("created_at", { ascending: false }).limit(10);
+    if (error) return { missing: error.code === "42P01" || error.code === "PGRST205", failed: true, polls: [] };
     const polls = await Promise.all(((data ?? []) as Poll[]).map(async (poll) => {
       const [r, v] = await Promise.all([supabase.rpc("poll_results", { p_poll: poll.id }), supabase.rpc("admin_poll_voters", { p_poll: poll.id })]);
       if (r.error || v.error) throw new Error("poll rpc failed");
       return { poll, tally: toTally(r.data as ResultRow[], poll.options.length), voters: (v.data ?? []) as Voter[] };
     }));
-    return { missing: false, polls };
+    return { missing: false, failed: false, polls };
   } catch {
-    return { missing: true, polls: [] };
+    return { missing: false, failed: true, polls: [] };
   }
 }
 
@@ -91,7 +91,7 @@ export default async function Admin() {
     supabase.from("verse_set_items").select("set_id, ref, position").order("position"),
     supabase.from("allowed_emails").select("email").order("email"),
   ]);
-  const { missing: pollsMissing, polls } = await pollsPromise;
+  const { missing: pollsMissing, failed: pollsFailed, polls } = await pollsPromise;
   const gospel = await gospelPromise;
   const pushOn = new Set(((pushRaw ?? []) as { user_id: string }[]).map((r) => r.user_id));
   const todos = (todosAll ?? []).filter((t) => !t.retired_at);
@@ -217,7 +217,7 @@ export default async function Admin() {
               <span className="min-w-0 flex-1 truncate">{p.name || p.email}{p.role === "admin" && <Star size={13} className="ml-1 inline -mt-0.5 text-accent" aria-label="Admin" />}</span>
               <input className="input !w-28 !py-1" name="team" defaultValue={p.team ?? ""} placeholder="Team" aria-label={`Team for ${p.name || p.email}`} />
             </ActionForm>
-            <ActionForm action={deletePerson} label="Delete person" buttonClass={del} confirm={`Permanently delete ${p.name || p.email} and all their progress? This can't be undone.`}><Id id={p.id} /></ActionForm>
+            <ActionForm action={deletePerson} label="Delete person" buttonClass={del} confirm={`Permanently delete ${p.name || p.email}, all their progress and their uploaded files (such as passport copies)? This can't be undone.`}><Id id={p.id} /></ActionForm>
           </div>
         ))}
         {[...waiting, ...denied].map((p) => (
@@ -272,7 +272,18 @@ export default async function Admin() {
               {uploads.length > 0 && (
                 <div className="flex flex-col text-sm">
                   <p className="font-semibold">Uploads</p>
-                  {uploads.map((a) => <UploadLink key={a.user_id} todoId={t.id} userId={a.user_id} name={String(who.get(a.user_id) ?? "file")} />)}
+                  {uploads.map((a) => {
+                    const person = String(who.get(a.user_id) ?? "this person");
+                    return (
+                      <div key={a.user_id} className="flex flex-wrap items-center gap-x-3">
+                        <UploadLink todoId={t.id} userId={a.user_id} name={String(who.get(a.user_id) ?? "file")} />
+                        <ActionForm action={deleteUpload} label="Delete file" className="flex items-center gap-2" buttonClass={del}
+                          confirm={`Permanently delete ${person}'s uploaded file for this to-do? This can't be undone. They stay marked done.`}>
+                          <input type="hidden" name="todo_id" value={t.id} /><input type="hidden" name="user_id" value={a.user_id} />
+                        </ActionForm>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               <ActionForm action={updateTodo} label="Save">
@@ -319,7 +330,8 @@ export default async function Admin() {
             <DateInput className="input mt-1" name="closes_on" type="date" /></label>
           <label className="flex min-h-11 items-center gap-2 text-sm"><input className="size-5" type="checkbox" name="push" defaultChecked /> Notify everyone by push</label>
         </ActionForm>
-        {polls.length === 0 && <p className="text-sm text-muted">No polls yet.</p>}
+        {pollsFailed && <p className="text-sm font-semibold" role="alert">Could not load the polls. Check your connection and reload.</p>}
+        {!pollsFailed && polls.length === 0 && <p className="text-sm text-muted">No polls yet.</p>}
         {polls.map(({ poll, tally, voters }) => {
           const open = isOpen(poll, nowMs());
           const waiting = voters.filter((v) => !v.voted);

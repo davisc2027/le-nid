@@ -16,6 +16,7 @@ export function liveStreak(current: number | null | undefined, lastDay: string |
 
 export function StreakCount({ current, lastDay }: { current?: number | null; lastDay?: string | null }) {
   const [n, setN] = useState(current ?? 0);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the streak depends on the device's local date
   useEffect(() => setN(liveStreak(current, lastDay)), [current, lastDay]);
   return <>{n}</>;
 }

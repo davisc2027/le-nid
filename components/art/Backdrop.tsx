@@ -41,6 +41,7 @@ function House({ x, w, h, roof = "var(--art-roof)", nest = false }: { x: number;
 
 export default function Backdrop({ aboveNav = true, faded = false, soft = false }: { aboveNav?: boolean; faded?: boolean; soft?: boolean }) {
   const [phase, setPhase] = useState<Phase>("day");
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the hour is known only in the browser (SSR renders "day")
   useEffect(() => setPhase(phaseOf(new Date().getHours())), []);
   const s = SKY[phase];
   return (

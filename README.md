@@ -1,17 +1,42 @@
 # Le Nid
 
-Companion PWA for the Strasbourg mission trip: announcements with push, itinerary, files released after prep meetings, to-dos with reminders, French lessons, scripture memory, live translation, and a group goal. Setup steps: `SETUP.md`. Product plan: `docs/plan.md`. Design plan: `docs/design.md`.
+Companion PWA for the Strasbourg mission trip: announcements with push, itinerary, files released after prep meetings, to-dos with reminders, French lessons, scripture memory, live translation, and a group goal. Setup steps: `SETUP.md`. Before launch, work through `docs/launch-checklist.md` (owner-side tasks). Product plan: `docs/plan.md`. Design plan: `docs/design.md`. Audits: `docs/audit-trip-readiness.md`, `docs/audit-security.md`, `docs/audit-reliability.md`.
 
 Stack: Next.js (App Router) + Tailwind, Supabase (Postgres, Auth, Storage), `web-push`, hosted on Vercel. Everything is free-tier. No machine-specific setup; all state lives in Supabase and git.
 
 ## Quick start (see SETUP.md for the full checklist)
 1. `npm install`
-2. Create a free Supabase project. Run `supabase/migrations/0001` through `0009` (0009 adds the French Practice and end-of-lesson review) in order in the SQL editor (or `npx supabase link` then `npx supabase db push`). `0011_verse_progress.sql` saves each learner's place on the verse mastery path across devices (safe to re-run; without it progress stays on the device, see docs/verse-learning.md).
+2. Create a free Supabase project. Run **every file in `supabase/migrations` (0001-0019 and any newer), in order**, in the SQL editor (or `npx supabase link` then `npx supabase db push`). `0010` contains security fixes; see the migrations table below.
 3. Supabase dashboard -> Authentication -> URL Configuration: set Site URL to your deployed URL and add `<url>/auth/callback` (and `http://localhost:3000/auth/callback`) to Redirect URLs.
 4. `cp .env.example .env.local` and fill it in (variables are listed in SETUP.md section 2). Generate push keys with `npx web-push generate-vapid-keys`. Never commit `vercel-env.txt` or any env file.
 5. `npm run dev`, sign in with your email, then make yourself admin in the SQL editor:
    `update profiles set role = 'admin' where email in ('you@example.com', 'coleader@example.com');`
 6. Sign-up is restricted to an allowlist: add every trip member's email on the Admin page before they sign in.
+
+## Migrations (0001-0019)
+| File | Purpose |
+| --- | --- |
+| `0001_core.sql` | Core schema: profiles, announcements, push subscriptions, itinerary, meetings, files. |
+| `0002_todos.sql` | To-dos with deadlines, per-person assignments, uploads and the reminder log. |
+| `0003_french.sql` | French lesson progress, XP events and streaks (`award_xp`, `complete_lesson`). |
+| `0004_scripture.sql` | Verse sets and per-person review cards for scripture memory. |
+| `0005_together.sql` | Teams, opt-in weekly leaderboard and the trip-wide group goal. |
+| `0006_profile_trigger_fix.sql` | Makes profile creation resilient so sign-up never fails on it. |
+| `0007_hardening.sql` | Sign-up allowlist, private emails, column-level write grants, XP caps, push claim, auto-assigned to-dos. |
+| `0008_access_requests.sql` | Accounts wait as `pending` until an admin approves them; `allowed_emails` becomes the pre-approved list. |
+| `0009_vocab_cards.sql` | Spaced-repetition cards for French phrases (end-of-lesson review and Practice). |
+| `0010_access_gaps.sql` | **Security fixes** (approved-only XP and lessons, admin status changes, push endpoint validation, profile self-insert limits) plus `my_stats()`, `pending_count()` and the daily usage budgets. Not optional. |
+| `0011_verse_progress.sql` | Saves the verse mastery path position so it resumes on any device. |
+| `0012_delete_users.sql` | Lets an admin delete a person; their announcements stay, with no author. |
+| `0013_todo_audience.sql` | To-dos for everyone or for specific people. |
+| `0014_polls.sql` | Polls with options, votes, tallies and the admin voter list. |
+| `0015_linter_cleanup.sql` | Supabase linter fixes: fixed search paths, closed anon grants, foreign-key indexes. |
+| `0016_itinerary_tz.sql` | Per-item time zone (Texas or Strasbourg) and the "Updated" tag on itinerary items. |
+| `0017_app_content.sql` | Admin-editable wording for built-in resources (Three Circles) with a "reviewed" flag. |
+| `0018_todo_retired.sql` | Admins can retire a to-do without deleting anyone's progress. |
+| `0019_push_status.sql` | Admin list of who has notifications on (never the endpoints or keys). |
+
+Recommended order: run **every file in `supabase/migrations` once, in numeric order**, before inviting anyone (each is safe to re-run). Do not skip 0010: it contains security fixes. The app still opens when a later migration is missing (it shows messages such as "Run migration 0019 first"), but a missing one hides features and weakens protections. Files numbered 0020 and up (for example the security hardening migration from `docs/audit-security.md`) follow the same rule.
 
 ## Deploy
 Import the repo into Vercel and add the same env vars from `.env.example`. Push to `main` to deploy. Follow SETUP.md for email templates (Confirm signup and Magic Link), custom SMTP and the iPhone checklist.
@@ -24,7 +49,9 @@ Import the repo into Vercel and add the same env vars from `.env.example`. Push 
 - Next.js 16 here differs from older versions; see `AGENTS.md` and `node_modules/next/dist/docs/`.
 
 ## Reminders
-`vercel.json` runs `/api/cron/reminders` daily at 07:00 UTC (08:00-09:00 Paris). Set `CRON_SECRET` in Vercel. Reminders go out 5, 1, and 0 days before a to-do's due date to people who haven't finished it; `reminder_log` prevents repeats. Reminders are push notifications only. The only email is one weekly summary on Mondays (Paris time) with each person's overdue and next-7-days to-dos, sent through the same SMTP mailbox as the sign-in codes when `SMTP_USER` and `SMTP_PASS` are set (about 35 emails a week; Gmail allows about 500 a day), or through Resend if only `RESEND_API_KEY` is set. Test locally: `curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/reminders`.
+`vercel.json` runs `/api/cron/reminders` daily at 14:00 UTC (08:00-09:00 in Texas, 15:00-16:00 in Paris; Vercel Hobby may fire it up to an hour late). The streak nudge cron runs at 17:00 UTC (11:00-12:00 Texas, 18:00-19:00 Paris, an evening reminder on the trip). Both times are UTC, so they do not move at daylight-saving changes. Set `CRON_SECRET` in Vercel. Reminders go out 5, 1, and 0 days before a to-do's due date to people who haven't finished it; `reminder_log` prevents repeats. Reminders are push notifications only. The only email is one weekly summary on Mondays (Paris time) with each person's overdue and next-7-days to-dos, sent through the same SMTP mailbox as the sign-in codes when `SMTP_USER` and `SMTP_PASS` are set (about 35 emails a week; Gmail allows about 500 a day), or through Resend if only `RESEND_API_KEY` is set. "Overdue" in the to-do list is judged on the Paris calendar date for everyone (the reminders use the same date), so a Texas student can see "Overdue" on the evening of the due date; leaders should treat the due date as Paris time. Streak days use the date on the student's own device.
+
+Test locally: `curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/reminders`.
 
 ## French lessons
 Content is plain data in `content/french/units.json` (phrases only; exercises are generated from them in `lib/french/exercises.ts`). Add a phrase or lesson there; no code change needed. Progress, XP and streaks live in Supabase (`0003_french.sql`); streaks are written only by the `complete_lesson()` function. Audio uses the device's built-in `fr-FR` voice. Odile's lines are in `lib/odile.ts` (lines marked `sass` are hidden in gentle mode).
@@ -49,3 +76,6 @@ The Translate tab in the bottom nav opens `/translate`: type or speak (browser s
 - **Glossary.** `content/talk/glossary.json` (faith terms and names, marked for a French speaker's review). Run `node scripts/sync-deepl-glossary.mjs` and put the printed ids in `DEEPL_GLOSSARY_EN_FR` / `DEEPL_GLOSSARY_FR_EN`. See SETUP.md.
 - **Checks.** `node --experimental-strip-types scripts/check-talk.mjs` runs the pure-logic tests (language check, segment filter, WAV, pre-roll, pause rules, phrasebook, cache, glossary).
 - **Development demo.** `npm run dev`, then `/translate/talk?demo=1` plays a scripted conversation without a microphone, Groq or DeepL (`&fail=rate_limited`, `&standalone=1` and `&mode=safari` show the fallback states). Disabled in production builds.
+
+## Checks and CI
+`npm run typecheck` (generates route types, then `tsc --noEmit`), `npm run lint`, `npm test` (unit tests plus the quick content checks; `check-curriculum` runs with its fast sampling argument `1`, the full run takes over 10 minutes: `node scripts/check-curriculum.mjs`) and `npm run build`. `.github/workflows/ci.yml` runs all four on every push and pull request with dummy Supabase variables (no secrets needed).

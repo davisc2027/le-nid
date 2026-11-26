@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import Stork from "@/components/art/Stork";
 import Logo from "@/components/art/Logo";
 import InstallBanner from "@/components/InstallBanner";
+import { clearDeviceData } from "@/lib/device-cleanup";
+import { LIMITS } from "@/lib/uploads";
 
 /** Shown instead of the app until an admin approves the account. Checks again every 20 seconds. */
 export default function PendingScreen({ id, name: initial, rejected }: { id: string; name: string; rejected: boolean }) {
@@ -23,6 +25,7 @@ export default function PendingScreen({ id, name: initial, rejected }: { id: str
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (saving || !name.trim()) return;
+    if (name.trim().length > LIMITS.name) return setMsg(`Keep your name under ${LIMITS.name} characters.`);
     setSaving(true); setMsg("");
     try {
       const { error } = await createClient().from("profiles").update({ name: name.trim() }).eq("id", id);
@@ -34,7 +37,7 @@ export default function PendingScreen({ id, name: initial, rejected }: { id: str
   }
   async function signOut() {
     try { await createClient().auth.signOut(); } catch {}
-    try { (await navigator.serviceWorker?.ready)?.active?.postMessage("clear"); } catch {}
+    await clearDeviceData();
     router.replace("/login");
     router.refresh();
   }
@@ -46,16 +49,16 @@ export default function PendingScreen({ id, name: initial, rejected }: { id: str
       <InstallBanner />
       {rejected ? (
         <>
-          <h1 className="text-xl font-extrabold">This request wasn't approved</h1>
-          <p className="text-muted">If you think that's a mistake, talk to a trip leader in person.</p>
+          <h1 className="text-xl font-extrabold">This request wasn&apos;t approved</h1>
+          <p className="text-muted">If you think that&apos;s a mistake, talk to a trip leader in person.</p>
         </>
       ) : (
         <>
           <h1 className="text-xl font-extrabold">Waiting for a leader to let you in</h1>
           <p className="text-muted">Your request is sent. This page checks again on its own, so you can leave it open.</p>
           <form onSubmit={save} className="card gap-2 text-left">
-            <label htmlFor="pname" className="label">Your name, so leaders know it's you</label>
-            <input id="pname" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" required />
+            <label htmlFor="pname" className="label">Your name, so leaders know it&apos;s you</label>
+            <input id="pname" className="input" value={name} maxLength={LIMITS.name} onChange={(e) => setName(e.target.value)} placeholder="First and last name" required />
             <button className="btn" disabled={saving}>{saving ? "Saving..." : "Save name"}</button>
             {msg && <p className="text-sm text-muted" role="status">{msg}</p>}
           </form>

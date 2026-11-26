@@ -14,7 +14,7 @@ PWA; Supabase + Vercel, must stay free; email sign-in with a 8-digit code (not a
 - Caveat: free Supabase pauses after ~1 week of inactivity; add a scheduled ping.
 
 ## Architecture
-Next.js PWA -> Supabase with RLS (roles admin/member). Storage for PDFs via short-lived signed URLs created on tap (`/files/[id]`). Push: `push_subscriptions`; the admin server action sends the push when an announcement is posted. Reminders: a Vercel cron (`vercel.json`, daily 07:00 UTC) calls `/api/cron/reminders`; open todos due in 5/1/0 days -> push + optional Resend email; `reminder_log` prevents duplicates. Sign-up is limited by an `allowed_emails` table (migration 0007). The service worker caches pages for limited offline use.
+Next.js PWA -> Supabase with RLS (roles admin/member). Storage for PDFs via short-lived signed URLs created on tap (`/files/[id]`). Push: `push_subscriptions`; the admin server action sends the push when an announcement is posted. Reminders: a Vercel cron (`vercel.json`, daily 14:00 UTC) calls `/api/cron/reminders`; open todos due in 5/1/0 days -> push + optional Resend email; `reminder_log` prevents duplicates. Sign-up is limited by an `allowed_emails` table (migration 0007). The service worker caches pages for limited offline use.
 
 ## Data model
 profiles, announcements, push_subscriptions, itinerary_items, meetings(release_at), files(meeting_id, kind, release_at), todos, todo_assignments(status, upload_path), reminder_log.

@@ -2,6 +2,7 @@ import { createClient, getProfile } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ChevronRight, Pin, Trophy } from "lucide-react";
+import LoadError from "@/components/LoadError";
 import PushToggle from "@/components/PushToggle";
 import InstallBanner from "@/components/InstallBanner";
 import SpireGoal from "@/components/art/SpireGoal";
@@ -9,7 +10,7 @@ import PollsSection from "@/components/polls/PollsSection";
 
 export default async function Home() {
   const supabase = await createClient();
-  const [{ data: items }, me, { data: goal }, { data: total }, { data: board }] = await Promise.all([
+  const [{ data: items, error: itemsError }, me, { data: goal }, { data: total }, { data: board }] = await Promise.all([
     supabase.from("announcements").select("*")
       .order("pinned", { ascending: false }).order("created_at", { ascending: false }),
     getProfile(),
@@ -37,7 +38,7 @@ export default async function Home() {
       <PushToggle prompt />
       <Link href="/together" className="card"><SpireGoal xp={Number(total ?? 0)} target={goal?.target_xp ?? 15000} title={goal?.title ?? "Raise the spire"} /></Link>
       <Suspense fallback={null}><PollsSection /></Suspense>
-      {items?.length ? items.map((a) => (
+      {itemsError ? <LoadError what="announcements" /> : items?.length ? items.map((a) => (
         <article key={a.id} className="card">
           <h2 className="font-bold">{a.pinned && <Pin size={16} className="mr-1 inline -mt-0.5 text-primary" aria-label="Pinned" />}{a.title}</h2>
           <p className="whitespace-pre-wrap text-sm">{a.body}</p>

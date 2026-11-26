@@ -18,7 +18,7 @@ export default function AdoptSet({ refs }: { refs: string[] }) {
   return (
     <div className="flex flex-col items-start gap-1">
       <button className="btn ghost" onClick={adopt} disabled={busy}>{busy ? "Adding…" : "Add all to my verses"}</button>
-      {err && <p className="text-sm text-primary" role="alert">Couldn't save. Check your connection and try again.</p>}
+      {err && <p className="text-sm text-primary" role="alert">Couldn&apos;t save. Check your connection and try again.</p>}
     </div>
   );
 }

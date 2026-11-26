@@ -22,7 +22,7 @@ export default function AddVerse() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [data, setData] = useState<{ code: string; ch: string[][] } | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ ref: string; fr: string } | null>(null);
 
   // "Jean 3" or "Jean 3:1" -> the book and numbers typed so far.
   const parts = useMemo(() => {
@@ -40,11 +40,16 @@ export default function AddVerse() {
 
   useEffect(() => {
     const r = parseRef(text);
-    if (!r) { setPreview(null); return; }
+    if (!r) return;
     let live = true;
-    loadVerse(refKey(r)).then((v) => live && setPreview(v ? v.fr : null));
+    const key = refKey(r);
+    loadVerse(key).then((v) => live && setPreview(v ? { ref: key, fr: v.fr } : null));
     return () => { live = false; };
   }, [text]);
+
+  // Derived: a preview only counts while the typed reference is still the one it was loaded for.
+  const typedRef = parseRef(text);
+  const shownPreview = typedRef && preview?.ref === refKey(typedRef) ? preview.fr : null;
 
   const items: Item[] = useMemo(() => {
     if (!parts) {
@@ -117,7 +122,7 @@ export default function AddVerse() {
           </ul>
         )}
       </div>
-      {preview && !open && <div aria-live="polite"><TapWords text={preview} className="verse-text text-base text-muted" /></div>}
+      {shownPreview && !open && <div aria-live="polite"><TapWords text={shownPreview} className="verse-text text-base text-muted" /></div>}
       {msg && <p className="text-sm text-muted" role="status">{msg}</p>}
     </form>
   );

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PushToggle, { unsubscribePush } from "./PushToggle";
+import { clearDeviceData } from "@/lib/device-cleanup";
+import { LIMITS } from "@/lib/uploads";
 
 export default function ProfileForm({ id, name: initial, optIn: initialOptIn, team }: { id: string; name: string; optIn: boolean; team: string | null }) {
   const router = useRouter();
@@ -13,6 +15,7 @@ export default function ProfileForm({ id, name: initial, optIn: initialOptIn, te
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (name.trim().length > LIMITS.name) return setMsg(`Keep your name under ${LIMITS.name} characters.`);
     const { error } = await createClient().from("profiles").update({ name: name.trim(), leaderboard_opt_in: optIn }).eq("id", id);
     setMsg(error ? error.message : "Saved.");
     router.refresh();
@@ -20,7 +23,7 @@ export default function ProfileForm({ id, name: initial, optIn: initialOptIn, te
   async function signOut() {
     await unsubscribePush();
     await createClient().auth.signOut();
-    try { await Promise.all((await caches.keys()).map((k) => caches.delete(k))); } catch {}
+    await clearDeviceData();
     router.replace("/login");
   }
 
@@ -28,7 +31,7 @@ export default function ProfileForm({ id, name: initial, optIn: initialOptIn, te
     <div className="flex flex-col gap-4">
       <form onSubmit={save} className="card gap-3">
         <label htmlFor="name" className="label">Your name</label>
-        <input id="name" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="First name and last initial" required />
+        <input id="name" className="input" value={name} maxLength={LIMITS.name} onChange={(e) => setName(e.target.value)} placeholder="First name and last initial" required />
         <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} />
           <span>Show me on the weekly leaderboard. Team totals count everyone either way.</span></label>
         {team && <p className="text-sm text-muted">Your team: <b>{team}</b></p>}

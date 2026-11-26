@@ -7,6 +7,8 @@ import { parseRef, refKey } from "@/lib/bible/reference";
 import { formatRange, dayHeading } from "@/lib/itinerary";
 import { parisEndOfDay, MAX_OPTION, MAX_QUESTION } from "@/lib/polls";
 import { applyPatch, checkPatch, SLUG as GOSPEL_SLUG, type PatchInput } from "@/lib/gospel";
+import { audit } from "@/lib/admin-audit";
+import { LIMITS } from "@/lib/uploads";
 import type { State } from "@/components/admin/ActionForm";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
@@ -18,6 +20,15 @@ async function requireAdmin() {
 }
 
 const text = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
+
+/** Like text(), but refuses overlong input with a message the form can show (server-side cap; the DB has none). */
+function capped(f: FormData, k: string, max: number, label: string) {
+  const v = text(f, k);
+  if (v.length > max) throw new Error(`${label} is too long (${v.length} characters; the limit is ${max}).`);
+  return v;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Runs an admin action and turns thrown errors into a message the form can show. */
 async function run(fn: (supabase: Supabase) => Promise<string>, paths: string[] = []): Promise<State> {
@@ -48,8 +59,8 @@ async function push(payload: Parameters<typeof sendPushToAll>[0], ids?: string[]
 
 export async function postAnnouncement(_: State, f: FormData) {
   return run(async (supabase) => {
-    const title = text(f, "title");
-    const body = text(f, "body");
+    const title = capped(f, "title", LIMITS.title, "The title");
+    const body = capped(f, "body", LIMITS.body, "The message");
     const since = new Date(Date.now() - 120_000).toISOString();
     const { data: dup } = await supabase.from("announcements").select("id").eq("title", title).eq("body", body).gte("created_at", since).limit(1);
     if (dup?.length) return "Already posted";
@@ -62,7 +73,7 @@ export async function postAnnouncement(_: State, f: FormData) {
 export async function updateAnnouncement(_: State, f: FormData) {
   return run(async (supabase) => {
     fail((await supabase.from("announcements")
-      .update({ title: text(f, "title"), body: text(f, "body"), pinned: f.get("pinned") === "on" }).eq("id", text(f, "id"))).error);
+      .update({ title: capped(f, "title", LIMITS.title, "The title"), body: capped(f, "body", LIMITS.body, "The message"), pinned: f.get("pinned") === "on" }).eq("id", text(f, "id"))).error);
     return "Saved";
   }, ["/"]);
 }
@@ -81,10 +92,10 @@ function itineraryFields(f: FormData, editing: boolean) {
     day: text(f, "day"),
     start_time: text(f, "start_time") || null,
     end_time: text(f, "end_time") || null,
-    title: text(f, "title"),
-    location: text(f, "location") || null,
-    map_url: mapUrl(text(f, "map_url")),
-    notes: text(f, "notes") || null,
+    title: capped(f, "title", LIMITS.title, "The title"),
+    location: capped(f, "location", LIMITS.title, "The location") || null,
+    map_url: mapUrl(capped(f, "map_url", 500, "The map link")),
+    notes: capped(f, "notes", LIMITS.notes, "The notes") || null,
   };
   // Editing: the form says whether this row already has a tz column ("tz_known"); only then is the default value sent too.
   if (tz === "America/Chicago" || (editing && f.get("tz_known") === "1")) fields.tz = tz;
@@ -129,14 +140,14 @@ export async function deleteItineraryItem(_: State, f: FormData) {
 
 export async function addMeeting(_: State, f: FormData) {
   return run(async (supabase) => {
-    fail((await supabase.from("meetings").insert({ title: text(f, "title"), meeting_date: text(f, "meeting_date") })).error);
+    fail((await supabase.from("meetings").insert({ title: capped(f, "title", LIMITS.title, "The title"), meeting_date: text(f, "meeting_date") })).error);
     return "Added";
   }, ["/files"]);
 }
 
 export async function updateMeeting(_: State, f: FormData) {
   return run(async (supabase) => {
-    fail((await supabase.from("meetings").update({ title: text(f, "title"), meeting_date: text(f, "meeting_date") }).eq("id", text(f, "id"))).error);
+    fail((await supabase.from("meetings").update({ title: capped(f, "title", LIMITS.title, "The title"), meeting_date: text(f, "meeting_date") }).eq("id", text(f, "id"))).error);
     return "Saved";
   }, ["/files"]);
 }
@@ -150,7 +161,7 @@ export async function deleteMeeting(_: State, f: FormData) {
 
 export async function updateFile(_: State, f: FormData) {
   return run(async (supabase) => {
-    fail((await supabase.from("files").update({ title: text(f, "title"), kind: text(f, "kind"), meeting_id: text(f, "meeting_id") || null }).eq("id", text(f, "id"))).error);
+    fail((await supabase.from("files").update({ title: capped(f, "title", LIMITS.title, "The title"), kind: text(f, "kind"), meeting_id: text(f, "meeting_id") || null }).eq("id", text(f, "id"))).error);
     return "Saved";
   }, ["/files"]);
 }
@@ -167,7 +178,7 @@ export async function deleteFile(_: State, f: FormData) {
 
 export async function addTodo(_: State, f: FormData) {
   return run(async (supabase) => {
-    const title = text(f, "title");
+    const title = capped(f, "title", LIMITS.title, "The title");
     const due_date = text(f, "due_date");
     const since = new Date(Date.now() - 120_000).toISOString();
     const { data: dup } = await supabase.from("todos").select("id").eq("title", title).eq("due_date", due_date).gte("created_at", since).limit(1);
@@ -175,7 +186,7 @@ export async function addTodo(_: State, f: FormData) {
     const chosen = f.get("audience") === "individuals" ? f.getAll("assign").map(String).filter(Boolean) : [];
     if (f.get("audience") === "individuals" && !chosen.length) throw new Error("Choose at least one person, or switch to Everyone");
     const { data: todo, error } = await supabase.from("todos")
-      .insert({ title, description: text(f, "description"), due_date, requires_upload: f.get("requires_upload") === "on", ...(chosen.length && { everyone: false }) })
+      .insert({ title, description: capped(f, "description", LIMITS.body, "The details"), due_date, requires_upload: f.get("requires_upload") === "on", ...(chosen.length && { everyone: false }) })
       .select("id").single();
     fail(error);
     const { data: people } = await supabase.from("profiles").select("id").eq("status", "approved");
@@ -196,7 +207,7 @@ export async function updateTodo(_: State, f: FormData) {
     if (f.get("audience") === "individuals" && !chosen.length) throw new Error("Choose at least one person, or switch to Everyone");
     const wasScoped = f.get("scoped") === "1";
     fail((await supabase.from("todos").update({
-      title: text(f, "title"), description: text(f, "description"), due_date: text(f, "due_date"),
+      title: capped(f, "title", LIMITS.title, "The title"), description: capped(f, "description", LIMITS.body, "The details"), due_date: text(f, "due_date"),
       requires_upload: f.get("requires_upload") === "on",
       ...(chosen.length ? { everyone: false } : wasScoped ? { everyone: true } : {}),
     }).eq("id", id)).error);
@@ -309,7 +320,7 @@ export async function addVerseSet(_: State, f: FormData) {
   return run(async (supabase) => {
     const refs = parseRefs(text(f, "refs"));
     const { data: set, error } = await supabase.from("verse_sets")
-      .insert({ title: text(f, "title"), description: text(f, "description") }).select("id").single();
+      .insert({ title: capped(f, "title", LIMITS.title, "The title"), description: capped(f, "description", LIMITS.body, "The description") }).select("id").single();
     fail(error);
     const { error: e2 } = await supabase.from("verse_set_items").insert(refs.map((ref, position) => ({ set_id: set!.id, ref, position })));
     if (e2) {
@@ -324,7 +335,7 @@ export async function updateVerseSet(_: State, f: FormData) {
   return run(async (supabase) => {
     const id = text(f, "id");
     const refs = parseRefs(text(f, "refs"));
-    fail((await supabase.from("verse_sets").update({ title: text(f, "title"), description: text(f, "description") }).eq("id", id)).error);
+    fail((await supabase.from("verse_sets").update({ title: capped(f, "title", LIMITS.title, "The title"), description: capped(f, "description", LIMITS.body, "The description") }).eq("id", id)).error);
     fail((await supabase.from("verse_set_items").delete().eq("set_id", id)).error);
     fail((await supabase.from("verse_set_items").insert(refs.map((ref, position) => ({ set_id: id, ref, position })))).error);
     return "Saved";
@@ -349,7 +360,7 @@ export async function updateGoal(_: State, f: FormData) {
   return run(async (supabase) => {
     const target_xp = Number(text(f, "target_xp"));
     if (!Number.isFinite(target_xp) || target_xp < 1) throw new Error("Enter a valid XP number");
-    fail((await supabase.from("trip_goal").update({ title: text(f, "title"), target_xp: Math.round(target_xp) }).eq("id", 1)).error);
+    fail((await supabase.from("trip_goal").update({ title: capped(f, "title", LIMITS.title, "The title"), target_xp: Math.round(target_xp) }).eq("id", 1)).error);
     return "Saved";
   }, ["/together", "/"]);
 }
@@ -381,17 +392,61 @@ export async function setAccess(_: State, f: FormData) {
   });
 }
 
-/** Permanently deletes a person's account and everything tied to it. Service role is used only after the admin check. */
+/**
+ * Removes every object under `<uid>/` in the todo-uploads bucket through the Storage API (a SQL delete would leave the
+ * file itself behind). Returns how many files went. Throws if one can't be removed, so the caller can stop before
+ * deleting the account and losing track of the leftovers.
+ */
+async function removeUploadsOf(db: ReturnType<typeof createServiceClient>, uid: string) {
+  let removed = 0;
+  for (let round = 0; round < 100; round++) {
+    const { data: objs, error } = await db.storage.from("todo-uploads").list(uid, { limit: 100 });
+    if (error) throw new Error(`Could not list their uploads: ${error.message}`);
+    const files = (objs ?? []).filter((o) => o.id); // folders have no id
+    if (!files.length) return removed;
+    const { data: gone, error: rmErr } = await db.storage.from("todo-uploads").remove(files.map((o) => `${uid}/${o.name}`));
+    if (rmErr) throw new Error(`Could not delete their uploads: ${rmErr.message}`);
+    if (!gone?.length) throw new Error("Could not delete their uploads (nothing was removed). The account was not deleted.");
+    removed += gone.length;
+  }
+  throw new Error("Too many uploads to remove in one go. Run Delete again.");
+}
+
+/** Permanently deletes a person's account, their uploaded files and everything tied to it. Service role is used only after the admin check. */
 export async function deletePerson(_: State, f: FormData) {
   return run(async () => {
     const id = text(f, "id");
     const me = await getProfile();
-    if (!id) throw new Error("Missing person");
+    if (!id || !UUID.test(id)) throw new Error("Missing person");
     if (me?.id === id) throw new Error("You can't delete your own account");
-    const { error } = await createServiceClient().auth.admin.deleteUser(id);
-    if (error) throw new Error(error.message);
-    return "Deleted";
+    const db = createServiceClient();
+    const { data: who } = await db.from("profiles").select("email").eq("id", id).maybeSingle();
+    const removed = await removeUploadsOf(db, id);
+    const { error } = await db.auth.admin.deleteUser(id);
+    if (error) throw new Error(`${error.message}${removed ? ` (their ${removed} uploaded ${removed === 1 ? "file was" : "files were"} already removed)` : ""}`);
+    await audit(me?.id, "delete_person", who?.email ?? null, { id, uploads_removed: removed });
+    return `Deleted. ${removed} uploaded ${removed === 1 ? "file" : "files"} removed.`;
   });
+}
+
+/** Deletes one person's uploaded file for one to-do (the file in storage and the link to it). Their to-do stays done. */
+export async function deleteUpload(_: State, f: FormData) {
+  return run(async (supabase) => {
+    const todoId = text(f, "todo_id");
+    const userId = text(f, "user_id");
+    if (!UUID.test(todoId) || !UUID.test(userId)) throw new Error("Missing to-do or person");
+    const { data: a } = await supabase.from("todo_assignments").select("upload_path").eq("todo_id", todoId).eq("user_id", userId).single();
+    const path = a?.upload_path;
+    if (!path) throw new Error("There is no uploaded file to delete");
+    if (!path.startsWith(`${userId}/`)) throw new Error("That file path looks wrong. Nothing was deleted.");
+    const db = createServiceClient();
+    const { error: rmErr } = await db.storage.from("todo-uploads").remove([path]);
+    if (rmErr) throw new Error(`Could not delete the file: ${rmErr.message}`);
+    fail((await supabase.from("todo_assignments").update({ upload_path: null }).eq("todo_id", todoId).eq("user_id", userId)).error);
+    const [{ data: who }, me] = await Promise.all([db.from("profiles").select("email").eq("id", userId).maybeSingle(), getProfile()]);
+    await audit(me?.id, "delete_upload", who?.email ?? null, { todo_id: todoId, path });
+    return "File deleted";
+  }, ["/todos"]);
 }
 
 /** Pushes "new resource" to everyone after a file goes up with no future release time. */
@@ -402,14 +457,32 @@ export async function announceFile(title: string) {
   } catch { /* the file is already saved; a failed push is not worth an error */ }
 }
 
-/** For someone whose emailed code never arrives: makes a one-time 8-digit code the admin can send them privately. */
+/**
+ * For someone whose emailed code never arrives: makes a one-time 8-digit code the admin can send them privately.
+ * Refused for leaders. Only for an email that is on the allowed list or already has a non-admin account. Every code
+ * made is written to admin_audit (when migration 0020 has run).
+ */
 export async function signInCode(_: State, f: FormData) {
   return run(async () => {
     const email = text(f, "email").toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email");
-    const { data, error } = await createServiceClient().auth.admin.generateLink({ type: "magiclink", email });
+    const db = createServiceClient();
+    const me = await getProfile();
+    const { data: target, error: lookupErr } = await db.from("profiles").select("id, role").eq("email", email).maybeSingle();
+    if (lookupErr) throw new Error("Couldn't check that email. Try again.");
+    if (target?.role === "admin") {
+      await audit(me?.id, "sign_in_code_refused_admin", email);
+      throw new Error("Codes can't be made for leaders. They can sign in with their own emailed code.");
+    }
+    if (!target) {
+      const { data: allowed, error: allowErr } = await db.from("allowed_emails").select("email").eq("email", email).maybeSingle();
+      if (allowErr) throw new Error("Couldn't check that email. Try again.");
+      if (!allowed) throw new Error("That email has no account and isn't on the allowed list. Add it under Allowed emails first, or ask them to request a code once.");
+    }
+    const { data, error } = await db.auth.admin.generateLink({ type: "magiclink", email });
     const code = data?.properties?.email_otp;
     if (error || !code) throw new Error(error?.message ?? "Couldn't make a code");
+    await audit(me?.id, "sign_in_code", email, { existing_account: Boolean(target) });
     return `Code for ${email}: ${code}. Send it to them privately. It works once and expires within an hour.`;
   });
 }

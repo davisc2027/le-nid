@@ -9,6 +9,7 @@ export default function InstallBanner({ compact = false }: { compact?: boolean }
   useEffect(() => {
     const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true || matchMedia("(display-mode: standalone)").matches;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- user agent and display mode exist only in the browser
     setShow(ios && !standalone);
   }, []);
   if (!show) return null;
@@ -31,7 +32,7 @@ export default function InstallBanner({ compact = false }: { compact?: boolean }
         <li>Open Le Nid from your Home Screen and sign in there.</li>
         <li>Turn on notifications when asked.</li>
       </ol>
-      <p className="text-xs text-muted">Without this step your iPhone can't send you announcements or reminders.</p>
+      <p className="text-xs text-muted">Without this step your iPhone can&apos;t send you announcements or reminders.</p>
     </div>
   );
 }

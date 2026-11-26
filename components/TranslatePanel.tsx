@@ -36,6 +36,7 @@ export default function TranslatePanel() {
   textRef.current = text;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- history lives in localStorage and speech support is known only in the browser
     try { setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]")); } catch {}
     const w = window as unknown as { SpeechRecognition?: new () => Recognizer; webkitSpeechRecognition?: new () => Recognizer };
     const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -146,7 +147,7 @@ export default function TranslatePanel() {
           <button onClick={() => { armed.current = false; setCoach(false); }} aria-label="Dismiss tip"
             className="absolute right-1 top-1 grid size-11 place-items-center rounded-xl text-muted"><X size={20} aria-hidden="true" /></button>
           <p className="font-extrabold">Tap the microphone on your keyboard</p>
-          <p>It's the microphone key at the bottom right of your iPhone keyboard (next to the space bar). Tap it, say your sentence, and tap it again. Le Nid translates a moment after you stop.</p>
+          <p>It&apos;s the microphone key at the bottom right of your iPhone keyboard (next to the space bar). Tap it, say your sentence, and tap it again. Le Nid translates a moment after you stop.</p>
           <p className="text-xs text-muted">No microphone key? Turn on Dictation in Settings → General → Keyboard.</p>
         </div>
       )}
@@ -174,7 +175,7 @@ export default function TranslatePanel() {
           </div>
         </div>
       )}
-      {!shown && <div className="flex items-end gap-2"><Stork mood="think" size={64} /><p className="card mb-2 flex-1 text-sm">Speak or type, then tap Translate. "Show them" fills the screen so the other person can read it.</p></div>}
+      {!shown && <div className="flex items-end gap-2"><Stork mood="think" size={64} /><p className="card mb-2 flex-1 text-sm">Speak or type, then tap Translate. &quot;Show them&quot; fills the screen so the other person can read it.</p></div>}
       {history.length > 0 && (
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">

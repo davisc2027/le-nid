@@ -5,6 +5,7 @@ import { GENTLE_KEY } from "@/lib/odile";
 
 export default function GentleToggle() {
   const [gentle, setGentle] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the setting lives in localStorage, unknown during SSR
   useEffect(() => { try { setGentle(localStorage.getItem(GENTLE_KEY) === "1"); } catch {} }, []);
   function toggle() {
     const next = !gentle;

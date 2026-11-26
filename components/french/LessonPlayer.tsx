@@ -50,6 +50,7 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   const [intro, setIntro] = useState(!practice); // lessons open with the "meet the phrases" cards
   const [odile, setOdile] = useState<Cue | null>(null);
   const [sound, setSoundState] = useState(true);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the sound setting lives in localStorage, unknown during SSR
   useEffect(() => setSoundState(soundOn()), []);
   const [summary, setSummary] = useState<{ xp: number; streak: number } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -66,7 +67,14 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
   const tier = tierOf(frontier);
   const saved = useRef<{ cards: boolean; reward: { xp: number; streak: number } | null }>({ cards: false, reward: null });
 
+  // Build the queue once per lesson (or once per practice session). Without this guard a router.refresh() or
+  // revalidation that hands the player new props would rebuild the queue while `i` and the missed refs stay,
+  // changing the exercise under the learner.
+  const builtFor = useRef<string | null>(null);
+  const queueKey = practice ? "practice" : lesson!.id;
   useEffect(() => {
+    if (builtFor.current === queueKey) return;
+    builtFor.current = queueKey;
     let q: Exercise[];
     if (practice) {
       q = buildPractice(practiceKeys.flatMap((k) => PHRASE_BY_KEY.get(k) ?? []), { frontier, cards });
@@ -77,8 +85,9 @@ export default function LessonPlayer({ lesson, nextHref, mode = "lesson", cards 
       // unavailable or nothing else is completed
       if (cards) q = [...q, ...buildReview(pickReviewPhrases(completed, lesson!.id, cards, 3), q[q.length - 1].kind, { frontier, cards })];
     }
+    // (browser-only: speakingOn() reads localStorage, so the queue cannot be built during SSR)
     setQueue(q); setTotal(q.length);
-  }, [lesson, practice, practiceKeys, cards, completed, frontier]);
+  }, [queueKey, lesson, practice, practiceKeys, cards, completed, frontier]);
 
   if (!queue) return <p className="text-muted">Loading…</p>;
   const cur = queue[i];

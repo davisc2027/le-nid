@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { TODO_RULE, TODO_UPLOAD_MAX_BYTES, checkUpload, mimeOf } from "@/lib/uploads";
 
 type Props = {
   todoId: string; userId: string; title: string; description: string;
@@ -17,16 +18,28 @@ export default function TodoItem(p: Props) {
 
   async function complete(file?: File) {
     let upload_path: string | undefined;
+    let previous: string | null = null;
     if (file) {
-      upload_path = `${p.userId}/${p.todoId}-${file.name.replace(/[^\w.-]/g, "_")}`;
+      const problem = checkUpload(file, TODO_RULE);
+      if (problem) return setMsg(problem);
+      // One fixed object per (person, to-do): a second upload replaces the first instead of leaving a stray copy.
+      upload_path = `${p.userId}/${p.todoId}`;
       setMsg("Uploading…");
-      const up = await supabase.storage.from("todo-uploads").upload(upload_path, file, { upsert: true });
+      const { data: row } = await supabase.from("todo_assignments").select("upload_path")
+        .eq("todo_id", p.todoId).eq("user_id", p.userId).maybeSingle();
+      previous = row?.upload_path ?? null;
+      const up = await supabase.storage.from("todo-uploads").upload(upload_path, file, { upsert: true, contentType: mimeOf(file) });
       if (up.error) return setMsg(up.error.message);
     }
     const { error } = await supabase.from("todo_assignments")
       .update({ completed_at: new Date().toISOString(), ...(upload_path && { upload_path }) })
       .eq("todo_id", p.todoId).eq("user_id", p.userId);
     if (error) return setMsg(error.message);
+    // Files uploaded before this change were named after the original file. Drop the old one now it is replaced.
+    if (upload_path && previous && previous !== upload_path && previous.startsWith(`${p.userId}/`)) {
+      await supabase.storage.from("todo-uploads").remove([previous]);
+    }
+    setMsg("");
     router.refresh();
   }
 
@@ -57,7 +70,9 @@ export default function TodoItem(p: Props) {
         <button className="text-left text-sm text-muted underline" onClick={undo}>Mark not done</button>
       ) : p.requiresUpload ? (
         <label className="text-sm">Upload your file to finish
-          <input className="input mt-1" type="file" onChange={(e) => e.target.files?.[0] && complete(e.target.files[0])} />
+          <input className="input mt-1" type="file" accept=".pdf,image/jpeg,image/png,image/heic,image/heif,image/webp"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void complete(f); e.target.value = ""; }} />
+          <span className="mt-1 block text-xs text-muted">A PDF or a photo, up to {TODO_UPLOAD_MAX_BYTES / 1048576} MB.</span>
         </label>
       ) : (
         <button className="btn" onClick={() => complete()}>Mark done</button>

@@ -33,6 +33,7 @@ export default function LoginPage() {
     const s = installState();
     let skip = false;
     try { skip = sessionStorage.getItem(SKIP_INSTALL_KEY) === "1"; } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- install state and sessionStorage exist only in the browser
     setInApp(s.inApp);
     setSkipped(skip);
     setGate(s.ios && !s.standalone && !skip ? "install" : "login");

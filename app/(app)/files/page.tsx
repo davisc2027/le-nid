@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import LoadError from "@/components/LoadError";
 import FileLink from "@/components/FileLink";
 
 export default async function Files() {
   const supabase = await createClient();
-  const [{ data: meetings }, { data: files }] = await Promise.all([
+  const [{ data: meetings, error: meetingsError }, { data: files, error: filesError }] = await Promise.all([
     supabase.from("meetings").select("*").order("meeting_date", { ascending: false }),
     supabase.from("files").select("*").order("created_at", { ascending: false }),
   ]);
@@ -14,7 +15,8 @@ export default async function Files() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-extrabold">Files</h1>
-      {groups.length === 0 && <p className="text-muted">No files yet.</p>}
+      {(meetingsError || filesError) && <LoadError what="files" />}
+      {!meetingsError && !filesError && groups.length === 0 && <p className="text-muted">No files yet.</p>}
       {groups.map((g) => (
         <section key={g.key} className="flex flex-col gap-2">
           <h2 className="font-bold text-primary">{g.title}</h2>

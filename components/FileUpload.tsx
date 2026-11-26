@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { announceFile } from "@/app/(app)/admin/actions";
 import DateInput from "@/components/DateInput";
 import { createClient } from "@/lib/supabase/client";
+import { FILES_RULE, checkUpload, mimeOf } from "@/lib/uploads";
 
 type Meeting = { id: string; title: string };
 
@@ -21,12 +22,14 @@ export default function FileUpload({ meetings }: { meetings: Meeting[] }) {
     const form = e.currentTarget;
     const f = new FormData(form);
     const file = f.get("file") as File;
+    const problem = checkUpload(file, FILES_RULE);
+    if (problem) return setMsg(problem);
     const supabase = createClient();
     const path = `${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
     setBusy(true);
     setMsg("Uploading…");
     try {
-      const up = await supabase.storage.from("files").upload(path, file);
+      const up = await supabase.storage.from("files").upload(path, file, { contentType: mimeOf(file) });
       if (up.error) return setMsg(up.error.message);
       const release = String(f.get("release_at") || "");
       const { error } = await supabase.from("files").insert({
@@ -55,6 +58,7 @@ export default function FileUpload({ meetings }: { meetings: Meeting[] }) {
     <form onSubmit={submit} className="flex flex-col gap-2">
       <input className="input" name="title" placeholder="Title" required />
       <input className="input" name="file" type="file" required />
+      <p className="text-xs text-muted">A PDF, image, Office document or text file, up to 50 MB.</p>
       <select className="input" name="kind" defaultValue="slides">
         <option value="recap">Recap</option><option value="homework">Homework</option>
         <option value="slides">Slides</option><option value="other">Other</option>
