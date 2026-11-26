@@ -25,14 +25,6 @@ export default async function Home() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-extrabold">Announcements</h1>
-      <Link href="/emergency" className="flex min-h-16 items-center gap-3 rounded-2xl bg-danger px-4 py-3 text-danger-fg shadow-sm">
-        <LifeBuoy size={26} aria-hidden="true" className="shrink-0" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-lg font-extrabold leading-tight">Emergency</span>
-          <span className="block text-sm leading-tight opacity-90">Who to call and who to contact. Works offline.</span>
-        </span>
-        <ChevronRight size={20} aria-hidden="true" className="shrink-0" />
-      </Link>
       <Link href="/together" className="card flex min-h-16 flex-row items-center gap-3 !border-accent">
         <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-[#2b2118]"><Trophy size={22} strokeWidth={2.4} aria-hidden="true" /></span>
         <span className="min-w-0 flex-1">
@@ -53,6 +45,14 @@ export default async function Home() {
           <p className="mt-2 text-xs text-muted">{new Date(a.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" })} (Paris time)</p>
         </article>
       )) : <p className="text-muted">Nothing yet.</p>}
+      <Link href="/emergency" className="mt-2 flex min-h-16 items-center gap-3 rounded-2xl bg-danger px-4 py-3 text-danger-fg shadow-sm">
+        <LifeBuoy size={26} aria-hidden="true" className="shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-extrabold leading-tight">Emergency</span>
+          <span className="block text-sm leading-tight opacity-90">Who to call and who to contact. Works offline.</span>
+        </span>
+        <ChevronRight size={20} aria-hidden="true" className="shrink-0" />
+      </Link>
     </div>
   );
 }
